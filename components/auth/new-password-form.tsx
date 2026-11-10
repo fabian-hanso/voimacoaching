@@ -1,6 +1,7 @@
 "use client";
 
-import { Alert, Button, Field, Input } from "@/components/ui";
+import { Alert, Button, Field } from "@/components/ui";
+import { PasswordInput } from "@/components/password-input";
 import { authErrorMessage } from "@/lib/client/errors";
 import { hardNavigate } from "@/lib/client/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
@@ -39,18 +40,16 @@ export function NewPasswordForm() {
     <form onSubmit={onSubmit} className="space-y-4">
       {error && <Alert>{error}</Alert>}
       <Field label="Neues Passwort" hint="Mindestens 8 Zeichen">
-        <Input
+        <PasswordInput
           name="password"
-          type="password"
           autoComplete="new-password"
           minLength={8}
           required
         />
       </Field>
       <Field label="Passwort wiederholen">
-        <Input
+        <PasswordInput
           name="confirm"
-          type="password"
           autoComplete="new-password"
           minLength={8}
           required

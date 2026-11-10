@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Button, cx, Field, Input } from "@/components/ui";
+import { PasswordInput } from "@/components/password-input";
 import { api } from "@/lib/client/api";
 import { authErrorMessage } from "@/lib/client/errors";
 import { hardNavigate } from "@/lib/client/navigation";
@@ -220,9 +221,8 @@ export function RegisterForm() {
         <Input name="email" type="email" autoComplete="email" required />
       </Field>
       <Field label="Passwort" hint="Mindestens 8 Zeichen">
-        <Input
+        <PasswordInput
           name="password"
-          type="password"
           autoComplete="new-password"
           minLength={8}
           required

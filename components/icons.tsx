@@ -17,8 +17,12 @@ const paths = {
       <path d="M3 9h18M8 2v4M16 2v4" />
     </>
   ),
-  flame: <path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 0-8Z" />,
-  heart: <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />,
+  flame: (
+    <path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 0-8Z" />
+  ),
+  heart: (
+    <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
+  ),
   activity: <path d="M3 12h4l3-8 4 16 3-8h4" />,
   scale: (
     <>
@@ -49,9 +53,13 @@ const paths = {
   chat: <path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z" />,
   send: <path d="M4 12 20 4l-6 16-3-7-7-1Z" />,
   x: <path d="M6 6l12 12M18 6 6 18" />,
-  bell: <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />,
+  bell: (
+    <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  ),
   chevronLeft: <path d="m15 18-6-6 6-6" />,
-  alert: <path d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />,
+  alert: (
+    <path d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+  ),
   camera: (
     <>
       <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
@@ -77,14 +85,18 @@ const paths = {
       <path d="M12 11v5M12 8h.01" />
     </>
   ),
-  book: <path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2V5Zm0 15a2 2 0 0 0 2 2h13v-4M8 7h7M8 11h5" />,
+  book: (
+    <path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2V5Zm0 15a2 2 0 0 0 2 2h13v-4M8 7h7M8 11h5" />
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.5-3.5" />
     </>
   ),
-  sparkles: <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3ZM19 15l.9 2.1 2.1.9-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" />,
+  sparkles: (
+    <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3ZM19 15l.9 2.1 2.1.9-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" />
+  ),
   building: (
     <>
       <path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M3 21h18" />
@@ -115,11 +127,25 @@ const paths = {
       <path d="m9 12 2 2 4-4" />
     </>
   ),
-  star: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />,
+  star: (
+    <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />
+  ),
   lightbulb: (
     <>
       <path d="M9 18h6M10 21h4" />
       <path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3Z" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  eyeOff: (
+    <>
+      <path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.6M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" />
     </>
   ),
   qr: (
@@ -130,12 +156,20 @@ const paths = {
       <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
     </>
   ),
-  logout: <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />,
+  logout: (
+    <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof paths;
 
-export function Icon({ name, className = "size-5" }: { name: IconName; className?: string }) {
+export function Icon({
+  name,
+  className = "size-5",
+}: {
+  name: IconName;
+  className?: string;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -152,7 +186,8 @@ export function Icon({ name, className = "size-5" }: { name: IconName; className
   );
 }
 
-export type Tone = "brand" | "success" | "warning" | "danger" | "accent" | "neutral";
+export type Tone =
+  "brand" | "success" | "warning" | "danger" | "accent" | "neutral";
 
 const tones: Record<Tone, string> = {
   brand: "bg-brand/30 text-brand-ink ring-brand-ink/20",
@@ -164,7 +199,15 @@ const tones: Record<Tone, string> = {
 };
 
 /** Icon in einem farbigen, abgerundeten Quadrat. */
-export function IconTile({ name, tone = "brand", size = "md" }: { name: IconName; tone?: Tone; size?: "sm" | "md" }) {
+export function IconTile({
+  name,
+  tone = "brand",
+  size = "md",
+}: {
+  name: IconName;
+  tone?: Tone;
+  size?: "sm" | "md";
+}) {
   return (
     <span
       className={`grid shrink-0 place-items-center rounded-control ring-1 ring-inset ${tones[tone]} ${size === "sm" ? "size-8" : "size-10"}`}

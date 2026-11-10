@@ -31,6 +31,10 @@ const TEXT: Record<
     title: `${n} hat einen Termin eingetragen`,
     text: d,
   }),
+  appointment_moved: (n, d) => ({
+    title: `${n} hat einen Termin verschoben`,
+    text: d,
+  }),
   appointment_comment: (n, d) => ({
     title: `${n} hat einen Termin kommentiert`,
     text: d,

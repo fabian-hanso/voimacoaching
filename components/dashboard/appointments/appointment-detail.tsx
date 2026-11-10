@@ -1,6 +1,7 @@
 "use client";
 
 import { Modal, ModalHeader } from "@/components/dashboard/modal";
+import { MoveDialog } from "./move-dialog";
 import { Icon } from "@/components/icons";
 import {
   Alert,
@@ -49,6 +50,7 @@ export function AppointmentDetail({
     `/appointments/${a.id}/comments`,
   );
   const [reason, setReason] = useState<"decline" | "cancel" | null>(null);
+  const [moving, setMoving] = useState(false);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [pending, setPending] = useState(false);
@@ -399,6 +401,11 @@ export function AppointmentDetail({
               </Button>
             </>
           )}
+          {role !== "client" && Date.parse(a.startsAt) > now && (
+            <Button variant="secondary" onClick={() => setMoving(true)}>
+              <Icon name="clock" className="size-4" /> Verschieben
+            </Button>
+          )}
           {!(role === "trainer" && a.status === "requested") && (
             <Button variant="secondary" onClick={() => setReason("cancel")}>
               {role === "client" && a.status === "requested"
@@ -407,6 +414,18 @@ export function AppointmentDetail({
             </Button>
           )}
         </div>
+      )}
+      {moving && role !== "client" && (
+        <MoveDialog
+          a={a}
+          role={role}
+          onClose={() => setMoving(false)}
+          onMoved={(updated) => {
+            setA({ ...updated, commentCount: a.commentCount });
+            setMoving(false);
+            onChanged();
+          }}
+        />
       )}
     </Modal>
   );

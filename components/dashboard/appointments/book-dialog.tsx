@@ -16,38 +16,57 @@ import type { AppointmentCategory, Schedule } from "@/lib/types";
 import { useState } from "react";
 import { CATEGORIES, durationLabel, DURATIONS, toMin } from "./utils";
 
-/** Termin direkt eintragen (sofort bestätigt). Studio wählt den Trainer, Trainer trägt bei sich ein. */
+/**
+ * Termin direkt eintragen (sofort bestätigt). Studio wählt den Trainer, Trainer trägt bei sich ein.
+ * Aus dem Kalender (Ziehen/Klicken im Zeitraster) kommen Startzeit, Dauer und ggf. Trainer vorbelegt.
+ */
 export function BookDialog({
   schedule,
   role,
   initialDate,
+  initialStart,
+  initialDuration,
+  initialTrainerId,
   onClose,
   onCreated,
 }: {
   schedule: Schedule;
   role: "trainer" | "studio";
   initialDate: string;
+  /** "HH:MM" */
+  initialStart?: string;
+  /** Minuten (15er-Schritte) */
+  initialDuration?: number;
+  initialTrainerId?: string;
   onClose: () => void;
   onCreated: () => void;
 }) {
   const clients = schedule.clients;
-  const [trainerId, setTrainerId] = useState(schedule.trainers[0]?.id ?? "");
+  const [trainerId, setTrainerId] = useState(
+    (initialTrainerId &&
+    schedule.trainers.some((t) => t.id === initialTrainerId)
+      ? initialTrainerId
+      : schedule.trainers[0]?.id) ?? "",
+  );
   const trainer = schedule.trainers.find((t) => t.id === trainerId);
   const [party, setParty] = useState<"client" | "guest">(
     clients.length ? "client" : "guest",
   );
   const [clientId, setClientId] = useState(clients[0]?.id ?? "");
   const [guestName, setGuestName] = useState("");
+  // Aufgezogene Dauer: passendes Angebot wählen, sonst „Eigener Termin“ mit genau dieser Dauer
   const [serviceId, setServiceId] = useState<string>(
-    trainer?.services[0]?.id ?? "custom",
+    (initialDuration
+      ? trainer?.services.find((s) => s.durationMin === initialDuration)?.id
+      : trainer?.services[0]?.id) ?? "custom",
   );
   const [custom, setCustom] = useState({
     category: "trial" as AppointmentCategory,
     title: CATEGORIES.trial.label,
-    durationMin: CATEGORIES.trial.duration,
+    durationMin: initialDuration ?? CATEGORIES.trial.duration,
   });
   const [date, setDate] = useState(initialDate);
-  const [startTime, setStartTime] = useState("10:00");
+  const [startTime, setStartTime] = useState(initialStart ?? "10:00");
   const [note, setNote] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -243,11 +262,13 @@ export function BookDialog({
                   setCustom({ ...custom, durationMin: Number(e.target.value) })
                 }
               >
-                {DURATIONS.map((d) => (
-                  <option key={d} value={d}>
-                    {durationLabel(d)}
-                  </option>
-                ))}
+                {[...new Set([...DURATIONS, custom.durationMin])]
+                  .sort((a, b) => a - b)
+                  .map((d) => (
+                    <option key={d} value={d}>
+                      {durationLabel(d)}
+                    </option>
+                  ))}
               </Select>
             </Field>
           </div>

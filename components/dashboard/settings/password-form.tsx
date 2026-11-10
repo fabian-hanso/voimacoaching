@@ -1,7 +1,8 @@
 "use client";
 
 import { useMe } from "@/components/dashboard/shell";
-import { Button, Field, Input } from "@/components/ui";
+import { Button, Field } from "@/components/ui";
+import { PasswordInput } from "@/components/password-input";
 import { authErrorMessage } from "@/lib/client/errors";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { createClient } from "@supabase/supabase-js";
@@ -74,26 +75,23 @@ export function PasswordForm() {
     <form onSubmit={submit}>
       <div className="grid max-w-sm gap-4">
         <Field label="Aktuelles Passwort">
-          <Input
+          <PasswordInput
             name="current"
-            type="password"
             autoComplete="current-password"
             required
           />
         </Field>
         <Field label="Neues Passwort" hint="Mindestens 8 Zeichen">
-          <Input
+          <PasswordInput
             name="next"
-            type="password"
             autoComplete="new-password"
             minLength={8}
             required
           />
         </Field>
         <Field label="Neues Passwort wiederholen">
-          <Input
+          <PasswordInput
             name="confirm"
-            type="password"
             autoComplete="new-password"
             minLength={8}
             required

@@ -283,6 +283,7 @@ export type NoticeKind =
   | "appointment_cancelled"
   | "appointment_booked"
   | "appointment_comment"
+  | "appointment_moved"
   | "course_assigned"
   | "course_cancelled"
   | "member_joined"

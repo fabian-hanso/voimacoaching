@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Button, Field, Input } from "@/components/ui";
+import { PasswordInput } from "@/components/password-input";
 import { authErrorMessage } from "@/lib/client/errors";
 import { hardNavigate } from "@/lib/client/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
@@ -48,9 +49,8 @@ export function LoginForm() {
         <Input name="email" type="email" autoComplete="email" required />
       </Field>
       <Field label="Passwort">
-        <Input
+        <PasswordInput
           name="password"
-          type="password"
           autoComplete="current-password"
           required
         />

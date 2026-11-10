@@ -16,6 +16,9 @@ import type { Appointment, Schedule } from "@/lib/types";
 import { useState, type ReactNode } from "react";
 import { AppointmentDetail } from "./appointment-detail";
 import { BookDialog } from "./book-dialog";
+import { MoveDialog } from "./move-dialog";
+import { hhmm, useDragCreate } from "./use-drag-create";
+import { RESIZE_HANDLE_PX, useDragMove } from "./use-drag-move";
 import {
   addDays,
   fmt,
@@ -58,7 +61,8 @@ const minutesOfDay = (iso: string) => {
 
 /**
  * Wochenkalender. Studio: alle Trainer (filterbar) · Trainer: eigene Termine und Zeiten.
- * Klick auf einen Termin öffnet Details mit Kommentaren, Klick auf einen Tag trägt einen Termin ein.
+ * Klick auf einen Termin öffnet Details mit Kommentaren. Neue Termine: im Zeitraster aufziehen oder klicken
+ * (Tag, Uhrzeit und Dauer vorbelegt), Klick auf einen Wochentag oder „Termin eintragen“.
  */
 export function CalendarView({
   role,
@@ -72,9 +76,42 @@ export function CalendarView({
   const [filter, setFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [course, setCourse] = useState<CourseBlock | null>(null);
-  const [create, setCreate] = useState<{ date: string } | null>(null);
+  const [create, setCreate] = useState<{
+    date: string;
+    start?: string;
+    duration?: number;
+  } | null>(null);
   const now = useNow();
   const today = localDate(new Date(now));
+  // Sichtbarer Zeitraum (wird unten berechnet) – der Hook braucht ihn erst beim Ziehen
+  const grid = { startMin: 7 * 60, endMin: 21 * 60 };
+  const drag = useDragCreate({
+    bounds: () => grid,
+    pxPerHour: HOUR_PX,
+    onCreate: (r) =>
+      setCreate({
+        date: r.day,
+        start: hhmm(r.start),
+        duration: r.end - r.start,
+      }),
+  });
+  const [moving, setMoving] = useState<{
+    a: Appointment;
+    date: string;
+    start: string;
+    duration: number;
+  } | null>(null);
+  const move = useDragMove({
+    bounds: () => grid,
+    pxPerHour: HOUR_PX,
+    onDrop: (d) =>
+      setMoving({
+        a: d.a,
+        date: d.day,
+        start: hhmm(d.start),
+        duration: d.end - d.start,
+      }),
+  });
 
   if (schedule.loading && !schedule.data) return <Spinner />;
   if (!schedule.data)
@@ -137,6 +174,8 @@ export function CalendarView({
   const startH = Math.floor(Math.min(...mins) / 60);
   const endH = Math.min(24, Math.ceil(Math.max(...maxs) / 60));
   const hours = Array.from({ length: endH - startH }, (_, i) => startH + i);
+  grid.startMin = startH * 60;
+  grid.endMin = endH * 60;
   const top = (min: number) => ((min - startH * 60) / 60) * HOUR_PX;
   const rangeLabel = `${fmt(`${days[0]}T12:00:00`, { day: "numeric", month: "short" })} – ${fmt(`${days[6]}T12:00:00`, { day: "numeric", month: "short", year: "numeric" })}`;
   const requested = visible.filter((a) => a.status === "requested").length;
@@ -240,6 +279,10 @@ export function CalendarView({
             {cancelledCount > 0 && (
               <span>{cancelledCount} abgesagt/abgelehnt (ausgeblendet)</span>
             )}
+            <span className="ml-auto inline-flex items-center gap-1.5">
+              <Icon name="plus" className="size-3" /> Im Raster ziehen oder
+              klicken für einen neuen Termin · Termine ziehen zum Verschieben
+            </span>
           </div>
 
           <Card className="overflow-x-auto p-0">
@@ -285,6 +328,7 @@ export function CalendarView({
 
               {/* Zeitraster */}
               <div
+                data-cal-grid
                 className="relative grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]"
                 style={{ height: hours.length * HOUR_PX }}
               >
@@ -310,11 +354,48 @@ export function CalendarView({
                   return (
                     <div
                       key={d}
+                      data-cal-day={d}
+                      {...drag.bind(d)}
                       className={cx(
-                        "relative border-l border-line",
+                        "relative cursor-cell border-l border-line select-none",
                         d === today && "bg-brand/5",
                       )}
                     >
+                      {drag.range?.day === d && (
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-x-0.5 z-30 rounded-inner border-2 border-dashed border-brand-fg/60 bg-brand/50 px-1.5 py-1 text-[11px] font-semibold text-brand-fg"
+                          style={{
+                            top: top(drag.range.start),
+                            height: Math.max(
+                              14,
+                              ((drag.range.end - drag.range.start) / 60) *
+                                HOUR_PX,
+                            ),
+                          }}
+                        >
+                          {hhmm(drag.range.start)}–{hhmm(drag.range.end)}
+                        </div>
+                      )}
+                      {move.draft?.day === d && (
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-x-0.5 z-30 overflow-hidden rounded-inner bg-brand px-1.5 py-1 text-[11px] leading-tight font-semibold text-brand-fg shadow-lg ring-2 ring-brand-fg"
+                          style={{
+                            top: top(move.draft.start),
+                            height: Math.max(
+                              14,
+                              ((move.draft.end - move.draft.start) / 60) *
+                                HOUR_PX,
+                            ),
+                          }}
+                        >
+                          {hhmm(move.draft.start)}–{hhmm(move.draft.end)}{" "}
+                          <span className="font-normal">
+                            {move.draft.a.title}
+                          </span>
+                        </div>
+                      )}
                       {hours.map((h) => (
                         <div
                           key={h}
@@ -407,6 +488,7 @@ export function CalendarView({
                           );
                         }
                         const a = item.a;
+                        const movable = Date.parse(a.startsAt) > now;
                         const who = multi
                           ? `${a.trainer.name.split(" ")[0]} · ${partyName(a)}`
                           : partyName(a);
@@ -414,13 +496,24 @@ export function CalendarView({
                           <button
                             key={a.id}
                             type="button"
-                            onClick={() => setSelected(a)}
+                            {...(movable
+                              ? move.bind(a, {
+                                  day: d,
+                                  start,
+                                  end: start + duration,
+                                })
+                              : {})}
+                            onClick={() => {
+                              if (!move.consumeClick()) setSelected(a);
+                            }}
                             title={`${time(a.startsAt)}–${time(a.endsAt)} ${a.title} · ${multi ? `${a.trainer.name} · ` : ""}${partyName(a)}`}
                             className={cx(
-                              "absolute overflow-hidden rounded-inner px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm transition hover:z-10 hover:shadow-md",
+                              "group/appt absolute overflow-hidden rounded-inner px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm transition hover:z-10 hover:shadow-md",
                               a.status === "confirmed"
                                 ? "bg-brand text-brand-fg"
                                 : "bg-surface text-fg ring-1 ring-accent ring-inset",
+                              movable && "cursor-grab active:cursor-grabbing",
+                              move.draft?.a.id === a.id && "opacity-40",
                             )}
                             style={position}
                           >
@@ -436,6 +529,16 @@ export function CalendarView({
                             {height > 34 && (
                               <span className="block truncate opacity-80">
                                 {who}
+                              </span>
+                            )}
+                            {movable && (
+                              <span
+                                aria-hidden="true"
+                                title="Ziehen, um die Dauer zu ändern"
+                                className="absolute inset-x-0 bottom-0 cursor-ns-resize"
+                                style={{ height: RESIZE_HANDLE_PX }}
+                              >
+                                <span className="mx-auto mt-0.5 block h-0.5 w-5 rounded-full bg-current opacity-0 transition group-hover/appt:opacity-40" />
                               </span>
                             )}
                           </button>
@@ -459,6 +562,22 @@ export function CalendarView({
           onChanged={reload}
         />
       )}
+      {moving && (
+        <MoveDialog
+          a={moving.a}
+          role={role}
+          initial={{
+            date: moving.date,
+            start: moving.start,
+            duration: moving.duration,
+          }}
+          onClose={() => setMoving(null)}
+          onMoved={() => {
+            setMoving(null);
+            reload();
+          }}
+        />
+      )}
       {course && (
         <CourseSessionModal
           session={{
@@ -478,6 +597,9 @@ export function CalendarView({
           schedule={data}
           role={role}
           initialDate={create.date}
+          initialStart={create.start}
+          initialDuration={create.duration}
+          initialTrainerId={filter ?? undefined}
           onClose={() => setCreate(null)}
           onCreated={() => {
             setCreate(null);

@@ -352,6 +352,7 @@ Status: `requested` → `confirmed` | `declined` | `cancelled`. `cancelledBy`: `
 | GET | `/appointments` | alle | Kunde: eigene · Trainer: bei sich · Studio: bei allen eigenen Trainern. Kommende + letzte 30 Tage |
 | POST | `/appointments` | Kunde | `{ trainerId, serviceId, startsAt, note? }` → 201. 409 wenn die Zeit nicht (mehr) frei ist, 429 ab 3 offenen Anfragen beim selben Trainer |
 | PATCH | `/appointments/:id` | Kunde, Trainer, Studio | `{ action: "confirm" \| "decline" \| "cancel", message? }` – bestätigen/ablehnen nur der Trainer |
+| PATCH | `/appointments/:id/time` | Trainer (eigene), Studio (seiner Trainer) | Verschieben: `{ startsAt, durationMin? }` (15-Min.-Raster, max. 240). Ohne `durationMin` bleibt die Dauer. Nur aktive, noch nicht begonnene Termine; Überschneidung → 409. Kunde (und bei Studio-Änderung der Trainer) bekommt den Hinweis `appointment_moved` |
 | GET | `/schedule?week=YYYY-MM-DD` | Trainer, Studio | Wochenkalender `{ weekStart, trainers: [{ id, name, avatarUrl, enabled, windows, services }], clients, appointments }` – Trainer: nur sich selbst, Studio: alle Trainer. `clients` = Kunden, für die eingetragen werden darf |
 | POST | `/schedule` | Trainer, Studio | Termin direkt eintragen `{ trainerId (nur Studio), clientId \| guestName, category, title, durationMin, startsAt, note? }` → 201, sofort bestätigt. 409 bei Überschneidung |
 | GET/POST | `/studio/appointments` | Studio | Wie `/schedule` (ältere Integrationen) |

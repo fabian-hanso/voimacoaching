@@ -37,8 +37,17 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 - **Impressum, Datenschutzerklärung und AGB** (`/impressum`, `/datenschutz`, `/agb`), im Footer verlinkt. Die Texte sind Muster, zugeschnitten auf die eingesetzten Dienste (Vercel, Supabase, Stripe), die Kleinunternehmerregelung und Geschäftskunden. Alle persönlichen Angaben stehen gesammelt in `lib/legal.ts`. Solange `draft: true` gesetzt ist, zeigen die Seiten einen Entwurfs-Hinweis und werden nicht indexiert. Preise und Testphase in den AGB kommen aus `lib/billing-plans.ts`. Die Links stehen auch unter Login, Registrierung und Passwort-Seiten sowie am Ende jeder Dashboard-Seite (Impressum muss von überall erreichbar sein).
 
+- **Termine verschieben** (Trainer bei sich, Studios bei ihren Trainern):
+  - Im Wochenkalender einen Termin mit der Maus auf einen anderen Tag oder eine andere Uhrzeit ziehen oder an der Unterkante die Dauer ändern (15-Minuten-Raster, max. 4 h). Beim Loslassen fragt ein Dialog mit „Bisher → Neu“ nach, bevor etwas passiert.
+  - Im Termin-Detail gibt es zusätzlich **„Verschieben“** mit Datum, Uhrzeit und Dauer, auch für Handy und Tastatur.
+  - Der **Kunde wird benachrichtigt** („… hat einen Termin verschoben: Personal Training · Do., 20. Nov., 18:00 Uhr (statt …)“). Verschiebt das Studio, erfährt es auch der Trainer. Gäste ohne Konto informiert man selbst, der Dialog weist darauf hin.
+  - Überschneidungen beim selben Trainer werden mit einem konkreten Hinweis abgelehnt. Abgesagte oder bereits begonnene Termine lassen sich nicht verschieben, Kunden können nicht verschieben.
+  - API: `PATCH /appointments/:id/time`.
+- **Termine im Kalender aufziehen:** Im Wochenkalender (Trainer und Studio) einen Zeitraum mit der Maus aufziehen oder auf eine freie Stelle klicken bzw. tippen (1 Stunde). Der Dialog „Termin eintragen“ öffnet sich mit Tag, Uhrzeit und Dauer vorbelegt; passt die Dauer zu einem Angebot, ist es ausgewählt. 15-Minuten-Raster, höchstens 4 Stunden. Im Studio-Kalender ist ein gefilterter Trainer vorausgewählt.
+
 ### Geändert
 
+- **Passwortfelder mit Augen-Symbol** zum Ein- und Ausblenden der Eingabe: Login, Registrierung, neues Passwort und Passwort ändern in den Einstellungen (Komponente `PasswordInput`).
 - **Markenname zentral:** „Voima Coach“ steht nur noch in `lib/site.ts` (`SITE_NAME`). Seitentitel nutzen eine Vorlage im Root-Layout („Anmelden · Voima Coach“). Stripe-Produktnamen werden beim Einrichten aus dem Namen zusammengesetzt. Die Stellen außerhalb des Codes (Logo, Supabase-E-Mails, Stripe-Dashboard) sind dort aufgelistet.
 - Preise der Landingpage kommen aus derselben Quelle wie die Abrechnung (`lib/billing-plans.ts`). Die Jahressumme zeigt jetzt den echten Jahrespreis (z. B. 190 € statt 192 €).
 - Preise: „Unbegrenzte Pläne & Vorlagen“ heißt jetzt „Unbegrenzt viele Trainingspläne“, weil es keine Vorlagen gibt.
@@ -46,6 +55,7 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Datenbank
 
+- `20261126000000_appointment_moved.sql` – neue Hinweisart `appointment_moved`. Eingespielt.
 - `20261125000000_billing.sql` – `profiles.trial_ends_at` (bestehende Trainer/Studios: 7 Tage ab Einspielen), Tabelle `subscriptions` (RLS, nur über die API), Funktion `trainer_client_limit`, Kundenlimit in `redeem_invitation`. Eingespielt.
 
 ## [1.0.0] – 2026-11-10

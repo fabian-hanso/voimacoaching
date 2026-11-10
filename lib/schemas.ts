@@ -289,6 +289,12 @@ export const studioAppointmentSchema = z
   .refine((v) => !!v.clientId !== !!v.guestName, { message: "Wähle einen Kunden oder gib den Namen eines Gastes an.", path: ["clientId"] });
 export type StudioAppointmentInput = z.infer<typeof studioAppointmentSchema>;
 
+/** Termin verschieben (Trainer/Studio): neuer Start, optional neue Dauer */
+export const appointmentMoveSchema = z.object({
+  startsAt: z.iso.datetime({ offset: true }),
+  durationMin: z.number().int().min(15).max(240).multipleOf(15, "In 15-Minuten-Schritten.").optional(),
+});
+
 /** Kontaktdaten am Termin (null/leer = aus dem Profil übernehmen) */
 export const appointmentContactSchema = z.object({ email: optEmailSchema, phone: phoneSchema });
 

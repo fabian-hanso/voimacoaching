@@ -413,6 +413,65 @@ export async function actOnAppointment(
   return (await toAppointments(updated, user))[0];
 }
 
+/**
+ * Termin verschieben bzw. Dauer ändern – Trainer bei sich, Studio bei seinen Trainern (Kunden fragen neu an).
+ * Überschneidungen beim selben Trainer lehnt die Datenbank ab (appointments_no_overlap → 409).
+ * Benachrichtigt den Kunden und – wenn das Studio verschiebt – den Trainer.
+ */
+export async function moveAppointment(
+  user: ProfileRow,
+  id: string,
+  input: { startsAt: string; durationMin?: number },
+): Promise<Appointment> {
+  const { row, isTrainer, isStudio, actorName } = await accessAppointment(user, id);
+  if (!isTrainer && !isStudio) throw forbidden("Termine verschieben können Trainer und Studios. Frag sonst einen neuen Termin an.");
+  if (!ACTIVE.includes(row.status)) throw conflict("Abgesagte oder abgelehnte Termine lassen sich nicht verschieben.");
+  const now = Date.now();
+  if (Date.parse(row.starts_at) <= now) throw badRequest("Der Termin hat bereits begonnen und lässt sich nicht mehr verschieben.");
+
+  const startMs = Date.parse(input.startsAt);
+  if (startMs <= now) throw badRequest("Der neue Zeitpunkt muss in der Zukunft liegen.");
+  const durationMs = input.durationMin ? input.durationMin * MIN : Date.parse(row.ends_at) - Date.parse(row.starts_at);
+  const startsAt = new Date(startMs).toISOString();
+  const endsAt = new Date(startMs + durationMs).toISOString();
+  if (startsAt === iso(row.starts_at) && endsAt === iso(row.ends_at)) return (await toAppointments([row], user))[0];
+
+  // Verständliche Meldung bei Überschneidung (die Datenbank-Sperre bleibt die eigentliche Absicherung)
+  const clash = must(
+    await sb()
+      .from("appointments")
+      .select("title, starts_at")
+      .eq("trainer_id", row.trainer_id)
+      .in("status", ACTIVE)
+      .neq("id", row.id)
+      .lt("starts_at", endsAt)
+      .gt("ends_at", startsAt)
+      .limit(1),
+  ) as { title: string; starts_at: string }[];
+  if (clash.length) {
+    throw conflict(`Zu dieser Zeit gibt es schon einen Termin: ${clash[0].title}, ${detailFmt.format(new Date(clash[0].starts_at))} Uhr.`);
+  }
+
+  const updated = must(
+    await sb()
+      .from("appointments")
+      .update({ starts_at: startsAt, ends_at: endsAt, updated_at: new Date().toISOString() })
+      .eq("id", row.id)
+      .eq("status", row.status)
+      .eq("starts_at", row.starts_at) // gleichzeitige Änderung erkennen
+      .select(),
+  ) as AppointmentRow[];
+  if (!updated.length) throw conflict("Der Termin wurde gerade geändert. Bitte lade die Seite neu.");
+
+  const sameStart = startsAt === iso(row.starts_at);
+  const detail = sameStart
+    ? `${row.title} · ${detailFmt.format(new Date(startsAt))} Uhr, jetzt ${Math.round(durationMs / MIN)} Min.`
+    : `${row.title} · ${detailFmt.format(new Date(startsAt))} Uhr (statt ${detailFmt.format(new Date(row.starts_at))} Uhr)`;
+  if (row.client_id) await addNotice(row.client_id, "appointment_moved", actorName, detail);
+  if (isStudio) await addNotice(row.trainer_id, "appointment_moved", actorName, detail);
+  return (await toAppointments(updated, user))[0];
+}
+
 /* ------------------------------------------------------------------ */
 /* Wochenkalender (Studio: alle Trainer · Trainer: sich selbst)         */
 /* ------------------------------------------------------------------ */
