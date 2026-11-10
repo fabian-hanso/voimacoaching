@@ -116,7 +116,7 @@ function WishDrawer({ context, onClose }: { context: string | null; onClose: () 
       <button aria-label="Schließen" tabIndex={-1} onClick={() => !pending && onClose()} className="absolute inset-0 bg-fg/30 backdrop-blur-[2px]" />
       <div className="relative flex h-full w-full flex-col bg-surface shadow-2xl sm:max-w-md">
         <header className="flex h-16 shrink-0 items-center gap-3 border-b border-line px-4">
-          <span className="grid size-9 place-items-center rounded-xl bg-brand text-brand-fg">
+          <span className="grid size-9 place-items-center rounded-control bg-brand text-brand-fg">
             <Icon name="lightbulb" className="size-5" />
           </span>
           <p id={titleId} className="flex-1 font-semibold text-fg">
@@ -125,7 +125,7 @@ function WishDrawer({ context, onClose }: { context: string | null; onClose: () 
           <button
             onClick={onClose}
             aria-label="Schließen"
-            className="grid size-9 place-items-center rounded-lg text-fg-muted hover:bg-surface-3"
+            className="grid size-9 place-items-center rounded-control text-fg-muted hover:bg-surface-3"
           >
             <Icon name="x" className="size-5" />
           </button>
@@ -133,7 +133,7 @@ function WishDrawer({ context, onClose }: { context: string | null; onClose: () 
 
         {sent ? (
           <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-            <span className="grid size-16 place-items-center rounded-2xl bg-brand text-brand-fg motion-safe:animate-pop">
+            <span className="grid size-16 place-items-center rounded-tile bg-brand text-brand-fg motion-safe:animate-pop">
               <Icon name="check" className="size-8" />
             </span>
             <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-fg">Danke für deinen Wunsch!</h2>
@@ -162,7 +162,7 @@ function WishDrawer({ context, onClose }: { context: string | null; onClose: () 
                   maxLength={2000}
                   autoFocus
                   placeholder="z. B. „Ich hätte gern Supersätze im Plan-Editor, damit ich zwei Übungen direkt hintereinander planen kann.“"
-                  className="mt-2 block w-full resize-y rounded-xl border-0 bg-surface-2 px-3.5 py-3 text-sm text-fg ring-1 ring-line-strong ring-inset placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none"
+                  className="mt-2 block w-full resize-y rounded-control border-0 bg-surface-2 px-3.5 py-3 text-sm text-fg ring-1 ring-line-strong ring-inset placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none"
                 />
                 <p className="mt-1 text-right text-xs text-fg-subtle tabular-nums">{body.length}/2000</p>
               </div>
@@ -170,7 +170,7 @@ function WishDrawer({ context, onClose }: { context: string | null; onClose: () 
               <ChipGroup label="Bereich (optional)" options={AREAS} value={area} onChange={setArea} />
               <ChipGroup label="Wie wichtig ist dir das? (optional)" options={IMPORTANCE} value={importance} onChange={setImportance} />
 
-              <p className="flex items-start gap-2 rounded-xl bg-surface-2 p-3 text-xs text-fg-muted">
+              <p className="flex items-start gap-2 rounded-tile bg-surface-2 p-3 text-xs text-fg-muted">
                 <Icon name="lock" className="mt-0.5 size-3.5 shrink-0" />
                 Dein Wunsch ist nur für das Voima-Coach-Team sichtbar – nicht für Kunden oder andere Trainer.
               </p>

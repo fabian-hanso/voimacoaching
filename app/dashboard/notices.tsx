@@ -185,7 +185,7 @@ export function NotificationsButton({ userId }: { userId: string }) {
         <div
           role="dialog"
           aria-label="Benachrichtigungen"
-          className="fixed inset-x-4 top-16 z-50 overflow-hidden rounded-2xl bg-surface shadow-2xl ring-1 ring-line-strong sm:absolute sm:inset-x-auto sm:top-12 sm:right-0 sm:w-96"
+          className="fixed inset-x-4 top-16 z-50 overflow-hidden rounded-box bg-surface shadow-2xl ring-1 ring-line-strong sm:absolute sm:inset-x-auto sm:top-12 sm:right-0 sm:w-96"
         >
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <p className="font-semibold text-fg">Benachrichtigungen</p>
@@ -224,7 +224,7 @@ export function NotificationsButton({ userId }: { userId: string }) {
                         // Fehler beim Wegklicken sind unkritisch – Hinweise verschwinden spätestens nach 30 Tagen
                         void api(`/notices/${n.id}`, { method: "DELETE" }).catch(() => {});
                       }}
-                      className="grid size-7 shrink-0 place-items-center rounded-lg text-fg-subtle hover:bg-surface-3 hover:text-fg"
+                      className="grid size-7 shrink-0 place-items-center rounded-control text-fg-subtle hover:bg-surface-3 hover:text-fg"
                     >
                       <Icon name="x" className="size-3.5" />
                     </button>

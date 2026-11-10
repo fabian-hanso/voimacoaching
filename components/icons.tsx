@@ -146,7 +146,7 @@ const tones: Record<Tone, string> = {
 export function IconTile({ name, tone = "brand", size = "md" }: { name: IconName; tone?: Tone; size?: "sm" | "md" }) {
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-xl ring-1 ring-inset ${tones[tone]} ${size === "sm" ? "size-8" : "size-10"}`}
+      className={`grid shrink-0 place-items-center rounded-control ring-1 ring-inset ${tones[tone]} ${size === "sm" ? "size-8" : "size-10"}`}
     >
       <Icon name={name} className={size === "sm" ? "size-4" : "size-5"} />
     </span>

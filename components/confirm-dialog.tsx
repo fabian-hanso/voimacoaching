@@ -61,7 +61,7 @@ export function ConfirmDialog({
       />
       <form
         onSubmit={submit}
-        className="relative w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl ring-1 ring-line-strong"
+        className="relative w-full max-w-md rounded-box bg-surface p-6 shadow-2xl ring-1 ring-line-strong"
       >
         <div className="flex items-start gap-4">
           <span className="grid size-10 shrink-0 place-items-center rounded-full bg-danger/15 text-danger">

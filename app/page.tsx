@@ -158,7 +158,7 @@ function Hero() {
               </a>
               <h1 className="mt-6 text-4xl leading-[1.05] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Trainingspläne teilen.{" "}
-                <span className="rounded-xl bg-brand box-decoration-clone px-2 text-brand-fg">Fortschritt sehen.</span>{" "}
+                <span className="rounded-control bg-brand box-decoration-clone px-2 text-brand-fg">Fortschritt sehen.</span>{" "}
                 Gemeinsam ans Ziel.
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-8 text-white/75">
@@ -168,14 +168,14 @@ function Hero() {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/registrieren?rolle=trainer"
-                  className="flex h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 font-semibold text-brand-fg transition hover:bg-brand-hover focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black focus:outline-none"
+                  className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand px-6 font-semibold text-brand-fg transition hover:bg-brand-hover focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black focus:outline-none"
                 >
                   Ich bin Trainer
                   <Icon className="size-4">{icons.arrow}</Icon>
                 </Link>
                 <Link
                   href="/registrieren?rolle=kunde"
-                  className="flex h-12 items-center justify-center gap-2 rounded-xl bg-white/10 px-6 font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition ring-inset hover:bg-white/20"
+                  className="flex h-12 items-center justify-center gap-2 rounded-control bg-white/10 px-6 font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition ring-inset hover:bg-white/20"
                 >
                   Ich trainiere mit Coach
                 </Link>
@@ -204,7 +204,7 @@ function Hero() {
 
             {/* Schwebende App-Karten (Desktop) */}
             <div aria-hidden="true" className="relative hidden h-[30rem] lg:block">
-              <div className="absolute top-4 right-0 w-72 rounded-2xl bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
+              <div className="absolute top-4 right-0 w-72 rounded-box bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
                 <p className="text-xs font-medium text-fg-muted">Heute · von Coach Marco</p>
                 <p className="mt-1 text-lg font-bold">Unterkörper A</p>
                 <div className="mt-3 h-2 rounded-full bg-surface-3">
@@ -230,8 +230,8 @@ function Hero() {
                 </ul>
               </div>
 
-              <div className="absolute bottom-24 left-0 flex w-64 items-center gap-3 rounded-2xl bg-brand p-4 text-brand-fg shadow-2xl motion-safe:animate-float [animation-delay:-2s]">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-fg text-brand">
+              <div className="absolute bottom-24 left-0 flex w-64 items-center gap-3 rounded-box bg-brand p-4 text-brand-fg shadow-2xl motion-safe:animate-float [animation-delay:-2s]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-control bg-brand-fg text-brand">
                   <Icon className="size-5">{icons.trophy}</Icon>
                 </span>
                 <div>
@@ -240,7 +240,7 @@ function Hero() {
                 </div>
               </div>
 
-              <div className="absolute right-6 bottom-2 flex w-72 items-start gap-3 rounded-2xl bg-white/95 p-4 text-brand-fg shadow-2xl backdrop-blur motion-safe:animate-float [animation-delay:-4s]">
+              <div className="absolute right-6 bottom-2 flex w-72 items-start gap-3 rounded-box bg-white/95 p-4 text-brand-fg shadow-2xl backdrop-blur motion-safe:animate-float [animation-delay:-4s]">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-fg">M</span>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold">Coach Marco</p>
@@ -334,11 +334,11 @@ function ForTrainers() {
 
         {/* Plan builder mock */}
         <div className="relative">
-          <div className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-tr from-brand/10 to-surface" />
-          <div className="rounded-xl bg-surface p-6 shadow-xl ring-1 ring-line-strong">
+          <div className="absolute -inset-4 -z-10 rounded-box bg-gradient-to-tr from-brand/10 to-surface" />
+          <div className="rounded-box bg-surface p-6 shadow-xl ring-1 ring-line-strong">
             <div className="flex items-center justify-between">
               <p className="font-semibold text-fg">Plan-Builder</p>
-              <span className="rounded-md bg-brand px-2.5 py-1 text-xs font-semibold text-brand-fg">
+              <span className="rounded-inner bg-brand px-2.5 py-1 text-xs font-semibold text-brand-fg">
                 Zuweisen an 3 Kunden
               </span>
             </div>
@@ -346,7 +346,7 @@ function ForTrainers() {
               {["Mo · Push", "Mi · Pull", "Fr · Beine"].map((d, i) => (
                 <div
                   key={d}
-                  className={`rounded-lg py-2 ${
+                  className={`rounded-inner py-2 ${
                     i === 0
                       ? "bg-brand text-brand-fg"
                       : "bg-surface-3 text-fg-muted"
@@ -375,7 +375,7 @@ function ForTrainers() {
             </div>
             <button
               type="button"
-              className="mt-4 w-full rounded-lg border border-dashed border-line-strong py-2 text-sm text-fg-muted"
+              className="mt-4 w-full rounded-control border border-dashed border-line-strong py-2 text-sm text-fg-muted"
             >
               + Übung hinzufügen
             </button>
@@ -404,14 +404,14 @@ function ForClients() {
                 <p className="mt-1 text-xs opacity-80">2 von 4 Übungen erledigt</p>
               </div>
               <div className="space-y-3 p-4">
-                <div className="rounded-xl p-3 ring-1 ring-line">
+                <div className="rounded-tile p-3 ring-1 ring-line">
                   <p className="text-xs text-fg-muted">Nächster Satz</p>
                   <p className="font-semibold text-fg">Bulgarian Split Squat</p>
                   <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
                     {["Satz 1", "Satz 2", "Satz 3"].map((s, i) => (
                       <span
                         key={s}
-                        className={`rounded-md py-1.5 ${
+                        className={`rounded-inner py-1.5 ${
                           i === 0
                             ? "bg-brand font-semibold text-brand-fg"
                             : "bg-surface-3 text-fg-muted"
@@ -422,8 +422,8 @@ function ForClients() {
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-xl p-3 ring-1 ring-line">
-                  <span className="grid size-9 place-items-center rounded-lg bg-warning/15 text-warning">
+                <div className="flex items-center gap-3 rounded-tile p-3 ring-1 ring-line">
+                  <span className="grid size-9 place-items-center rounded-control bg-warning/15 text-warning">
                     <Icon className="size-5">{icons.trophy}</Icon>
                   </span>
                   <div>
@@ -431,7 +431,7 @@ function ForClients() {
                     <p className="text-xs text-fg-muted">Kniebeuge 85 kg × 6</p>
                   </div>
                 </div>
-                <div className="rounded-xl bg-surface-2 p-3 text-xs text-fg-muted">
+                <div className="rounded-tile bg-surface-2 p-3 text-xs text-fg-muted">
                   <span className="font-semibold text-fg">Coach Marco:</span> Stark heute!
                   Achte beim Split Squat auf die Knieposition 💪
                 </div>
@@ -523,9 +523,9 @@ function Features() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="group relative rounded-2xl bg-surface p-6 ring-1 ring-line transition hover:shadow-lg hover:ring-line-strong"
+              className="group relative rounded-box bg-surface p-6 ring-1 ring-line transition hover:shadow-lg hover:ring-line-strong"
             >
-              <span className="grid size-10 place-items-center rounded-lg bg-brand/30 text-brand-ink ring-1 ring-brand-ink/20 transition group-hover:bg-brand group-hover:text-brand-fg">
+              <span className="grid size-10 place-items-center rounded-control bg-brand/30 text-brand-ink ring-1 ring-brand-ink/20 transition group-hover:bg-brand group-hover:text-brand-fg">
                 <Icon>{f.icon}</Icon>
               </span>
               <h3 className="mt-5 font-semibold text-fg">{f.title}</h3>
@@ -607,7 +607,7 @@ function Testimonials() {
           {quotes.map((q) => (
             <figure
               key={q.name}
-              className="flex flex-col rounded-2xl bg-surface-2 p-8 ring-1 ring-line"
+              className="flex flex-col rounded-box bg-surface-2 p-8 ring-1 ring-line"
             >
               <blockquote className="flex-1 text-fg">„{q.text}“</blockquote>
               <figcaption className="mt-6 flex items-center gap-3">
@@ -649,14 +649,14 @@ function FinalCta() {
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/registrieren?rolle=trainer"
-            className="flex h-12 items-center justify-center gap-2 rounded-lg bg-brand px-6 font-semibold text-brand-fg hover:bg-brand-hover"
+            className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand px-6 font-semibold text-brand-fg hover:bg-brand-hover"
           >
             <Icon className="size-4">{icons.bolt}</Icon>
             Als Trainer starten
           </Link>
           <Link
             href="/registrieren?rolle=kunde"
-            className="flex h-12 items-center justify-center gap-2 rounded-lg bg-surface px-6 font-semibold text-fg shadow-sm ring-1 ring-line-strong hover:bg-surface-2"
+            className="flex h-12 items-center justify-center gap-2 rounded-control bg-surface px-6 font-semibold text-fg shadow-sm ring-1 ring-line-strong hover:bg-surface-2"
           >
             <Icon className="size-4">{icons.flame}</Icon>
             Als Kunde beitreten

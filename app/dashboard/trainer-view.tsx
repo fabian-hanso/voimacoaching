@@ -42,7 +42,7 @@ export function TrainerView() {
 
   return (
     <div>
-      <nav className="flex gap-6 overflow-x-auto border-b border-line">
+      <nav className="tab-bar flex gap-6 overflow-x-auto overflow-y-hidden">
         {tabs.map(([key, label, count]) => (
           <button
             key={key}
@@ -51,9 +51,8 @@ export function TrainerView() {
               setClientId(null);
             }}
             className={cx(
-              "-mb-px flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition",
-              tab === key
-                ? "border-brand-ink text-brand-ink"
+              "flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition",
+              tab === key ? "border-fg text-fg"
                 : "border-transparent text-fg-muted hover:text-fg",
             )}
           >
@@ -178,7 +177,7 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
               <button
                 key={c.id}
                 onClick={() => onOpen(c.id)}
-                className="rounded-2xl bg-surface p-6 text-left ring-1 ring-line transition hover:shadow-lg hover:ring-line-strong"
+                className="rounded-box bg-surface p-6 text-left ring-1 ring-line transition hover:shadow-lg hover:ring-line-strong"
               >
                 <div className="flex items-center gap-3">
                   <Avatar name={c.name} src={c.avatarUrl} size="xl" />
@@ -211,7 +210,7 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
           {shownInvites.map((inv) => (
             <div
               key={inv.code}
-              className="rounded-2xl border border-dashed border-line-strong bg-surface/60 p-6"
+              className="rounded-box border border-dashed border-line-strong bg-surface/60 p-6"
             >
               <div className="flex items-center gap-3">
                 <span className="grid size-12 shrink-0 place-items-center rounded-full bg-surface-3 text-fg-subtle">
@@ -225,7 +224,7 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
                 </div>
                 <StatusBadge status="invited" />
               </div>
-              <div className="mt-4 flex items-center justify-between gap-2 rounded-lg bg-surface-2 px-3 py-2">
+              <div className="mt-4 flex items-center justify-between gap-2 rounded-tile bg-surface-2 px-3 py-2">
                 <span className="text-xs text-fg-muted">Noch nicht angemeldet</span>
                 <Button
                   variant="ghost"
@@ -288,7 +287,7 @@ function FilterChip({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface-2 py-2">
+    <div className="rounded-tile bg-surface-2 py-2">
       <dt className="text-[10px] text-fg-muted">{label}</dt>
       <dd className="text-sm font-semibold text-fg">{value}</dd>
     </div>
@@ -624,7 +623,7 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
                   aria-label="Übung entfernen"
                   title="Übung entfernen"
                   onClick={() => update((p) => void p.days[di].exercises.splice(ei, 1))}
-                  className="grid size-9 shrink-0 place-items-center rounded-lg text-lg text-fg-subtle hover:bg-danger/10 hover:text-danger"
+                  className="grid size-9 shrink-0 place-items-center rounded-control text-lg text-fg-subtle hover:bg-danger/10 hover:text-danger"
                 >
                   ×
                 </button>
@@ -632,7 +631,7 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
               return (
                 <div
                   key={ei}
-                  className="flex flex-col gap-3 rounded-xl bg-surface-2 p-3 ring-1 ring-line lg:flex-row lg:items-end"
+                  className="flex flex-col gap-3 rounded-tile bg-surface-2 p-3 ring-1 ring-line lg:flex-row lg:items-end"
                 >
                   {/* Art + Name */}
                   <div className="flex min-w-0 items-end gap-2 lg:w-[42%] lg:shrink-0">

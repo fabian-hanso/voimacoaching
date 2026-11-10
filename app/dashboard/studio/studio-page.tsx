@@ -13,7 +13,11 @@ import {
 } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import { StudioLogo } from "@/components/studio-logo";
-import type { BookingProvider, OpeningHoursDay, StudioProfile } from "@/lib/types";
+import type {
+  BookingProvider,
+  OpeningHoursDay,
+  StudioProfile,
+} from "@/lib/types";
 import { BookingDialog, nextFreeLabel } from "../appointments";
 import { StudioCourseList } from "../courses";
 import { useMe } from "../shell";
@@ -79,7 +83,9 @@ function useNow() {
 export function StudioPage() {
   const { me } = useMe();
   const profile = useApi<StudioProfile>(me.studio ? "/studio/profile" : null);
-  const booking = useApi<{ providers: BookingProvider[] }>(me.studio && me.user.role === "client" ? "/booking/providers" : null);
+  const booking = useApi<{ providers: BookingProvider[] }>(
+    me.studio && me.user.role === "client" ? "/booking/providers" : null,
+  );
   const bookable = booking.data?.providers ?? [];
   // Trainer-ID oder "any" = Buchungsdialog offen
   const [bookingFor, setBookingFor] = useState<string | null>(null);
@@ -142,7 +148,7 @@ export function StudioPage() {
       </Link>
 
       {isOwner && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-accent/10 px-4 py-3 text-sm ring-1 ring-accent/30">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-box bg-accent/10 px-4 py-3 text-sm ring-1 ring-accent/30">
           <span className="text-fg">
             <span className="font-semibold">Vorschau:</span> So sehen deine
             Trainer und Kunden dein Studio.
@@ -157,7 +163,7 @@ export function StudioPage() {
       )}
 
       {/* Kopf */}
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-brand-fg p-6 text-white sm:p-10">
+      <section className="relative isolate overflow-hidden rounded-box bg-brand-fg p-6 text-white sm:p-10">
         <div
           aria-hidden="true"
           className="absolute -top-32 -right-24 -z-10 size-96 rounded-full bg-brand opacity-20 blur-3xl"
@@ -208,71 +214,13 @@ export function StudioPage() {
         {bookable.length > 0 && (
           <a
             href="#trainer-termine"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-fg transition hover:bg-brand-hover"
+            className="mt-6 inline-flex items-center gap-2 rounded-control bg-brand px-5 py-2.5 text-sm font-semibold text-brand-fg transition hover:bg-brand-hover"
           >
-            <Icon name="calendar" className="size-4" /> Termin bei einem Trainer anfragen
+            <Icon name="calendar" className="size-4" /> Termin bei einem Trainer
+            anfragen
           </a>
         )}
       </section>
-
-      {bookable.length > 0 && (
-        <section id="trainer-termine" className="scroll-mt-24">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-fg">Freie Termine bei unseren Trainern</h2>
-              <p className="mt-1 text-sm text-fg-muted">Wähle einen Trainer – er bestätigt deine Anfrage persönlich.</p>
-            </div>
-            <Link href="/dashboard#termine" className="text-sm font-semibold text-brand-ink hover:underline">
-              Meine Termine →
-            </Link>
-          </div>
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {bookable.map((p) => (
-              <li key={p.trainerId}>
-                <button
-                  type="button"
-                  onClick={() => setBookingFor(p.trainerId)}
-                  className="group flex h-full w-full flex-col rounded-2xl bg-surface p-5 text-left ring-1 ring-line transition hover:ring-brand-ink"
-                >
-                  <span className="flex items-center gap-3">
-                    <Avatar name={p.name} src={p.avatarUrl} size="xl" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold text-fg">{p.name}</span>
-                      {p.ownCoach && <span className="text-xs font-semibold text-brand-ink">Dein Coach</span>}
-                    </span>
-                  </span>
-                  <span className="mt-4 flex flex-wrap gap-1.5">
-                    {p.services.map((x) => (
-                      <span key={x.id} className="rounded-full bg-surface-3 px-2.5 py-1 text-xs font-medium text-fg-muted">
-                        {x.title}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="mt-auto flex items-center justify-between gap-2 pt-5 text-sm">
-                    <span className={p.nextFree ? "text-fg" : "text-fg-subtle"}>
-                      {p.nextFree ? (
-                        <>
-                          <span className="text-fg-muted">Nächster freier Termin</span>
-                          <span className="block font-semibold">{nextFreeLabel(p.nextFree)}</span>
-                        </>
-                      ) : (
-                        "Gerade ausgebucht"
-                      )}
-                    </span>
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand text-brand-fg transition group-hover:translate-x-0.5">
-                      <Icon name="arrow" className="size-4" />
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      <StudioCourseList canBook={me.user.role === "client"} />
-      {bookingFor && (
-        <BookingDialog providers={bookable} initialTrainerId={bookingFor} onClose={() => setBookingFor(null)} onBooked={booking.reload} />
-      )}
 
       {empty ? (
         <EmptyState
@@ -356,7 +304,7 @@ export function StudioPage() {
                         {people.map((p) => (
                           <li
                             key={p.id}
-                            className="flex flex-col items-center rounded-2xl bg-surface-2 p-4 text-center"
+                            className="flex flex-col items-center rounded-tile bg-surface-2 p-4 text-center"
                           >
                             <Avatar name={p.name} src={p.photoUrl} size="2xl" />
                             <p className="mt-3 text-sm font-semibold text-fg">
@@ -393,7 +341,7 @@ export function StudioPage() {
                       <li
                         key={day}
                         className={cx(
-                          "flex justify-between rounded-lg px-3 py-1.5",
+                          "flex justify-between rounded-inner px-3 py-1.5",
                           isToday
                             ? "bg-brand font-semibold text-brand-fg"
                             : "text-fg-muted",
@@ -426,7 +374,7 @@ export function StudioPage() {
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${s.name}, ${address}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-start gap-3 rounded-xl px-3 py-2 text-sm text-fg ring-1 ring-line transition hover:bg-surface-2"
+                      className="flex items-start gap-3 rounded-tile px-3 py-2 text-sm text-fg ring-1 ring-line transition hover:bg-surface-2"
                     >
                       <Icon
                         name="building"
@@ -485,6 +433,90 @@ export function StudioPage() {
           </div>
         </div>
       )}
+
+      {bookable.length > 0 && (
+        <section id="trainer-termine" className="scroll-mt-24">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-fg">
+                Freie Termine bei unseren Trainern
+              </h2>
+              <p className="mt-1 text-sm text-fg-muted">
+                Wähle einen Trainer – er bestätigt deine Anfrage persönlich.
+              </p>
+            </div>
+            <Link
+              href="/dashboard#termine"
+              className="text-sm font-semibold text-brand-ink hover:underline"
+            >
+              Meine Termine →
+            </Link>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {bookable.map((p) => (
+              <li key={p.trainerId}>
+                <button
+                  type="button"
+                  onClick={() => setBookingFor(p.trainerId)}
+                  className="group flex h-full w-full flex-col rounded-box bg-surface p-5 text-left ring-1 ring-line transition hover:ring-brand-ink"
+                >
+                  <span className="flex items-center gap-3">
+                    <Avatar name={p.name} src={p.avatarUrl} size="xl" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold text-fg">
+                        {p.name}
+                      </span>
+                      {p.ownCoach && (
+                        <span className="text-xs font-semibold text-brand-ink">
+                          Dein Coach
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                  <span className="mt-4 flex flex-wrap gap-1.5">
+                    {p.services.map((x) => (
+                      <span
+                        key={x.id}
+                        className="rounded-full bg-surface-3 px-2.5 py-1 text-xs font-medium text-fg-muted"
+                      >
+                        {x.title}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="mt-auto flex items-center justify-between gap-2 pt-5 text-sm">
+                    <span className={p.nextFree ? "text-fg" : "text-fg-subtle"}>
+                      {p.nextFree ? (
+                        <>
+                          <span className="text-fg-muted">
+                            Nächster freier Termin
+                          </span>
+                          <span className="block font-semibold">
+                            {nextFreeLabel(p.nextFree)}
+                          </span>
+                        </>
+                      ) : (
+                        "Gerade ausgebucht"
+                      )}
+                    </span>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-control bg-brand text-brand-fg transition group-hover:translate-x-0.5">
+                      <Icon name="arrow" className="size-4" />
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <StudioCourseList canBook={me.user.role === "client"} />
+      {bookingFor && (
+        <BookingDialog
+          providers={bookable}
+          initialTrainerId={bookingFor}
+          onClose={() => setBookingFor(null)}
+          onBooked={booking.reload}
+        />
+      )}
     </div>
   );
 }
@@ -504,7 +536,7 @@ function ContactLink({
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-fg ring-1 ring-line transition hover:bg-surface-2"
+      className="flex items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium text-fg ring-1 ring-line transition hover:bg-surface-2"
     >
       <Icon name={icon} className="size-4 shrink-0 text-brand-ink" />
       <span className="truncate">{label}</span>

@@ -57,9 +57,19 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Geändert
 
+- Studio-Seite: Erst die Studio-Infos (Ausstattung, Team, Öffnungszeiten, Kontakt), danach freie Termine bei Trainern und Kurse.
+- Startseite (Kunde): Die Kachel „Nächstes Training“ hat ein Gym-Foto als Hintergrund unter einer dunklen Ebene, weißen Text und einen Lime-Button (`public/images/dashboard-training.jpg`, zugeschnitten und auf 1600 px verkleinert).
+- Training: Die Abhak-Buttons für Sätze und Ausdauer-Einheiten sind kleiner und zeigen schon vor dem Abhaken einen grauen Haken. Erledigt werden sie Lime.
+- **Einheitliche Rundungen:** feste Stufen als Design-Tokens (`rounded-box` 24 px für äußere Flächen, `rounded-tile` 16 px für Flächen in Karten, `rounded-control` 12 px für Buttons/Felder, `rounded-inner` 8 px). Alle CTAs haben jetzt dieselbe Form, keine Pillen-Buttons mehr.
+- Aktiver Tab in den Dashboards (Team, Kunden, …) ist jetzt schwarz statt dunkelgrün.
 - Studio-Kundenliste: Status **„Mitglied“** für Mitglieder ohne Coach, Filter „Mitglieder“ und „Coach fehlt“.
   Der Hinweis „Kunden ohne Trainer – bitte zuweisen“ erscheint nur noch, wenn ein Coach weggefallen ist.
 - Registrierung als Kunde: Das Code-Feld akzeptiert Einladungscodes von Trainern **und** Studio-Codes.
+
+### Behoben
+
+- Die Tab-Leisten im Studio- und Trainer-Dashboard (Team, Kunden, …) ließen sich vertikal scrollen. Die Leiste scrollt jetzt nur noch horizontal, und zwar ohne sichtbaren Scrollbalken.
+- Startseite (Kunde): Der Nachrichten-Button in der Karte „Dein Coach“ hat jetzt einen sichtbaren Hover-Zustand.
 
 ### Datenbank
 

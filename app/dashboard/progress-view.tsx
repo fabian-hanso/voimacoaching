@@ -59,7 +59,7 @@ export function ProgressView({ progress, aside }: { progress: Progress; aside?: 
                 {mode === "strength" ? "Summe aus Wiederholungen × Gewicht" : "Minuten Ausdauertraining (Laufband, Rad, …)"}
               </p>
             </div>
-            <div className="flex gap-1 rounded-lg bg-surface-3 p-0.5 text-xs font-semibold">
+            <div className="flex gap-1 rounded-control bg-surface-3 p-0.5 text-xs font-semibold">
               {(
                 [
                   ["strength", "Kraft"],
@@ -70,7 +70,7 @@ export function ProgressView({ progress, aside }: { progress: Progress; aside?: 
                   key={m}
                   onClick={() => setMode(m)}
                   className={cx(
-                    "rounded-md px-2.5 py-1 transition",
+                    "rounded-inner px-2.5 py-1 transition",
                     mode === m ? "bg-surface text-fg shadow-sm" : "text-fg-muted",
                   )}
                 >
@@ -145,7 +145,7 @@ export function ProgressView({ progress, aside }: { progress: Progress; aside?: 
           ) : (
             <ul className="mt-4 space-y-3">
               {progress.recentWorkouts.map((w) => (
-                <li key={w.id} className="rounded-lg p-3 ring-1 ring-line">
+                <li key={w.id} className="rounded-tile p-3 ring-1 ring-line">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-fg">{w.title}</span>
                     <span className="text-xs text-fg-muted">{fmtDate(w.performedAt, { dateStyle: "medium", timeStyle: "short" })}</span>

@@ -205,7 +205,7 @@ function ChatDrawer({
             <button
               onClick={() => onSelect(null)}
               aria-label="Zurück zur Übersicht"
-              className="grid size-9 place-items-center rounded-lg text-fg-muted hover:bg-surface-3"
+              className="grid size-9 place-items-center rounded-control text-fg-muted hover:bg-surface-3"
             >
               <Icon name="chevronLeft" className="size-5" />
             </button>
@@ -224,7 +224,7 @@ function ChatDrawer({
           <button
             onClick={onClose}
             aria-label="Schließen"
-            className="grid size-9 place-items-center rounded-lg text-fg-muted hover:bg-surface-3"
+            className="grid size-9 place-items-center rounded-control text-fg-muted hover:bg-surface-3"
           >
             <Icon name="x" className="size-5" />
           </button>
@@ -520,7 +520,7 @@ function ChatThread({ partner }: { partner: ConversationPartner }) {
                   <div className={cx("flex", mine ? "justify-end" : "justify-start", !grouped && "mt-3")}>
                     <div
                       className={cx(
-                        "max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm",
+                        "max-w-[80%] rounded-tile px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm",
                         mine
                           ? "rounded-br-md bg-brand text-brand-fg"
                           : "rounded-bl-md bg-surface text-fg ring-1 ring-line",
@@ -563,13 +563,13 @@ function ChatThread({ partner }: { partner: ConversationPartner }) {
             maxLength={4000}
             placeholder="Nachricht schreiben …"
             aria-label="Nachricht"
-            className="block max-h-40 min-h-10 flex-1 resize-none rounded-xl border-0 bg-surface-3 px-3.5 py-2.5 text-sm text-fg placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none"
+            className="block max-h-40 min-h-10 flex-1 resize-none rounded-control border-0 bg-surface-3 px-3.5 py-2.5 text-sm text-fg placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none"
           />
           <button
             type="submit"
             disabled={!text.trim()}
             aria-label="Senden"
-            className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand text-brand-fg transition hover:bg-brand-hover disabled:opacity-40"
+            className="grid size-10 shrink-0 place-items-center rounded-control bg-brand text-brand-fg transition hover:bg-brand-hover disabled:opacity-40"
           >
             <Icon name="send" className="size-4" />
           </button>

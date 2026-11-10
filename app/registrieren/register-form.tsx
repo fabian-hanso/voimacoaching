@@ -115,7 +115,7 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div role="radiogroup" aria-label="Ich bin …" className="grid grid-cols-3 gap-1 rounded-lg bg-surface-3 p-1">
+      <div role="radiogroup" aria-label="Ich bin …" className="grid grid-cols-3 gap-1 rounded-control bg-surface-3 p-1">
         {ROLES.map(([value, label]) => (
           <button
             key={value}
@@ -124,7 +124,7 @@ export function RegisterForm() {
             aria-checked={role === value}
             onClick={() => setRole(value)}
             className={cx(
-              "rounded-md py-2 text-sm font-semibold transition",
+              "rounded-inner py-2 text-sm font-semibold transition",
               role === value ? "bg-surface text-fg shadow-sm" : "text-fg-muted hover:text-fg",
             )}
           >

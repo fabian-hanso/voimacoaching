@@ -10,7 +10,7 @@ export function GuestActions() {
       <Link href="/login" className="hidden text-sm font-semibold text-fg hover:text-brand-ink/80 sm:block">
         Anmelden
       </Link>
-      <Link href="/registrieren" className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-fg hover:bg-brand-hover">
+      <Link href="/registrieren" className="rounded-control bg-brand px-4 py-2 text-sm font-semibold text-brand-fg hover:bg-brand-hover">
         Kostenlos starten
       </Link>
     </>
@@ -37,7 +37,7 @@ export async function HeaderActions() {
   return (
     <Link
       href="/dashboard"
-      className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-fg hover:bg-brand-hover"
+      className="inline-flex items-center gap-2 rounded-control bg-brand px-4 py-2 text-sm font-semibold text-brand-fg hover:bg-brand-hover"
     >
       Zum Dashboard
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="size-4" aria-hidden="true">

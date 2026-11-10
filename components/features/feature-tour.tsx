@@ -383,7 +383,7 @@ function Hud({ xp, level, unlocked }: { xp: number; level: number; unlocked: Set
         <div className="flex shrink-0 items-center gap-2">
           <span
             key={level}
-            className="grid size-9 place-items-center rounded-xl bg-brand-fg text-sm font-extrabold text-brand motion-safe:animate-pop"
+            className="grid size-9 place-items-center rounded-control bg-brand-fg text-sm font-extrabold text-brand motion-safe:animate-pop"
             aria-label={`Level ${level}`}
           >
             {level}
@@ -492,7 +492,7 @@ function Bubble({ mine, children }: { mine: boolean; children: ReactNode }) {
   return (
     <p
       className={cx(
-        "rounded-2xl px-4 py-2.5 text-[15px] leading-snug shadow-sm",
+        "rounded-tile px-4 py-2.5 text-[15px] leading-snug shadow-sm",
         mine ? "rounded-br-md bg-brand text-brand-fg" : "rounded-bl-md bg-surface text-fg ring-1 ring-line",
       )}
     >
@@ -507,7 +507,7 @@ function TypingBubble({ mine }: { mine: boolean }) {
       role="status"
       aria-label="schreibt …"
       className={cx(
-        "flex items-center gap-1 rounded-2xl px-4 py-3",
+        "flex items-center gap-1 rounded-tile px-4 py-3",
         mine ? "rounded-br-md bg-brand" : "rounded-bl-md bg-surface ring-1 ring-line",
       )}
     >
@@ -530,7 +530,7 @@ function CardShell({ mine, title, icon, children }: { mine: boolean; title: stri
   return (
     <div
       className={cx(
-        "overflow-hidden rounded-2xl bg-surface shadow-sm ring-1",
+        "overflow-hidden rounded-tile bg-surface shadow-sm ring-1",
         mine ? "rounded-br-md ring-brand" : "rounded-bl-md ring-line",
       )}
     >
@@ -566,7 +566,7 @@ function RichCard({ kind, mine }: { kind: CardKind; mine: boolean }) {
         <CardShell mine={mine} title="Einladung" icon="mail">
           <p className="text-sm text-fg-muted">Coach Marco lädt dich ein</p>
           <p className="mt-2 font-mono text-2xl font-bold tracking-[0.3em] text-fg">K7MX2QPA</p>
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2 text-xs">
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-tile bg-surface-2 px-3 py-2 text-xs">
             <span className="truncate text-fg-subtle">voimacoach.de/registrieren?code=K7MX2QPA</span>
             <Pill tone="brand">gültig 14 Tage</Pill>
           </div>
@@ -633,7 +633,7 @@ function RichCard({ kind, mine }: { kind: CardKind; mine: boolean }) {
               <span className="w-6 text-fg-subtle">{n}</span>
               <span className="flex-1 text-fg">{r}</span>
               <span className="font-mono text-xs text-fg-muted">{w}</span>
-              <span className="grid size-6 place-items-center rounded-md bg-brand text-brand-fg">
+              <span className="grid size-6 place-items-center rounded-inner bg-brand text-brand-fg">
                 <Icon name="check" className="size-3.5" />
               </span>
             </div>
@@ -651,7 +651,7 @@ function RichCard({ kind, mine }: { kind: CardKind; mine: boolean }) {
               ["Steigung", "8", "%"],
               ["Ø Puls", "138", "bpm"],
             ].map(([l, v, u]) => (
-              <div key={l} className="rounded-xl bg-surface-2 px-3 py-2">
+              <div key={l} className="rounded-tile bg-surface-2 px-3 py-2">
                 <p className="text-[11px] text-fg-subtle">{l}</p>
                 <p className="text-lg font-bold text-fg">
                   {v} <span className="text-xs font-medium text-fg-muted">{u}</span>
@@ -663,8 +663,8 @@ function RichCard({ kind, mine }: { kind: CardKind; mine: boolean }) {
       );
     case "pr":
       return (
-        <div className={cx("flex items-center gap-3 rounded-2xl bg-brand p-4 text-brand-fg shadow-sm", mine ? "rounded-br-md" : "rounded-bl-md")}>
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-fg text-brand motion-safe:animate-pop">
+        <div className={cx("flex items-center gap-3 rounded-tile bg-brand p-4 text-brand-fg shadow-sm", mine ? "rounded-br-md" : "rounded-bl-md")}>
+          <span className="grid size-11 shrink-0 place-items-center rounded-control bg-brand-fg text-brand motion-safe:animate-pop">
             <Icon name="trophy" className="size-5" />
           </span>
           <div>
@@ -762,7 +762,7 @@ function RichCard({ kind, mine }: { kind: CardKind; mine: boolean }) {
               ["iOS", "phone", "Kunden trainieren"],
               ["Android", "phone", "Kunden trainieren"],
             ].map(([n, i, d]) => (
-              <div key={n} className="rounded-xl bg-surface-2 px-2 py-3">
+              <div key={n} className="rounded-tile bg-surface-2 px-2 py-3">
                 <Icon name={i as IconName} className="mx-auto size-5 text-fg" />
                 <p className="mt-1 text-sm font-semibold text-fg">{n}</p>
                 <p className="text-[10px] text-fg-subtle">{d}</p>
@@ -801,14 +801,14 @@ function Finale({ complete, level, xp }: { complete: boolean; level: number; xp:
     <section className="relative mt-16" aria-live="polite">
       <div
         className={cx(
-          "relative isolate overflow-hidden rounded-[2rem] p-8 text-center transition-colors duration-500 sm:p-12",
+          "relative isolate overflow-hidden rounded-box p-8 text-center transition-colors duration-500 sm:p-12",
           complete ? "bg-brand-fg text-white" : "bg-surface text-fg ring-1 ring-line",
         )}
       >
         {complete && <Confetti />}
         <span
           className={cx(
-            "mx-auto grid size-16 place-items-center rounded-2xl",
+            "mx-auto grid size-16 place-items-center rounded-tile",
             complete ? "bg-brand text-brand-fg motion-safe:animate-pop" : "bg-surface-3 text-fg-subtle",
           )}
         >
@@ -824,13 +824,13 @@ function Finale({ complete, level, xp }: { complete: boolean; level: number; xp:
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href="/registrieren?rolle=trainer"
-                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-brand px-6 font-semibold text-brand-fg transition hover:bg-brand-hover"
+                className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand px-6 font-semibold text-brand-fg transition hover:bg-brand-hover"
               >
                 Als Trainer starten <Icon name="arrow" className="size-4" />
               </Link>
               <Link
                 href="/registrieren?rolle=kunde"
-                className="flex h-12 items-center justify-center rounded-xl bg-white/10 px-6 font-semibold text-white ring-1 ring-white/20 transition ring-inset hover:bg-white/15"
+                className="flex h-12 items-center justify-center rounded-control bg-white/10 px-6 font-semibold text-white ring-1 ring-white/20 transition ring-inset hover:bg-white/15"
               >
                 Als Kunde beitreten
               </Link>
@@ -882,9 +882,9 @@ function Toasts({ toasts }: { toasts: Toast[] }) {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="flex items-center gap-3 rounded-2xl bg-brand-fg p-3 pr-4 text-white shadow-2xl motion-safe:animate-toast-in"
+          className="flex items-center gap-3 rounded-box bg-brand-fg p-3 pr-4 text-white shadow-2xl motion-safe:animate-toast-in"
         >
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand text-brand-fg">
+          <span className="grid size-10 shrink-0 place-items-center rounded-control bg-brand text-brand-fg">
             <Icon name={t.icon} className="size-5" />
           </span>
           <div className="min-w-0 flex-1">

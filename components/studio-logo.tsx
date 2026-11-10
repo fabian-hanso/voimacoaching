@@ -22,7 +22,7 @@ export function StudioLogo({
       <img
         src={logoUrl}
         alt={`Logo von ${name}`}
-        className={cx(box, "shrink-0 rounded-lg bg-surface object-contain p-0.5 ring-1 ring-line", className)}
+        className={cx(box, "shrink-0 rounded-control bg-surface object-contain p-0.5 ring-1 ring-line", className)}
       />
     );
   }
@@ -38,7 +38,7 @@ export function StudioLogo({
       aria-label={`Logo von ${name}`}
       className={cx(
         box,
-        "grid shrink-0 place-items-center rounded-lg bg-brand-fg font-bold text-brand",
+        "grid shrink-0 place-items-center rounded-control bg-brand-fg font-bold text-brand",
         size === "xl" ? "text-2xl" : size === "lg" ? "text-sm" : "text-[10px]",
         className,
       )}

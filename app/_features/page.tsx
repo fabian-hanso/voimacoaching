@@ -30,7 +30,7 @@ export default function FeaturesPage() {
             <Link href="/login" className="text-fg-muted hover:text-fg">
               Anmelden
             </Link>
-            <Link href="/registrieren" className="rounded-full bg-brand px-4 py-2 text-brand-fg hover:bg-brand-hover">
+            <Link href="/registrieren" className="rounded-control bg-brand px-4 py-2 text-brand-fg hover:bg-brand-hover">
               Kostenlos starten
             </Link>
           </nav>
@@ -44,7 +44,7 @@ export default function FeaturesPage() {
           </p>
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-fg sm:text-6xl">
             Alle Features.{" "}
-            <span className="rounded-xl bg-brand box-decoration-clone px-2 text-brand-fg">Erzählt als Chat.</span>
+            <span className="rounded-control bg-brand box-decoration-clone px-2 text-brand-fg">Erzählt als Chat.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg text-fg-muted">
             Begleite Coach Marco und Lena durch einen Trainingsmonat. Jedes Feature, das du entdeckst, bringt dir XP – schaffst du

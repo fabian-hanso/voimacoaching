@@ -63,7 +63,7 @@ export function StudioView() {
       {unassigned > 0 && (
         <button
           onClick={() => setTab("clients")}
-          className="flex w-full items-center gap-3 rounded-2xl bg-accent/10 p-4 text-left ring-1 ring-accent/30 transition hover:bg-accent/15"
+          className="flex w-full items-center gap-3 rounded-box bg-accent/10 p-4 text-left ring-1 ring-accent/30 transition hover:bg-accent/15"
         >
           <IconTile name="alert" tone="accent" />
           <span className="flex-1 text-sm">
@@ -76,14 +76,14 @@ export function StudioView() {
         </button>
       )}
 
-      <nav className="flex gap-6 overflow-x-auto border-b border-line">
+      <nav className="tab-bar flex gap-6 overflow-x-auto overflow-y-hidden">
         {tabs.map(([key, label, count]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={cx(
-              "-mb-px flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition",
-              tab === key ? "border-brand-ink text-brand-ink" : "border-transparent text-fg-muted hover:text-fg",
+              "flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition",
+              tab === key ? "border-fg text-fg" : "border-transparent text-fg-muted hover:text-fg",
             )}
           >
             {label}
@@ -148,11 +148,11 @@ function TeamTab({ data, reload, onInvite }: { data: StudioOverview; reload: () 
               </div>
             </div>
             <dl className="mt-4 grid grid-cols-2 gap-2 text-center">
-              <div className="rounded-lg bg-surface-2 py-2">
+              <div className="rounded-tile bg-surface-2 py-2">
                 <dt className="text-[10px] text-fg-subtle">Kunden</dt>
                 <dd className="text-sm font-semibold text-fg">{t.clientCount}</dd>
               </div>
-              <div className="rounded-lg bg-surface-2 py-2">
+              <div className="rounded-tile bg-surface-2 py-2">
                 <dt className="text-[10px] text-fg-subtle">Aktiv (7 Tage)</dt>
                 <dd className="text-sm font-semibold text-fg">{t.activeClients}</dd>
               </div>
@@ -437,7 +437,7 @@ function StaffDialog({ member, onClose, onSaved }: { member: StudioStaffMember |
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Mitarbeitende">
       <button aria-label="Abbrechen" tabIndex={-1} onClick={() => !pending && onClose()} className="absolute inset-0 bg-fg/30 backdrop-blur-[2px]" />
-      <form onSubmit={save} className="relative w-full max-w-md space-y-4 rounded-2xl bg-surface p-6 shadow-2xl ring-1 ring-line-strong">
+      <form onSubmit={save} className="relative w-full max-w-md space-y-4 rounded-box bg-surface p-6 shadow-2xl ring-1 ring-line-strong">
         <h2 className="text-lg font-semibold text-fg">{member ? `${member.name} bearbeiten` : "Mitarbeitende hinzufügen"}</h2>
         <div className="flex items-center gap-4">
           <button
@@ -675,7 +675,7 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
                     onClick={() => setRemoving(c)}
                     aria-label={`${c.name} aus dem Studio entfernen`}
                     title="Aus dem Studio entfernen"
-                    className="grid size-9 shrink-0 place-items-center rounded-lg text-fg-subtle ring-1 ring-line transition hover:bg-danger/10 hover:text-danger"
+                    className="grid size-9 shrink-0 place-items-center rounded-control text-fg-subtle ring-1 ring-line transition hover:bg-danger/10 hover:text-danger"
                   >
                     <Icon name="x" className="size-4" />
                   </button>
@@ -750,7 +750,7 @@ function MemberCodeCard({ code, studioName, onRenewed }: { code: string; studioN
 
   return (
     <Card className="flex flex-col gap-6 sm:flex-row sm:items-center">
-      <div className="grid size-36 shrink-0 place-items-center self-center rounded-xl bg-white p-2 ring-1 ring-line">
+      <div className="grid size-36 shrink-0 place-items-center self-center rounded-tile bg-white p-2 ring-1 ring-line">
         {qr ? (
           // eslint-disable-next-line @next/next/no-img-element -- lokal erzeugter QR-Code (data:-URL)
           <img src={qr} alt={`QR-Code zum Beitritt bei ${studioName}`} className="size-full" />
@@ -786,7 +786,7 @@ function MemberCodeCard({ code, studioName, onRenewed }: { code: string; studioN
             <a
               href={qr}
               download={`qr-${studioName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`}
-              className="inline-flex items-center gap-2 rounded-lg bg-surface-3 px-2.5 py-1.5 text-xs font-semibold text-fg ring-1 ring-line-strong transition hover:bg-line-strong"
+              className="inline-flex items-center gap-2 rounded-control bg-surface-3 px-2.5 py-1.5 text-xs font-semibold text-fg ring-1 ring-line-strong transition hover:bg-line-strong"
             >
               <Icon name="camera" className="size-3.5" /> QR-Code herunterladen
             </a>
@@ -830,7 +830,7 @@ function AssignDialog({
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true">
       <button aria-label="Abbrechen" tabIndex={-1} onClick={() => !pending && onClose()} className="absolute inset-0 bg-fg/30 backdrop-blur-[2px]" />
-      <div className="relative w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl ring-1 ring-line-strong">
+      <div className="relative w-full max-w-md rounded-box bg-surface p-6 shadow-2xl ring-1 ring-line-strong">
         <h2 className="text-lg font-semibold text-fg">
           {isTransfer ? `${client.name} an ${trainer.name} übertragen?` : `${client.name} an ${trainer.name} zuweisen?`}
         </h2>

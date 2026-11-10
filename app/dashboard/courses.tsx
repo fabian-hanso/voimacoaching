@@ -102,7 +102,7 @@ export function CourseSessionModal({
             <LoadError message={list.error.message} onRetry={list.reload} />
           </div>
         ) : participants.length === 0 ? (
-          <p className="mt-4 rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-sm text-fg-muted">Noch keine Anmeldungen.</p>
+          <p className="mt-4 rounded-tile border border-dashed border-line-strong px-4 py-6 text-center text-sm text-fg-muted">Noch keine Anmeldungen.</p>
         ) : (
           <ul className="mt-4 max-h-80 divide-y divide-line overflow-y-auto">
             {participants.map((p, i) => (
@@ -157,7 +157,7 @@ export function StudioCourses({ trainers }: { trainers: StudioTrainer[] }) {
             const next = c.sessions.slice(0, 4);
             const upcomingBookings = c.sessions.reduce((n, s) => n + s.booked, 0);
             return (
-              <li key={c.id} className={cx("flex flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-line", !c.active && "opacity-70")}>
+              <li key={c.id} className={cx("flex flex-col overflow-hidden rounded-box bg-surface ring-1 ring-line", !c.active && "opacity-70")}>
                 <div className="relative">
                   <CourseImage course={c} />
                   <div className="absolute top-3 left-3 flex gap-1.5">
@@ -188,7 +188,7 @@ export function StudioCourses({ trainers }: { trainers: StudioTrainer[] }) {
                               <button
                                 type="button"
                                 onClick={() => setSession({ course: c, startsAt: s.startsAt, endsAt: s.endsAt, booked: s.booked })}
-                                className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-sm transition hover:bg-surface-2"
+                                className="flex w-full items-center justify-between gap-3 rounded-inner px-2 py-1.5 text-left text-sm transition hover:bg-surface-2"
                               >
                                 <span className="text-fg">{sessionLabel(s.startsAt)}</span>
                                 <span className={cx("shrink-0 text-xs font-semibold tabular-nums", s.booked >= s.capacity ? "text-accent-soft" : "text-fg-muted")}>
@@ -345,7 +345,7 @@ function CourseEditor({
         {/* Bild */}
         <div>
           <span className="mb-1.5 block text-sm font-medium text-fg">Bild</span>
-          <div className="relative overflow-hidden rounded-xl ring-1 ring-line">
+          <div className="relative overflow-hidden rounded-tile ring-1 ring-line">
             <CourseImage course={{ imageUrl: preview, title: f.title, category: f.category || null }} />
             <div className="absolute right-3 bottom-3 flex gap-2">
               <Button type="button" size="sm" variant="secondary" onClick={() => fileInput.current?.click()} className="bg-surface/90 backdrop-blur">
@@ -468,7 +468,7 @@ function CourseEditor({
                   aria-label="Termin entfernen"
                   disabled={schedule.length === 1}
                   onClick={() => setSchedule((s) => s.filter((_, j) => j !== i))}
-                  className="grid size-9 shrink-0 place-items-center rounded-lg text-fg-subtle hover:bg-surface-3 hover:text-fg disabled:opacity-30"
+                  className="grid size-9 shrink-0 place-items-center rounded-control text-fg-subtle hover:bg-surface-3 hover:text-fg disabled:opacity-30"
                 >
                   <Icon name="x" className="size-4" />
                 </button>
@@ -486,7 +486,7 @@ function CourseEditor({
           </Field>
         </div>
 
-        <label className="flex items-center justify-between gap-4 rounded-xl bg-surface-2 p-3">
+        <label className="flex items-center justify-between gap-4 rounded-tile bg-surface-2 p-3">
           <span>
             <span className="block text-sm font-medium text-fg">Kurs ist aktiv</span>
             <span className="block text-xs text-fg-muted">Pausierte Kurse sind für Kunden unsichtbar; bestehende Anmeldungen werden storniert.</span>
@@ -551,7 +551,7 @@ export function StudioCourseList({ canBook }: { canBook: boolean }) {
               <button
                 type="button"
                 onClick={() => setOpen(c)}
-                className="group flex h-full w-full flex-col overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-line transition hover:ring-brand-ink"
+                className="group flex h-full w-full flex-col overflow-hidden rounded-box bg-surface text-left ring-1 ring-line transition hover:ring-brand-ink"
               >
                 <div className="relative w-full">
                   <CourseImage course={c} />
@@ -611,7 +611,7 @@ function CourseDetail({ course, canBook, onClose, onChanged }: { course: CourseW
 
   return (
     <Modal label={c.title} onClose={onClose} wide>
-      <div className="-mx-6 -mt-6 mb-5 overflow-hidden rounded-t-2xl">
+      <div className="-mx-6 -mt-6 mb-5 overflow-hidden rounded-t-box">
         <CourseImage course={c} />
       </div>
       <ModalHeader title={c.title} subtitle={c.category ?? undefined} onClose={onClose} />
@@ -701,7 +701,7 @@ export function MyCourses() {
           <li key={b.id}>
             <Card className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-1 items-center gap-4">
-                <div className="grid w-14 shrink-0 place-items-center rounded-xl bg-brand-fg py-2 text-center text-white">
+                <div className="grid w-14 shrink-0 place-items-center rounded-control bg-brand-fg py-2 text-center text-white">
                   <span className="text-[11px] font-semibold uppercase">{fmt(b.startsAt, { weekday: "short" }).replace(".", "")}</span>
                   <span className="text-xl leading-6 font-extrabold">{fmt(b.startsAt, { day: "numeric" })}</span>
                   <span className="text-[11px] font-medium">{fmt(b.startsAt, { month: "short" }).replace(".", "")}</span>

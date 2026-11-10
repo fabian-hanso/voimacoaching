@@ -138,7 +138,7 @@ const cancelAppointment = (a: Appointment, message: string) =>
 
 function DateBlock({ iso, muted }: { iso: string; muted?: boolean }) {
   return (
-    <div className={cx("grid w-14 shrink-0 place-items-center rounded-xl py-2 text-center", muted ? "bg-surface-3 text-fg-muted" : "bg-brand text-brand-fg")}>
+    <div className={cx("grid w-14 shrink-0 place-items-center rounded-control py-2 text-center", muted ? "bg-surface-3 text-fg-muted" : "bg-brand text-brand-fg")}>
       <span className="text-[11px] font-semibold uppercase">{fmt(iso, { weekday: "short" }).replace(".", "")}</span>
       <span className="text-xl leading-6 font-extrabold">{fmt(iso, { day: "numeric" })}</span>
       <span className="text-[11px] font-medium">{fmt(iso, { month: "short" }).replace(".", "")}</span>
@@ -164,7 +164,7 @@ function AppointmentRow({
   const person = perspective === "client" ? { name: a.trainer.name, src: a.trainer.avatarUrl } : { name: partyName(a), src: a.client?.avatarUrl ?? null };
   const answerFrom = { client: "Deine Nachricht", provider: perspective === "client" ? `Antwort von ${a.trainer.name}` : "Deine Antwort", studio: "Studio", system: "Hinweis" };
   return (
-    <li className="flex flex-col gap-4 rounded-2xl bg-surface p-4 ring-1 ring-line sm:flex-row sm:items-center">
+    <li className="flex flex-col gap-4 rounded-box bg-surface p-4 ring-1 ring-line sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <DateBlock iso={a.startsAt} muted={inactive} />
         <div className="min-w-0 flex-1">
@@ -252,7 +252,7 @@ export function TrainerAppointments({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg bg-surface-3 p-1">
+        <div className="inline-flex rounded-control bg-surface-3 p-1">
           {(
             [
               ["calendar", "Kalender", 0],
@@ -264,7 +264,7 @@ export function TrainerAppointments({
               key={key}
               onClick={() => setView(key)}
               className={cx(
-                "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition",
+                "inline-flex items-center gap-1.5 rounded-inner px-3 py-1.5 text-sm font-semibold transition",
                 view === key ? "bg-surface text-fg shadow-sm" : "text-fg-muted hover:text-fg",
               )}
             >
@@ -285,7 +285,7 @@ export function TrainerAppointments({
             <button
               type="button"
               onClick={() => setView("list")}
-              className="flex w-full items-center gap-3 rounded-2xl bg-accent/10 p-4 text-left ring-1 ring-accent/30 transition hover:bg-accent/15"
+              className="flex w-full items-center gap-3 rounded-box bg-accent/10 p-4 text-left ring-1 ring-accent/30 transition hover:bg-accent/15"
             >
               <IconTile name="calendar" tone="accent" />
               <span className="flex-1 text-sm">
@@ -348,7 +348,7 @@ function ListSection({ title, count, empty, children }: { title: string; count: 
         {title}
         <span className="rounded-full bg-surface-3 px-1.5 text-xs text-fg-muted">{count}</span>
       </h3>
-      {count ? <ul className="space-y-3">{children}</ul> : <p className="rounded-2xl border border-dashed border-line-strong px-4 py-6 text-center text-sm text-fg-muted">{empty}</p>}
+      {count ? <ul className="space-y-3">{children}</ul> : <p className="rounded-box border border-dashed border-line-strong px-4 py-6 text-center text-sm text-fg-muted">{empty}</p>}
     </section>
   );
 }
@@ -518,7 +518,7 @@ function BookingSettingsEditor({ initial, onSaved }: { initial: BookingSettings;
         ) : (
           <ul className="mt-4 space-y-3">
             {services.map((s) => (
-              <li key={s.key} className="grid gap-3 rounded-xl bg-surface-2 p-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_7rem_auto] sm:items-end">
+              <li key={s.key} className="grid gap-3 rounded-tile bg-surface-2 p-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_7rem_auto] sm:items-end">
                 <Field label="Kategorie">
                   <Select
                     value={s.category}
@@ -584,7 +584,7 @@ function BookingSettingsEditor({ initial, onSaved }: { initial: BookingSettings;
                 <span className={cx("w-28 shrink-0 pt-2 text-sm font-medium", list.length ? "text-fg" : "text-fg-subtle")}>{name}</span>
                 <div className="flex flex-1 flex-wrap items-center gap-2">
                   {list.map(({ w, i }) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-surface-2 p-1 ring-1 ring-line">
+                    <span key={i} className="inline-flex items-center gap-1.5 rounded-control bg-surface-2 p-1 ring-1 ring-line">
                       <Input
                         type="time"
                         step={900}
@@ -606,7 +606,7 @@ function BookingSettingsEditor({ initial, onSaved }: { initial: BookingSettings;
                         type="button"
                         aria-label="Zeitfenster entfernen"
                         onClick={() => setWindows((ws) => ws.filter((_, j) => j !== i))}
-                        className="grid size-7 place-items-center rounded-md text-fg-subtle hover:bg-surface-3 hover:text-fg"
+                        className="grid size-7 place-items-center rounded-inner text-fg-subtle hover:bg-surface-3 hover:text-fg"
                       >
                         <Icon name="x" className="size-3.5" />
                       </button>
@@ -619,7 +619,7 @@ function BookingSettingsEditor({ initial, onSaved }: { initial: BookingSettings;
                       const last = list.at(-1)?.w;
                       setWindows((ws) => [...ws, last ? { day, start: last.end, end: plus2h(last.end) } : { day, start: "09:00", end: "17:00" }]);
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
+                    className="inline-flex items-center gap-1 rounded-control px-2 py-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
                   >
                     <Icon name="plus" className="size-3.5" /> {list.length ? "Weiteres" : "Zeitfenster"}
                   </button>
@@ -739,7 +739,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
             type="button"
             aria-label="Vorherige Woche"
             onClick={() => setWeek(addDays(data.weekStart, -7))}
-            className="grid size-9 place-items-center rounded-lg ring-1 ring-line hover:bg-surface-2"
+            className="grid size-9 place-items-center rounded-control ring-1 ring-line hover:bg-surface-2"
           >
             <Icon name="chevronLeft" className="size-4" />
           </button>
@@ -747,7 +747,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
             type="button"
             aria-label="Nächste Woche"
             onClick={() => setWeek(addDays(data.weekStart, 7))}
-            className="grid size-9 place-items-center rounded-lg ring-1 ring-line hover:bg-surface-2"
+            className="grid size-9 place-items-center rounded-control ring-1 ring-line hover:bg-surface-2"
           >
             <Icon name="chevronLeft" className="size-4 rotate-180" />
           </button>
@@ -881,7 +881,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
                               type="button"
                               onClick={() => setCourse(c)}
                               title={`${time(c.startsAt)}–${time(c.endsAt)} ${c.title} · ${c.booked}/${c.capacity} Plätze${trainerName ? ` · ${trainerName}` : ""}`}
-                              className="absolute overflow-hidden rounded-md bg-brand-fg px-1.5 py-1 text-left text-[11px] leading-tight text-white shadow-sm transition hover:z-10 hover:shadow-md"
+                              className="absolute overflow-hidden rounded-inner bg-brand-fg px-1.5 py-1 text-left text-[11px] leading-tight text-white shadow-sm transition hover:z-10 hover:shadow-md"
                               style={position}
                             >
                               <span className="flex items-center gap-1 truncate font-semibold">
@@ -908,7 +908,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
                             onClick={() => setSelected(a)}
                             title={`${time(a.startsAt)}–${time(a.endsAt)} ${a.title} · ${multi ? `${a.trainer.name} · ` : ""}${partyName(a)}`}
                             className={cx(
-                              "absolute overflow-hidden rounded-md px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm transition hover:z-10 hover:shadow-md",
+                              "absolute overflow-hidden rounded-inner px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm transition hover:z-10 hover:shadow-md",
                               a.status === "confirmed" ? "bg-brand text-brand-fg" : "bg-surface text-fg ring-1 ring-accent ring-inset",
                             )}
                             style={position}
@@ -1097,12 +1097,12 @@ function AppointmentDetail({
           />
         )}
         {a.clientNote && (
-          <p className="rounded-xl bg-surface-2 p-3 text-fg-muted">
+          <p className="rounded-tile bg-surface-2 p-3 text-fg-muted">
             <span className="font-medium text-fg">{a.createdBy === "client" ? `Nachricht von ${who}` : "Notiz"}:</span> {a.clientNote}
           </p>
         )}
         {a.responseNote && (
-          <p className="rounded-xl bg-surface-2 p-3 text-fg-muted">
+          <p className="rounded-tile bg-surface-2 p-3 text-fg-muted">
             <span className="font-medium text-fg">{a.cancelledBy === "system" ? "Hinweis" : a.cancelledBy === "studio" ? "Studio" : a.cancelledBy === "client" ? who : a.trainer.name}:</span>{" "}
             {a.responseNote}
           </p>
@@ -1151,7 +1151,7 @@ function AppointmentDetail({
               <LoadError message={comments.error.message} onRetry={comments.reload} />
             </div>
           ) : list.length === 0 ? (
-            <p className="mt-3 rounded-xl border border-dashed border-line-strong px-4 py-4 text-center text-xs text-fg-muted">
+            <p className="mt-3 rounded-tile border border-dashed border-line-strong px-4 py-4 text-center text-xs text-fg-muted">
               Noch keine Kommentare – z. B. „Bitte Laufschuhe mitbringen“ oder „Ich komme 5 Minuten später“.
             </p>
           ) : (
@@ -1159,7 +1159,7 @@ function AppointmentDetail({
               {list.map((c) => (
                 <li key={c.id} className={cx("flex gap-2", c.mine && "flex-row-reverse")}>
                   <Avatar name={c.author.name} src={c.author.avatarUrl} className="size-7 text-[10px] ring-1" />
-                  <div className={cx("max-w-[80%] rounded-2xl px-3 py-2", c.mine ? "bg-brand/40 text-fg" : "bg-surface-2 text-fg")}>
+                  <div className={cx("max-w-[80%] rounded-tile px-3 py-2", c.mine ? "bg-brand/40 text-fg" : "bg-surface-2 text-fg")}>
                     <p className="text-[11px] text-fg-muted">
                       <span className="font-semibold text-fg">{c.mine ? "Du" : c.author.name}</span> · {ROLE_LABEL[c.author.role]} ·{" "}
                       {fmt(c.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
@@ -1272,7 +1272,7 @@ function ContactBlock({ a, onSaved }: { a: Appointment; onSaved: (a: Appointment
 
   if (editing) {
     return (
-      <form onSubmit={save} className="space-y-3 rounded-xl bg-surface-2 p-3">
+      <form onSubmit={save} className="space-y-3 rounded-tile bg-surface-2 p-3">
         <p className="text-xs text-fg-muted">
           {a.client ? "Leer lassen, um die Daten aus dem Profil des Kunden zu verwenden." : "Kontaktdaten des Gastes."}
         </p>
@@ -1298,7 +1298,7 @@ function ContactBlock({ a, onSaved }: { a: Appointment; onSaved: (a: Appointment
   }
 
   return (
-    <div className="rounded-xl bg-surface-2 p-3">
+    <div className="rounded-tile bg-surface-2 p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-fg-muted">Kontakt</p>
         {a.canEditContact && (
@@ -1333,7 +1333,7 @@ function ContactBlock({ a, onSaved }: { a: Appointment; onSaved: (a: Appointment
 
 function PersonBox({ label, name, src }: { label: string; name: string; src: string | null }) {
   return (
-    <div className="flex items-center gap-2 rounded-xl bg-surface-2 p-3">
+    <div className="flex items-center gap-2 rounded-tile bg-surface-2 p-3">
       <Avatar name={name} src={src} />
       <span className="min-w-0">
         <span className="block text-xs text-fg-muted">{label}</span>
@@ -1435,7 +1435,7 @@ function BookDialog({
           )}
           <div>
             <span className="mb-1.5 block text-sm font-medium text-fg">Für</span>
-            <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-3 p-1">
+            <div className="grid grid-cols-2 gap-1 rounded-control bg-surface-3 p-1">
               {(
                 [
                   ["client", "Kunde"],
@@ -1447,7 +1447,7 @@ function BookDialog({
                   type="button"
                   disabled={key === "client" && !clients.length}
                   onClick={() => setParty(key)}
-                  className={cx("rounded-md py-1.5 text-sm font-semibold transition disabled:opacity-40", party === key ? "bg-surface text-fg shadow-sm" : "text-fg-muted")}
+                  className={cx("rounded-inner py-1.5 text-sm font-semibold transition disabled:opacity-40", party === key ? "bg-surface text-fg shadow-sm" : "text-fg-muted")}
                 >
                   {label}
                 </button>
@@ -1483,7 +1483,7 @@ function BookDialog({
           </Select>
         </Field>
         {serviceId === "custom" && (
-          <div className="grid gap-4 rounded-xl bg-surface-2 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_7rem]">
+          <div className="grid gap-4 rounded-tile bg-surface-2 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_7rem]">
             <Field label="Kategorie">
               <Select
                 value={custom.category}
@@ -1731,7 +1731,7 @@ export function BookingDialog({
                   setServiceId(p.services.length === 1 ? p.services[0].id : null);
                 }}
                 className={cx(
-                  "flex items-center gap-3 rounded-xl p-3 text-left ring-1 transition",
+                  "flex items-center gap-3 rounded-tile p-3 text-left ring-1 transition",
                   p.trainerId === trainerId ? "bg-brand/25 ring-brand-ink" : "ring-line hover:bg-surface-2",
                 )}
               >
@@ -1759,7 +1759,7 @@ export function BookingDialog({
                 type="button"
                 onClick={() => setServiceId(s.id)}
                 className={cx(
-                  "flex items-start gap-3 rounded-xl p-3 text-left ring-1 transition",
+                  "flex items-start gap-3 rounded-tile p-3 text-left ring-1 transition",
                   s.id === serviceId ? "bg-brand/25 ring-brand-ink" : "ring-line hover:bg-surface-2",
                 )}
               >
@@ -1847,7 +1847,7 @@ function SlotPicker({ provider, service, onBooked }: { provider: BookingProvider
                 setSlot(null);
               }}
               className={cx(
-                "grid w-16 shrink-0 place-items-center rounded-xl py-2 text-center ring-1 transition disabled:opacity-35",
+                "grid w-16 shrink-0 place-items-center rounded-control py-2 text-center ring-1 transition disabled:opacity-35",
                 active ? "bg-brand text-brand-fg ring-brand-ink" : "ring-line enabled:hover:bg-surface-2",
               )}
             >
@@ -1869,7 +1869,7 @@ function SlotPicker({ provider, service, onBooked }: { provider: BookingProvider
                 type="button"
                 onClick={() => setSlot(s)}
                 className={cx(
-                  "rounded-lg py-2 text-sm font-semibold tabular-nums ring-1 transition",
+                  "rounded-control py-2 text-sm font-semibold tabular-nums ring-1 transition",
                   s === slot ? "bg-brand-fg text-white ring-brand-fg" : "text-fg ring-line hover:bg-surface-2",
                 )}
               >

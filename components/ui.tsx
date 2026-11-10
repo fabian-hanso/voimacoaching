@@ -15,7 +15,7 @@ export function cx(...classes: (string | false | null | undefined)[]) {
 export function Logo({ href = "/", className }: { href?: string; className?: string }) {
   return (
     <Link href={href} className={cx("flex items-center gap-2.5 font-bold tracking-tight text-fg", className)}>
-      <Image src={logoMark} alt="" width={32} height={32} className="size-8 rounded-lg" />
+      <Image src={logoMark} alt="" width={32} height={32} className="size-8 rounded-inner" />
       Voima Coach
     </Link>
   );
@@ -40,7 +40,7 @@ export function Button({
     <button
       {...props}
       className={cx(
-        "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center justify-center gap-2 rounded-control font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
         size === "sm" ? "px-2.5 py-1.5 text-xs" : "px-4 py-2.5 text-sm",
         variants[variant],
         className,
@@ -50,7 +50,7 @@ export function Button({
 }
 
 const fieldBase =
-  "block w-full rounded-lg border-0 bg-surface-2 px-3 py-2 text-sm text-fg ring-1 ring-line-strong ring-inset placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none";
+  "block w-full rounded-control border-0 bg-surface-2 px-3 py-2 text-sm text-fg ring-1 ring-line-strong ring-inset placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none";
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(fieldBase, className)} />;
@@ -77,7 +77,7 @@ export function Field({ label, children, hint }: { label: string; children: Reac
 
 export function Card({ children, className, id }: { children: ReactNode; className?: string; id?: string }) {
   return (
-    <div id={id} className={cx("rounded-2xl bg-surface p-6 ring-1 ring-line", className)}>
+    <div id={id} className={cx("rounded-box bg-surface p-6 ring-1 ring-line", className)}>
       {children}
     </div>
   );
@@ -89,7 +89,7 @@ export function Alert({ children, tone = "error" }: { children: ReactNode; tone?
     success: "bg-success/10 text-success ring-success/25",
     info: "bg-brand/30 text-brand-ink ring-brand-ink/20",
   };
-  return <div className={cx("rounded-lg px-3 py-2 text-sm ring-1 ring-inset", tones[tone])}>{children}</div>;
+  return <div className={cx("rounded-tile px-3 py-2 text-sm ring-1 ring-inset", tones[tone])}>{children}</div>;
 }
 
 export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger" | "accent";
@@ -116,7 +116,7 @@ export function Spinner() {
 
 export function EmptyState({ title, text, action }: { title: string; text: string; action?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-line-strong px-6 py-12 text-center">
+    <div className="rounded-box border border-dashed border-line-strong px-6 py-12 text-center">
       <p className="font-semibold text-fg">{title}</p>
       <p className="mt-1 text-sm text-fg-muted">{text}</p>
       {action && <div className="mt-4">{action}</div>}
@@ -132,7 +132,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
         className="absolute top-0 left-1/2 -z-10 h-[24rem] w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand/15 to-brand/5 blur-3xl"
       />
       <Logo />
-      <div className="mt-8 w-full max-w-md rounded-2xl bg-surface p-8 shadow-xl ring-1 ring-line-strong">
+      <div className="mt-8 w-full max-w-md rounded-box bg-surface p-8 shadow-xl ring-1 ring-line-strong">
         <h1 className="text-2xl font-bold tracking-tight text-fg">{title}</h1>
         <p className="mt-1 text-sm text-fg-muted">{subtitle}</p>
         <div className="mt-6">{children}</div>
@@ -187,7 +187,7 @@ export function Avatar({
 /** Fehler beim Laden – mit „Erneut versuchen“. */
 export function LoadError({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger ring-1 ring-danger/25 ring-inset">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-box bg-danger/10 px-4 py-3 text-sm text-danger ring-1 ring-danger/25 ring-inset">
       <span>{message}</span>
       {onRetry && (
         <button onClick={onRetry} className="font-semibold underline-offset-2 hover:underline">

@@ -57,7 +57,7 @@ export function Pricing() {
             <p className="text-sm font-semibold text-brand-ink">Preise</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-fg sm:text-5xl">
               Fair für Trainer.{" "}
-              <span className="rounded-xl bg-brand box-decoration-clone px-2 text-brand-fg">Kostenlos für Kunden.</span>
+              <span className="rounded-control bg-brand box-decoration-clone px-2 text-brand-fg">Kostenlos für Kunden.</span>
             </h2>
             <p className="mt-4 text-lg text-fg-muted">
               Deine Kunden zahlen nie etwas. Du zahlst nur nach Anzahl deiner Kunden – alle Funktionen sind immer dabei.
@@ -67,7 +67,7 @@ export function Pricing() {
         </div>
 
         {/* Trainer – Hauptprodukt mit aufgefächerten Paketen */}
-        <div className="mt-14 rounded-[2rem] bg-surface p-6 ring-1 ring-line sm:p-10 xl:p-12">
+        <div className="mt-14 rounded-box bg-surface p-6 ring-1 ring-line sm:p-10 xl:p-12">
           <div className="grid gap-12 xl:grid-cols-[1fr_1.2fr] xl:items-center">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-brand/40 px-3 py-1 text-xs font-semibold text-brand-ink">
@@ -262,7 +262,7 @@ function PackageCard({
     <div
       style={style}
       className={cx(
-        "flex flex-col rounded-3xl p-6 shadow-xl",
+        "flex flex-col rounded-box p-6 shadow-xl",
         // ab lg: absolut positioniert, Position/Rotation über CSS-Variablen
         "lg:absolute lg:top-6 lg:left-1/2 lg:-ml-28 lg:h-[16.5rem] lg:w-56 lg:z-[var(--z)]",
         // Hover/Fokus: nach vorn holen, voll sichtbar, leicht anheben (--lift fließt in die Position ein)
@@ -306,7 +306,7 @@ function PackageCard({
       <Link
         href={`/registrieren?rolle=trainer&paket=${pkg.id}`}
         className={cx(
-          "mt-6 flex h-11 items-center lg:mt-auto justify-center gap-2 rounded-xl text-sm font-semibold transition",
+          "mt-6 flex h-11 items-center lg:mt-auto justify-center gap-2 rounded-control text-sm font-semibold transition",
           dark && "bg-brand text-brand-fg hover:bg-brand-hover",
           lime && "bg-brand-fg text-white hover:bg-brand-fg/85",
           variant === "light" && "bg-brand-fg text-white hover:bg-brand-fg/85",
@@ -344,7 +344,7 @@ function SideCard({
   href: string;
 }) {
   return (
-    <div className="flex flex-col gap-6 rounded-3xl bg-surface p-6 ring-1 ring-line sm:flex-row sm:items-center sm:p-8">
+    <div className="flex flex-col gap-6 rounded-box bg-surface p-6 ring-1 ring-line sm:flex-row sm:items-center sm:p-8">
       <div className="flex-1">
         <div className="flex items-center gap-3">
           <IconTile name={icon} tone={tone} />
@@ -360,7 +360,7 @@ function SideCard({
         <p className="mt-1 text-xs text-fg-subtle">{note}</p>
         <Link
           href={href}
-          className="mt-4 flex h-11 items-center justify-center gap-2 rounded-xl bg-surface-3 px-4 text-sm font-semibold text-fg ring-1 ring-line-strong transition hover:bg-line-strong"
+          className="mt-4 flex h-11 items-center justify-center gap-2 rounded-control bg-surface-3 px-4 text-sm font-semibold text-fg ring-1 ring-line-strong transition hover:bg-line-strong"
         >
           {cta} <Icon name="arrow" className="size-4" />
         </Link>
@@ -376,7 +376,7 @@ function BillingToggle({ billing, onChange }: { billing: Billing; onChange: (b: 
     <div
       role="radiogroup"
       aria-label="Zahlweise"
-      className="inline-flex shrink-0 items-center gap-1 self-start rounded-full bg-surface p-1 ring-1 ring-line lg:self-auto"
+      className="inline-flex shrink-0 items-center gap-1 self-start rounded-control bg-surface p-1 ring-1 ring-line lg:self-auto"
     >
       {(
         [
@@ -391,7 +391,7 @@ function BillingToggle({ billing, onChange }: { billing: Billing; onChange: (b: 
           aria-checked={billing === value}
           onClick={() => onChange(value)}
           className={cx(
-            "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
+            "flex items-center gap-2 rounded-inner px-4 py-2 text-sm font-semibold transition",
             billing === value ? "bg-brand-fg text-white shadow-sm" : "text-fg-muted hover:text-fg",
           )}
         >

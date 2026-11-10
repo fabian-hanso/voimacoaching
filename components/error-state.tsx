@@ -25,7 +25,7 @@ export function ErrorState({ error, retry, homeHref = "/" }: { error: unknown; r
         {retry && <Button onClick={() => retry()}>Erneut versuchen</Button>}
         <Link
           href={homeHref}
-          className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-fg ring-1 ring-line-strong hover:bg-surface-2"
+          className="inline-flex items-center rounded-control px-4 py-2.5 text-sm font-semibold text-fg ring-1 ring-line-strong hover:bg-surface-2"
         >
           Zur Startseite
         </Link>

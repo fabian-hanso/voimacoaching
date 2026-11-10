@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import trainingImage from "@/public/images/dashboard-training.jpg";
 import { useEffect, useState, type ReactNode } from "react";
 import { api, ApiClientError, fmtDate, useApi } from "@/lib/client/api";
 import { errorMessage } from "@/lib/client/errors";
@@ -98,7 +100,7 @@ export function ClientView({ me, onMeChange }: { me: MeResponse; onMeChange: () 
           <div className="flex flex-wrap gap-2">
             <Link
               href="/dashboard/studio#kurse"
-              className="inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-2 text-sm font-semibold text-fg ring-1 ring-line-strong transition hover:bg-surface-3"
+              className="inline-flex items-center gap-2 rounded-control bg-surface px-3 py-2 text-sm font-semibold text-fg ring-1 ring-line-strong transition hover:bg-surface-3"
             >
               <Icon name="users" className="size-4" /> Kurse
             </Link>
@@ -243,7 +245,7 @@ function CoachCard({ trainer, studio }: { trainer: NonNullable<MeResponse["train
           onClick={() => open(trainer.id)}
           aria-label={unreadTotal ? `Nachricht an ${trainer.name}, ${unreadTotal} ungelesen` : `Nachricht an ${trainer.name}`}
           title="Nachricht schreiben"
-          className="relative grid size-9 shrink-0 place-items-center rounded-lg text-fg-subtle ring-1 ring-line-strong transition hover:text-brand-ink"
+          className="relative grid size-9 shrink-0 place-items-center rounded-control text-fg-subtle ring-1 ring-line-strong transition hover:bg-surface-3 hover:text-fg"
         >
           <Icon name="chat" className="size-4" />
           {unreadTotal > 0 && (
@@ -262,47 +264,56 @@ function NextWorkoutHero({ next, onStart }: { next: DayRef; onStart: () => void 
   const minutes = estimateMinutes(day);
   const shown = day.exercises.slice(0, 5);
   return (
-    <div className="relative isolate h-full overflow-hidden rounded-3xl bg-brand p-6 text-brand-fg shadow-[0_0_80px_-20px] shadow-brand/40 sm:p-8">
-      {/* Dekor: geschwungene Linie wie in der Referenz */}
-      <svg aria-hidden="true" viewBox="0 0 200 80" fill="none" className="absolute -right-2 -bottom-2 -z-10 w-56 text-brand-fg/25">
-        <path d="M2 78c10-30 22-30 30-10s20 18 26-6 18-28 28-6 20 22 28-2 18-30 30-12 20 10 26-10 12-28 28-30" stroke="currentColor" strokeWidth="2" />
-      </svg>
+    <div className="relative isolate h-full overflow-hidden rounded-box bg-brand-fg p-6 text-white shadow-xl sm:p-8">
+      {/* Hintergrund: Gym-Foto unter einer dunklen Ebene – links dichter für den Text, rechts lichter fürs Foto */}
+      <Image
+        src={trainingImage}
+        alt=""
+        fill
+        placeholder="blur"
+        sizes="(min-width: 1024px) 66vw, 100vw"
+        className="-z-20 object-cover object-right"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-linear-to-r from-brand-fg/85 from-20% via-brand-fg/65 to-brand-fg/40"
+      />
 
-      <p className="text-sm font-medium text-brand-fg/70">Nächstes Training · {plan.title}</p>
+      <p className="text-sm font-medium text-white/70">Nächstes Training · {plan.title}</p>
       <h3 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{day.name}</h3>
 
-      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-brand-fg/80">
+      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/80">
         <span className="flex items-center gap-1.5">
-          <Icon name="list" className="size-4" /> {day.exercises.length} Übungen
+          <Icon name="list" className="size-4 text-brand" /> {day.exercises.length} Übungen
         </span>
         {minutes > 0 && (
           <span className="flex items-center gap-1.5">
-            <Icon name="clock" className="size-4" /> ca. {minutes} min
+            <Icon name="clock" className="size-4 text-brand" /> ca. {minutes} min
           </span>
         )}
         <span className="flex items-center gap-1.5">
-          <Icon name="calendar" className="size-4" /> Tag {index + 1} von {plan.days.length}
+          <Icon name="calendar" className="size-4 text-brand" /> Tag {index + 1} von {plan.days.length}
         </span>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         {shown.length === 0 ? (
-          <span className="rounded-full bg-brand-fg/10 px-3 py-1 text-sm">Noch keine Übungen – du kannst beim Training welche hinzufügen</span>
+          <span className="rounded-full bg-white/10 px-3 py-1 text-sm backdrop-blur-sm">Noch keine Übungen – du kannst beim Training welche hinzufügen</span>
         ) : (
           shown.map((e, i) => (
-            <span key={i} className="rounded-full bg-brand-fg/10 px-3 py-1 text-sm font-medium ring-1 ring-brand-fg/15 ring-inset">
+            <span key={i} className="rounded-full bg-white/10 px-3 py-1 text-sm font-medium ring-1 ring-white/15 backdrop-blur-sm ring-inset">
               {e.name}
             </span>
           ))
         )}
         {day.exercises.length > shown.length && (
-          <span className="rounded-full px-3 py-1 text-sm text-brand-fg/70">+{day.exercises.length - shown.length} weitere</span>
+          <span className="rounded-full px-3 py-1 text-sm text-white/70">+{day.exercises.length - shown.length} weitere</span>
         )}
       </div>
 
       <button
         onClick={onStart}
-        className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-brand-fg px-6 py-3.5 font-semibold text-surface shadow-sm transition hover:bg-brand-fg/85 focus:ring-2 focus:ring-brand-fg/40 focus:ring-offset-2 focus:ring-offset-brand focus:outline-none"
+        className="mt-8 inline-flex items-center gap-2 rounded-control bg-brand px-6 py-3.5 font-semibold text-brand-fg shadow-sm transition hover:bg-brand-hover focus:ring-2 focus:ring-brand/50 focus:ring-offset-2 focus:ring-offset-brand-fg focus:outline-none"
       >
         <Icon name="play" className="size-4" /> Training starten
       </button>
@@ -326,7 +337,7 @@ function QuickAction({
   return (
     <button
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-surface-2"
+      className="group flex w-full items-center gap-3 rounded-tile p-2 text-left transition hover:bg-surface-2"
     >
       <IconTile name={icon} tone={tone} />
       <span className="min-w-0 flex-1">
@@ -370,7 +381,7 @@ function PlanCard({
             <div
               key={i}
               className={cx(
-                "flex flex-col rounded-xl p-4 ring-1 ring-inset",
+                "flex flex-col rounded-tile p-4 ring-1 ring-inset",
                 isNext ? "bg-brand/30 ring-brand-ink/30" : "bg-surface-2 ring-line",
               )}
             >
@@ -618,7 +629,7 @@ function WorkoutLogger({ plan, day, onDone }: { plan: AssignedPlan | null; day: 
           ) : (
             <div className="mt-4 space-y-2">
               {ex.sets.map((set, si) => (
-                <div key={si} className="grid grid-cols-[2.5rem_1fr_1fr_2.5rem] items-center gap-2">
+                <div key={si} className="grid grid-cols-[2.5rem_1fr_1fr_2.25rem] items-center gap-2">
                   <span className="text-sm text-fg-subtle">#{si + 1}</span>
                   <UnitInput
                     aria-label={`Satz ${si + 1} Wiederholungen`}
@@ -688,17 +699,26 @@ function WorkoutLogger({ plan, day, onDone }: { plan: AssignedPlan | null; day: 
 }
 
 function CheckButton({ done, onClick, label }: { done: boolean; onClick: () => void; label: string }) {
+  // Sichtbar 28 px, Klickfläche 36 px. Auch unerledigt mit grauem Haken, damit klar ist: hier abhaken.
   return (
     <button
       type="button"
       aria-label={label}
       aria-pressed={done}
+      title={done ? `${label} – zum Zurücksetzen tippen` : `Als erledigt abhaken`}
       onClick={onClick}
-      className={`grid size-10 shrink-0 place-items-center rounded-lg text-lg transition ${
-        done ? "bg-brand text-brand-fg" : "ring-1 ring-line-strong hover:bg-surface-2"
-      }`}
+      className="group grid size-9 shrink-0 place-items-center justify-self-end"
     >
-      {done ? "✓" : ""}
+      <span
+        className={cx(
+          "grid size-7 place-items-center rounded-inner transition",
+          done
+            ? "bg-brand text-brand-fg motion-safe:animate-pop"
+            : "bg-surface-3 text-fg-subtle group-hover:bg-line-strong group-hover:text-fg",
+        )}
+      >
+        <Icon name="check" className="size-4" />
+      </span>
     </button>
   );
 }

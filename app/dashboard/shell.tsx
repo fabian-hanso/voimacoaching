@@ -74,7 +74,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             */}
             {me.loading ? (
               <span aria-hidden="true" className="flex items-center gap-2.5">
-                <span className="size-8 animate-pulse rounded-lg bg-surface-3" />
+                <span className="size-8 animate-pulse rounded-inner bg-surface-3" />
                 <span className="h-4 w-28 animate-pulse rounded bg-surface-3" />
               </span>
             ) : me.data?.studio ? (
@@ -159,7 +159,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
         aria-haspopup="menu"
         aria-expanded={open}
         className={cx(
-          "flex items-center gap-3 rounded-full p-1 transition hover:bg-surface-3 sm:rounded-xl sm:pr-3",
+          "flex items-center gap-3 rounded-full p-1 transition hover:bg-surface-3 sm:rounded-control sm:pr-3",
           open && "bg-surface-3",
         )}
       >
@@ -181,7 +181,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-64 origin-top-right overflow-hidden rounded-2xl bg-surface shadow-xl ring-1 ring-line-strong"
+          className="absolute right-0 z-50 mt-2 w-64 origin-top-right overflow-hidden rounded-box bg-surface shadow-xl ring-1 ring-line-strong"
         >
           <div className="flex items-center gap-3 border-b border-line p-4">
             <Avatar name={user.name} src={user.avatarUrl} size="xl" />
@@ -197,7 +197,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
                 href="/dashboard/studio"
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
+                className="flex w-full items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
               >
                 <Icon name="building" className="size-4" />
                 {user.role === "studio" ? "Studio-Seite ansehen" : "Studio-Infos & Öffnungszeiten"}
@@ -207,7 +207,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
               href="/dashboard/einstellungen"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
+              className="flex w-full items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
             >
               <Icon name="settings" className="size-4" />
               Einstellungen
@@ -220,7 +220,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
                   setOpen(false);
                   wish.open("Avatar-Menü");
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
+                className="flex w-full items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
               >
                 <Icon name="lightbulb" className="size-4" />
                 Feature wünschen
@@ -230,7 +230,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
               type="button"
               role="menuitem"
               onClick={onLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-fg transition hover:bg-danger/10 hover:text-danger"
+              className="flex w-full items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium text-fg transition hover:bg-danger/10 hover:text-danger"
             >
               <Icon name="logout" className="size-4" />
               Abmelden
