@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { supabaseAdmin } from "../supabase/admin";
 import { ApiError, badRequest, conflict, forbidden, notFound } from "./http";
 import { addNotice, avatarUrl, iso, must, ownStudio, studioOf, type ProfileRow } from "./repo";
-import { addDays, computeSlots, DAY, MIN, TZ, toMin, weekday, zonedToUtc } from "../booking-time";
+import { addDays, computeSlots, DAY, MIN, TZ, toMin, weekday, zonedDate, zonedToUtc } from "../booking-time";
 import { courseSessionsForWeek } from "./courses";
 import type { AppointmentRequestInput, BookingSettingsInput, StudioAppointmentInput } from "../schemas";
 import type {
@@ -532,6 +532,50 @@ export async function getSchedule(user: ProfileRow, weekOf: string | null): Prom
 }
 
 /**
+ * Studio: Trainer, die in einem Zeitraum arbeiten (Verfügbarkeit laut Buchungseinstellungen) UND frei sind
+ * (kein aktiver Termin, kein Kurs). Grundlage für die Trainer-Auswahl beim Eintragen.
+ */
+export async function availableTrainers(
+  user: ProfileRow,
+  startsAt: string,
+  durationMin: number,
+): Promise<{ id: string; name: string; avatarUrl: string | null }[]> {
+  if (user.role !== "studio") throw forbidden("Nur für Studios.");
+  const { trainers } = await calendarScope(user);
+  if (!trainers.length) return [];
+  const startMs = Date.parse(startsAt);
+  const endMs = startMs + durationMin * MIN;
+  // Uhrzeit in Europe/Berlin – so sind auch die Verfügbarkeitsfenster gespeichert
+  const date = zonedDate(startMs);
+  const day = weekday(date);
+  const fromMin = Math.round((startMs - zonedToUtc(date, 0)) / MIN);
+  const toMinute = fromMin + durationMin;
+
+  const profiles = await loadProfiles(trainers.map((t) => t.id));
+  const working = trainers.filter((t) => {
+    const s = profiles.get(t.id);
+    return !!s?.enabled && s.windows.some((w) => w.day === day && toMin(w.start) <= fromMin && toMinute <= toMin(w.end));
+  });
+  if (!working.length) return [];
+
+  const busy = new Set<string>();
+  const appts = must(
+    await sb()
+      .from("appointments")
+      .select("trainer_id")
+      .in("trainer_id", working.map((t) => t.id))
+      .in("status", ACTIVE)
+      .lt("starts_at", new Date(endMs).toISOString())
+      .gt("ends_at", new Date(startMs).toISOString()),
+  ) as { trainer_id: string }[];
+  appts.forEach((a) => busy.add(a.trainer_id));
+  for (const c of await courseSessionsForWeek(user, mondayOf(date))) {
+    if (c.trainerId && Date.parse(c.startsAt) < endMs && Date.parse(c.endsAt) > startMs) busy.add(c.trainerId);
+  }
+  return working.filter((t) => !busy.has(t.id)).map((t) => ({ id: t.id, name: t.name, avatarUrl: avatarUrl(t.avatar_path) }));
+}
+
+/**
  * Termin direkt eintragen (sofort bestätigt):
  * Studio bei einem seiner Trainer, Trainer bei sich selbst – für erlaubte Kunden oder Gäste ohne Konto.
  */
@@ -544,6 +588,13 @@ export async function createDirectAppointment(user: ProfileRow, input: StudioApp
   if (input.clientId && !client) throw badRequest(user.role === "studio" ? "Dieser Kunde gehört nicht zu deinem Studio." : "Dieser Kunde gehört nicht zu dir oder deinem Studio.");
   const startMs = Date.parse(input.startsAt);
   if (startMs <= Date.now()) throw badRequest("Der Termin muss in der Zukunft liegen.");
+  // Studio: nur bei Trainern, die zu der Zeit arbeiten und frei sind
+  if (user.role === "studio") {
+    const free = await availableTrainers(user, input.startsAt, input.durationMin);
+    if (!free.some((t) => t.id === trainer.id)) {
+      throw conflict(`${trainer.name} ist zu dieser Zeit nicht verfügbar oder schon belegt. Wähle eine andere Zeit oder einen anderen Trainer.`);
+    }
+  }
 
   const row = must(
     await sb()

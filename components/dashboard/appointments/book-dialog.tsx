@@ -10,7 +10,7 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
-import { api } from "@/lib/client/api";
+import { api, useApi } from "@/lib/client/api";
 import { errorMessage } from "@/lib/client/errors";
 import type { AppointmentCategory, Schedule } from "@/lib/types";
 import { useState } from "react";
@@ -94,6 +94,53 @@ export function BookDialog({
   );
   const isStudio = role === "studio";
 
+  // Studio: nur Trainer, die zur gewählten Zeit arbeiten und frei sind (prüft der Server, auch für andere Wochen)
+  const startDate =
+    date && startTime ? new Date(`${date}T${startTime}:00`) : null;
+  const startIso =
+    startDate && !Number.isNaN(startDate.getTime())
+      ? startDate.toISOString()
+      : null;
+  const available = useApi<{ trainers: { id: string; name: string }[] }>(
+    isStudio && startIso
+      ? `/schedule/available?startsAt=${encodeURIComponent(startIso)}&durationMin=${details.durationMin}`
+      : null,
+  );
+  const freeTrainers = available.data?.trainers;
+
+  /** Trainer wechseln, ohne dass sich Art und Dauer des Termins ändern (sonst würde die Verfügbarkeit springen). */
+  function switchTrainer(id: string) {
+    const next = schedule.trainers.find((t) => t.id === id);
+    const same =
+      next?.services.find(
+        (s) =>
+          s.durationMin === details.durationMin &&
+          s.category === details.category,
+      ) ?? next?.services.find((s) => s.durationMin === details.durationMin);
+    setTrainerId(id);
+    if (same) setServiceId(same.id);
+    else {
+      setServiceId("custom");
+      setCustom({
+        category: details.category,
+        title: details.title,
+        durationMin: details.durationMin,
+      });
+    }
+  }
+
+  // Neue Liste freier Trainer: ist der gewählte nicht dabei, den ersten freien übernehmen (Anpassung beim Rendern)
+  const [syncedList, setSyncedList] = useState<typeof freeTrainers>(undefined);
+  if (isStudio && freeTrainers && freeTrainers !== syncedList) {
+    setSyncedList(freeTrainers);
+    if (freeTrainers.length && !freeTrainers.some((t) => t.id === trainerId))
+      switchTrainer(freeTrainers[0].id);
+  }
+  const noneFree = isStudio && !!freeTrainers && freeTrainers.length === 0;
+  const trainerOk =
+    !isStudio ||
+    (!!freeTrainers && freeTrainers.some((t) => t.id === trainerId));
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
@@ -133,22 +180,30 @@ export function BookDialog({
 
         <div className={cx("grid gap-4", isStudio && "sm:grid-cols-2")}>
           {isStudio && (
-            <Field label="Trainer">
+            <Field
+              label="Trainer"
+              hint={
+                noneFree
+                  ? undefined
+                  : "Nur Trainer, die zu dieser Zeit arbeiten und frei sind."
+              }
+            >
               <Select
-                value={trainerId}
-                onChange={(e) => {
-                  setTrainerId(e.target.value);
-                  setServiceId(
-                    schedule.trainers.find((t) => t.id === e.target.value)
-                      ?.services[0]?.id ?? "custom",
-                  );
-                }}
+                value={trainerOk ? trainerId : ""}
+                disabled={!freeTrainers || noneFree}
+                onChange={(e) => switchTrainer(e.target.value)}
               >
-                {schedule.trainers.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
+                {!freeTrainers ? (
+                  <option value="">Verfügbarkeit wird geprüft …</option>
+                ) : noneFree ? (
+                  <option value="">Kein Trainer frei</option>
+                ) : (
+                  freeTrainers.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))
+                )}
               </Select>
             </Field>
           )}
@@ -293,18 +348,29 @@ export function BookDialog({
             />
           </Field>
         </div>
-        <p
-          className={cx(
-            "text-xs",
-            outside ? "text-accent-soft" : "text-fg-muted",
-          )}
-        >
-          {isStudio ? trainer?.name : "Du"}{" "}
-          {windows.length
-            ? `${isStudio ? "ist" : "bist"} an diesem Tag verfügbar: ${windows.map((w) => `${w.start}–${w.end}`).join(", ")} Uhr.`
-            : `${isStudio ? "hat" : "hast"} an diesem Tag keine Zeiten hinterlegt.`}
-          {outside && " Der Termin liegt außerhalb – eintragen geht trotzdem."}
-        </p>
+        {isStudio ? (
+          noneFree && (
+            <Alert>
+              Zu dieser Zeit arbeitet kein Trainer oder alle sind schon belegt.
+              Wähle eine andere Uhrzeit, einen anderen Tag oder eine kürzere
+              Dauer.
+            </Alert>
+          )
+        ) : (
+          <p
+            className={cx(
+              "text-xs",
+              outside ? "text-accent-soft" : "text-fg-muted",
+            )}
+          >
+            Du{" "}
+            {windows.length
+              ? `bist an diesem Tag verfügbar: ${windows.map((w) => `${w.start}–${w.end}`).join(", ")} Uhr.`
+              : "hast an diesem Tag keine Zeiten hinterlegt."}
+            {outside &&
+              " Der Termin liegt außerhalb – eintragen geht trotzdem."}
+          </p>
+        )}
 
         <div>
           <p className="text-sm font-medium text-fg">Kontakt</p>
@@ -361,7 +427,7 @@ export function BookDialog({
           >
             Abbrechen
           </Button>
-          <Button type="submit" disabled={pending || !trainerId}>
+          <Button type="submit" disabled={pending || !trainerId || !trainerOk}>
             {pending ? "Wird eingetragen …" : "Termin eintragen"}
           </Button>
         </div>

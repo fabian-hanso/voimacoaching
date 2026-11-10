@@ -62,7 +62,7 @@ export async function requireUser(req: NextRequest, role?: ProfileRow["role"]): 
   const profile = await getProfile(userId);
   if (!profile) throw unauthorized("Kein Profil zu diesem Konto gefunden.");
   if (role && profile.role !== role) {
-    throw forbidden(role === "trainer" ? "Nur für Trainer." : "Nur für Kunden.");
+    throw forbidden({ trainer: "Nur für Trainer.", client: "Nur für Kunden.", studio: "Nur für Studios." }[role]);
   }
   // Trainer/Studios ohne Testphase oder aktives Abo: alles außer Profil, Konto und Abrechnung gesperrt (402)
   await assertBillingAccess(profile, req.nextUrl.pathname);

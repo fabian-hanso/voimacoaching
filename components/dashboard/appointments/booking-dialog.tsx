@@ -83,7 +83,8 @@ export function BookingDialog({
         onClose={onClose}
       />
 
-      {providers.length > 1 && (
+      {/* Immer sichtbar – bei nur einem Trainer ist er vorausgewählt */}
+      {providers.length > 0 && (
         <>
           <p className="mt-6 text-sm font-semibold text-fg">Trainer</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">

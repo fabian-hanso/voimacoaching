@@ -37,6 +37,7 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 - **Impressum, Datenschutzerklärung und AGB** (`/impressum`, `/datenschutz`, `/agb`), im Footer verlinkt. Die Texte sind Muster, zugeschnitten auf die eingesetzten Dienste (Vercel, Supabase, Stripe), die Kleinunternehmerregelung und Geschäftskunden. Alle persönlichen Angaben stehen gesammelt in `lib/legal.ts`. Solange `draft: true` gesetzt ist, zeigen die Seiten einen Entwurfs-Hinweis und werden nicht indexiert. Preise und Testphase in den AGB kommen aus `lib/billing-plans.ts`. Die Links stehen auch unter Login, Registrierung und Passwort-Seiten sowie am Ende jeder Dashboard-Seite (Impressum muss von überall erreichbar sein).
 
+- **Studio: nur verfügbare und freie Trainer wählbar.** Beim Eintragen eines Termins (Dialog, Aufziehen im Kalender) zeigt die Trainer-Auswahl nur Trainer, die zu Datum, Uhrzeit und Dauer laut ihren Zeiten arbeiten und weder einen Termin (auch keine offene Anfrage) noch einen Kurs haben. Das gilt auch für andere Wochen als die angezeigte, weil der Server prüft. Ändert man die Zeit, aktualisiert sich die Liste. Ist der gewählte Trainer nicht mehr frei, wird der erste freie gewählt; Art und Dauer des Termins bleiben dabei gleich. Ist niemand frei, erscheint ein Hinweis, und Eintragen ist nicht möglich. Der Server lehnt Studio-Einträge bei nicht verfügbaren Trainern ebenfalls ab (409). Trainer dürfen bei sich weiterhin auch außerhalb ihrer Zeiten eintragen. API: `GET /schedule/available`.
 - **Termine verschieben** (Trainer bei sich, Studios bei ihren Trainern):
   - Im Wochenkalender einen Termin mit der Maus auf einen anderen Tag oder eine andere Uhrzeit ziehen oder an der Unterkante die Dauer ändern (15-Minuten-Raster, max. 4 h). Beim Loslassen fragt ein Dialog mit „Bisher → Neu“ nach, bevor etwas passiert.
   - Im Termin-Detail gibt es zusätzlich **„Verschieben“** mit Datum, Uhrzeit und Dauer, auch für Handy und Tastatur.
@@ -47,6 +48,8 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Geändert
 
+- Termin anfragen (Kunden): Die Trainer-Auswahl ist jetzt auch sichtbar, wenn das Studio nur einen Trainer hat. Er ist dann vorausgewählt.
+- Fehlermeldung bei falscher Rolle: Studio-Endpunkte melden jetzt „Nur für Studios.“ statt „Nur für Kunden.“.
 - **Passwortfelder mit Augen-Symbol** zum Ein- und Ausblenden der Eingabe: Login, Registrierung, neues Passwort und Passwort ändern in den Einstellungen (Komponente `PasswordInput`).
 - **Markenname zentral:** „Voima Coach“ steht nur noch in `lib/site.ts` (`SITE_NAME`). Seitentitel nutzen eine Vorlage im Root-Layout („Anmelden · Voima Coach“). Stripe-Produktnamen werden beim Einrichten aus dem Namen zusammengesetzt. Die Stellen außerhalb des Codes (Logo, Supabase-E-Mails, Stripe-Dashboard) sind dort aufgelistet.
 - Preise der Landingpage kommen aus derselben Quelle wie die Abrechnung (`lib/billing-plans.ts`). Die Jahressumme zeigt jetzt den echten Jahrespreis (z. B. 190 € statt 192 €).
