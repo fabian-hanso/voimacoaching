@@ -58,18 +58,6 @@
   --radius-inner: 0.5rem; /* Elemente in Controls: Segmente, Kalenderblöcke, kleine Zeilen */
   /* rounded-full nur für Badges, Filter-Chips, Avatare – nie für CTAs */
 
-  /* Animation: sanftes Schweben (Hero-Karten) */
-  --animate-float: float 6s ease-in-out infinite;
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
   /* Animationen: Feature-Tour (/features) */
   --animate-msg-in: msg-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-typing: typing 1s ease-in-out infinite;
@@ -204,3 +192,33 @@ html {
   }
 }
 
+/*
+ * Hero-Karten: Einschweben (einmalig) und sanftes Schweben (dauerhaft).
+ * Als @utility statt Theme-Token, damit --rise-delay / --float-delay am Element ausgewertet werden
+ * (ein separates animation-delay würde von motion-safe:animate-* überschrieben).
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@utility animate-rise-in {
+  animation: rise-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) var(--rise-delay, 0s) both;
+}
+@utility animate-float {
+  animation: float 6s ease-in-out var(--float-delay, 0s) infinite;
+}

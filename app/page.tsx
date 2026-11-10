@@ -4,7 +4,10 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import heroImage from "@/public/images/hero-training.jpg";
 import { Pricing } from "@/components/landing/pricing";
-import { GuestActions, HeaderActions } from "@/components/landing/header-actions";
+import {
+  GuestActions,
+  HeaderActions,
+} from "@/components/landing/header-actions";
 import { Icon, type IconName } from "@/components/icons";
 import { Logo } from "@/components/ui";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -29,7 +32,11 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
   },
-  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 /** FAQ – sichtbar auf der Seite und als strukturierte Daten (FAQPage) für Suchmaschinen. */
@@ -76,7 +83,12 @@ function StructuredData() {
         operatingSystem: "Web",
         inLanguage: "de",
         description: DESCRIPTION,
-        offers: { "@type": "AggregateOffer", priceCurrency: "EUR", lowPrice: "0", highPrice: "299" },
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "EUR",
+          lowPrice: "0",
+          highPrice: "299",
+        },
       },
       {
         "@type": "FAQPage",
@@ -92,7 +104,9 @@ function StructuredData() {
     <script
       type="application/ld+json"
       // `<` maskieren, damit kein Inhalt aus dem Script-Tag ausbrechen kann
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
     />
   );
 }
@@ -106,7 +120,10 @@ const container = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
 function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <p className="inline-flex items-center gap-2 text-sm font-semibold text-fg-muted">
-      <span className="size-1.5 rounded-full bg-brand ring-2 ring-brand/40" aria-hidden="true" />
+      <span
+        className="size-1.5 rounded-full bg-brand ring-2 ring-brand/40"
+        aria-hidden="true"
+      />
       {children}
     </p>
   );
@@ -127,7 +144,15 @@ function CheckList({ items }: { items: ReactNode[] }) {
   );
 }
 
-function PrimaryCta({ href, children, dark }: { href: string; children: ReactNode; dark?: boolean }) {
+function PrimaryCta({
+  href,
+  children,
+  dark,
+}: {
+  href: string;
+  children: ReactNode;
+  dark?: boolean;
+}) {
   return (
     <Link
       href={href}
@@ -156,9 +181,16 @@ function Header() {
     <header className="sticky top-0 z-40 w-full border-b border-line bg-bg/80 backdrop-blur-sm">
       <div className={`${container} flex h-16 items-center justify-between`}>
         <Logo />
-        <nav aria-label="Hauptnavigation" className="hidden items-center gap-8 text-sm font-semibold text-fg md:flex">
+        <nav
+          aria-label="Hauptnavigation"
+          className="hidden items-center gap-8 text-sm font-semibold text-fg md:flex"
+        >
           {NAV.map(([href, label]) => (
-            <a key={href} href={href} className="text-fg-muted transition hover:text-fg">
+            <a
+              key={href}
+              href={href}
+              className="text-fg-muted transition hover:text-fg"
+            >
               {label}
             </a>
           ))}
@@ -217,8 +249,9 @@ function Hero() {
             <span className="block">und Fitnessstudios.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/75">
-            Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und Kundenverwaltung – an einem Ort. Deine Kunden
-            trainieren nach Plan, du siehst jeden Fortschritt.
+            Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und
+            Kundenverwaltung – an einem Ort. Deine Kunden trainieren nach Plan,
+            du siehst jeden Fortschritt.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <PrimaryCta href="/registrieren?rolle=trainer" dark>
@@ -232,7 +265,9 @@ function Hero() {
               Studio anlegen
             </Link>
           </div>
-          <p className="mt-6 text-xs text-white/55">7 Tage kostenlos · Keine Kreditkarte nötig · Für Kunden immer gratis</p>
+          <p className="mt-6 text-xs text-white/55">
+            7 Tage kostenlos · Keine Kreditkarte nötig · Für Kunden immer gratis
+          </p>
         </div>
 
         <HeroCards />
@@ -244,49 +279,71 @@ function Hero() {
 /** Schwebende App-Karten (nur Desktop, dekorativ). */
 function HeroCards() {
   return (
-    <div aria-hidden="true" className="relative hidden h-[30rem] opacity-85 lg:block">
-      <div className="absolute top-2 right-0 w-72 rounded-box bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
-        <p className="text-xs font-medium text-fg-muted">Plan · Kraft 3× pro Woche</p>
-        <p className="mt-1 text-lg font-bold">Unterkörper A</p>
-        <ul className="mt-4 space-y-2.5 text-sm">
-          {[
-            ["Kniebeuge", "4 × 6 · 85 kg", true],
-            ["Rumän. Kreuzheben", "3 × 8 · 70 kg", false],
-            ["Laufband", "20 min · Zone 2", false],
-          ].map(([name, detail, note]) => (
-            <li key={String(name)} className="flex items-center gap-2">
-              <span className="font-medium">{name}</span>
-              {note && <span className="size-1.5 rounded-full bg-accent" />}
-              <span className="ml-auto font-mono text-[10px] text-fg-subtle">{detail}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 rounded-tile bg-brand/30 px-3 py-2 text-xs text-fg">
-          <span className="font-semibold">Hinweis:</span> Knie aktiv nach außen drücken.
-        </p>
-      </div>
-
-      <div className="absolute top-52 left-0 w-64 rounded-box bg-brand p-4 text-brand-fg shadow-2xl motion-safe:animate-float [animation-delay:-2s]">
-        <p className="flex items-center gap-2 text-xs font-semibold">
-          <Icon name="calendar" className="size-3.5" /> Neue Terminanfrage
-        </p>
-        <p className="mt-1.5 font-bold">Personal Training</p>
-        <p className="text-sm text-brand-fg/75">Do · 18:00 – 19:00 · Lena M.</p>
-        <div className="mt-3 flex gap-2 text-xs font-semibold">
-          <span className="rounded-inner bg-brand-fg px-2.5 py-1.5 text-white">Bestätigen</span>
-          <span className="rounded-inner bg-brand-fg/10 px-2.5 py-1.5">Ablehnen</span>
+    <div
+      aria-hidden="true"
+      className="relative hidden h-[30rem] opacity-85 lg:block"
+    >
+      <div className="absolute top-2 right-0 w-72 [--rise-delay:200ms] motion-safe:animate-rise-in">
+        <div className="rounded-box bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
+          <p className="text-xs font-medium text-fg-muted">
+            Plan · Kraft 3× pro Woche
+          </p>
+          <p className="mt-1 text-lg font-bold">Unterkörper A</p>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            {[
+              ["Kniebeuge", "4 × 6 · 85 kg", true],
+              ["Rumän. Kreuzheben", "3 × 8 · 70 kg", false],
+              ["Laufband", "20 min · Zone 2", false],
+            ].map(([name, detail, note]) => (
+              <li key={String(name)} className="flex items-center gap-2">
+                <span className="font-medium">{name}</span>
+                {note && <span className="size-1.5 rounded-full bg-accent" />}
+                <span className="ml-auto font-mono text-[10px] text-fg-subtle">
+                  {detail}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 rounded-tile bg-brand/30 px-3 py-2 text-xs text-fg">
+            <span className="font-semibold">Hinweis:</span> Knie aktiv nach
+            außen drücken.
+          </p>
         </div>
       </div>
 
-      <div className="absolute right-6 bottom-0 w-72 rounded-box bg-white/95 p-4 text-brand-fg shadow-2xl backdrop-blur motion-safe:animate-float [animation-delay:-4s]">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-bold">Yoga Flow</p>
-          <span className="text-xs text-fg-muted">Mi · 19:00</span>
+      <div className="absolute top-52 left-0 w-64 [--rise-delay:700ms] motion-safe:animate-rise-in">
+        <div className="rounded-box bg-brand p-4 text-brand-fg shadow-2xl [--float-delay:-2s] motion-safe:animate-float">
+          <p className="flex items-center gap-2 text-xs font-semibold">
+            <Icon name="calendar" className="size-3.5" /> Neue Terminanfrage
+          </p>
+          <p className="mt-1.5 font-bold">Personal Training</p>
+          <p className="text-sm text-brand-fg/75">
+            Do · 18:00 – 19:00 · Lena M.
+          </p>
+          <div className="mt-3 flex gap-2 text-xs font-semibold">
+            <span className="rounded-inner bg-brand-fg px-2.5 py-1.5 text-white">
+              Bestätigen
+            </span>
+            <span className="rounded-inner bg-brand-fg/10 px-2.5 py-1.5">
+              Ablehnen
+            </span>
+          </div>
         </div>
-        <div className="mt-2.5 h-2 rounded-full bg-surface-3">
-          <div className="h-2 w-4/5 rounded-full bg-brand-fg" />
+      </div>
+
+      <div className="absolute right-6 bottom-0 w-72 [--rise-delay:1500ms] motion-safe:animate-rise-in">
+        <div className="rounded-box bg-white/95 p-4 text-brand-fg shadow-2xl backdrop-blur [--float-delay:-4s] motion-safe:animate-float">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold">Yoga Flow</p>
+            <span className="text-xs text-fg-muted">Mi · 19:00</span>
+          </div>
+          <div className="mt-2.5 h-2 rounded-full bg-surface-3">
+            <div className="h-2 w-4/5 rounded-full bg-brand-fg" />
+          </div>
+          <p className="mt-1.5 text-xs text-fg-muted">
+            12 von 15 Plätzen gebucht
+          </p>
         </div>
-        <p className="mt-1.5 text-xs text-fg-muted">12 von 15 Plätzen gebucht</p>
       </div>
     </div>
   );
@@ -298,7 +355,12 @@ function HeroCards() {
 
 type Audience = "Trainer" | "Studios";
 
-const FEATURES: { icon: IconName; title: string; text: string; for: Audience[] }[] = [
+const FEATURES: {
+  icon: IconName;
+  title: string;
+  text: string;
+  for: Audience[];
+}[] = [
   {
     icon: "dumbbell",
     title: "Trainingspläne",
@@ -339,27 +401,41 @@ const FEATURES: { icon: IconName; title: string; text: string; for: Audience[] }
 
 function FeatureOverview() {
   return (
-    <section id="funktionen" aria-labelledby="funktionen-titel" className="scroll-mt-20 py-20 sm:py-28">
+    <section
+      id="funktionen"
+      aria-labelledby="funktionen-titel"
+      className="scroll-mt-20 py-20 sm:py-28"
+    >
       <div className={container}>
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="max-w-2xl">
           <Eyebrow>Funktionen</Eyebrow>
-          <h2 id="funktionen-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+          <h2
+            id="funktionen-titel"
+            className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl"
+          >
             Alles fürs Coaching. Nichts, was du nicht brauchst.
           </h2>
           <p className="mt-4 text-lg text-fg-muted">
-            Pläne, Termine, Kurse und Kommunikation in einer Plattform – statt Excel, WhatsApp und Terminkalender.
+            Pläne, Termine, Kurse und Kommunikation in einer Plattform – statt
+            Excel, WhatsApp und Terminkalender.
           </p>
         </div>
         <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
-            <li key={f.title} className="rounded-box bg-surface p-6 ring-1 ring-line">
+            <li
+              key={f.title}
+              className="rounded-box bg-surface p-6 ring-1 ring-line"
+            >
               <div className="flex items-start justify-between gap-3">
                 <span className="grid size-10 place-items-center rounded-control bg-brand text-brand-fg">
                   <Icon name={f.icon} />
                 </span>
                 <span className="flex gap-1.5">
                   {f.for.map((a) => (
-                    <span key={a} className="rounded-full bg-surface-3 px-2 py-0.5 text-[11px] font-semibold text-fg-muted">
+                    <span
+                      key={a}
+                      className="rounded-full bg-surface-3 px-2 py-0.5 text-[11px] font-semibold text-fg-muted"
+                    >
                       {a}
                     </span>
                   ))}
@@ -381,16 +457,23 @@ function FeatureOverview() {
 
 function ForTrainers() {
   return (
-    <section id="trainer" aria-labelledby="trainer-titel" className="scroll-mt-20 bg-surface-2 py-20 sm:py-28">
+    <section
+      id="trainer"
+      aria-labelledby="trainer-titel"
+      className="scroll-mt-20 bg-surface-2 py-20 sm:py-28"
+    >
       <div className={`${container} grid items-center gap-14 lg:grid-cols-2`}>
         <div>
           <Eyebrow>Für Personal Trainer</Eyebrow>
-          <h2 id="trainer-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+          <h2
+            id="trainer-titel"
+            className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl"
+          >
             Mehr Zeit fürs Coaching, weniger für Verwaltung.
           </h2>
           <p className="mt-4 text-lg text-fg-muted">
-            Erstelle Trainingspläne in Minuten, gib jeder Übung eine Anleitung mit und sieh, wie deine Kunden trainieren –
-            online wie vor Ort.
+            Erstelle Trainingspläne in Minuten, gib jeder Übung eine Anleitung
+            mit und sieh, wie deine Kunden trainieren – online wie vor Ort.
           </p>
           <CheckList
             items={[
@@ -402,12 +485,17 @@ function ForTrainers() {
             ]}
           />
           <div className="mt-10 flex">
-            <PrimaryCta href="/registrieren?rolle=trainer">Trainer-Konto erstellen</PrimaryCta>
+            <PrimaryCta href="/registrieren?rolle=trainer">
+              Trainer-Konto erstellen
+            </PrimaryCta>
           </div>
         </div>
 
         {/* Plan-Editor (Illustration) */}
-        <div aria-hidden="true" className="rounded-box bg-surface p-6 shadow-xl ring-1 ring-line-strong">
+        <div
+          aria-hidden="true"
+          className="rounded-box bg-surface p-6 shadow-xl ring-1 ring-line-strong"
+        >
           <div className="flex items-center justify-between gap-3">
             <p className="font-semibold text-fg">Oberkörper · Tag A</p>
             <span className="inline-flex items-center gap-1.5 rounded-control bg-surface-3 px-3 py-1.5 text-xs font-semibold text-fg">
@@ -416,19 +504,31 @@ function ForTrainers() {
           </div>
           <div className="mt-5 space-y-3">
             {[
-              ["Bankdrücken", "4 × 8 · 60 kg", "Schulterblätter zusammen, Füße fest am Boden."],
+              [
+                "Bankdrücken",
+                "4 × 8 · 60 kg",
+                "Schulterblätter zusammen, Füße fest am Boden.",
+              ],
               ["Klimmzüge", "3 × 6", null],
               ["Schulterdrücken", "3 × 10 · 14 kg", null],
             ].map(([name, detail, note]) => (
-              <div key={name} className="rounded-tile bg-surface-2 p-3 ring-1 ring-line">
+              <div
+                key={name}
+                className="rounded-tile bg-surface-2 p-3 ring-1 ring-line"
+              >
                 <div className="flex items-center gap-2 text-sm">
                   <span className="font-medium text-fg">{name}</span>
                   <Icon name="info" className="size-4 text-fg-subtle" />
-                  <span className="ml-auto font-mono text-xs text-fg-muted">{detail}</span>
+                  <span className="ml-auto font-mono text-xs text-fg-muted">
+                    {detail}
+                  </span>
                 </div>
                 {note && (
                   <p className="mt-2 rounded-inner bg-surface px-2.5 py-1.5 text-xs text-fg-muted ring-1 ring-line">
-                    <span className="font-semibold text-fg">Hinweis für den Kunden:</span> {note}
+                    <span className="font-semibold text-fg">
+                      Hinweis für den Kunden:
+                    </span>{" "}
+                    {note}
                   </p>
                 )}
               </div>
@@ -450,7 +550,11 @@ function ForTrainers() {
 
 function ForStudios() {
   return (
-    <section id="studios" aria-labelledby="studios-titel" className="scroll-mt-20 py-20 sm:py-28">
+    <section
+      id="studios"
+      aria-labelledby="studios-titel"
+      className="scroll-mt-20 py-20 sm:py-28"
+    >
       <div className={`${container} grid items-center gap-14 lg:grid-cols-2`}>
         {/* Studio-Dashboard (Illustration) */}
         <div aria-hidden="true" className="order-last space-y-4 lg:order-first">
@@ -469,14 +573,18 @@ function ForStudios() {
                   <div className="flex items-baseline justify-between text-sm">
                     <span className="font-medium text-fg">{name}</span>
                     <span className="text-xs text-fg-muted">
-                      {booked === cap ? "ausgebucht" : `${booked}/${cap} Plätze`}
+                      {booked === cap
+                        ? "ausgebucht"
+                        : `${booked}/${cap} Plätze`}
                     </span>
                   </div>
                   <p className="text-xs text-fg-subtle">{when}</p>
                   <div className="mt-1.5 h-1.5 rounded-full bg-surface-3">
                     <div
                       className={`h-1.5 rounded-full ${booked === cap ? "bg-fg" : "bg-brand-fg/70"}`}
-                      style={{ width: `${((booked as number) / (cap as number)) * 100}%` }}
+                      style={{
+                        width: `${((booked as number) / (cap as number)) * 100}%`,
+                      }}
                     />
                   </div>
                 </li>
@@ -489,19 +597,24 @@ function ForStudios() {
             </span>
             <div>
               <p className="font-bold">Mitglieds-Code für die Rezeption</p>
-              <p className="text-sm text-brand-fg/75">Scannen, registrieren, Kurse buchen.</p>
+              <p className="text-sm text-brand-fg/75">
+                Scannen, registrieren, Kurse buchen.
+              </p>
             </div>
           </div>
         </div>
 
         <div>
           <Eyebrow>Für Fitnessstudios</Eyebrow>
-          <h2 id="studios-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+          <h2
+            id="studios-titel"
+            className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl"
+          >
             Ein Dashboard für Team, Kunden und Kurse.
           </h2>
           <p className="mt-4 text-lg text-fg-muted">
-            Behalte alle Trainer und Mitglieder im Blick, organisiere Kurse ohne Überbuchung und präsentiere dein Studio
-            mit eigener Seite und Logo.
+            Behalte alle Trainer und Mitglieder im Blick, organisiere Kurse ohne
+            Überbuchung und präsentiere dein Studio mit eigener Seite und Logo.
           </p>
           <CheckList
             items={[
@@ -513,7 +626,9 @@ function ForStudios() {
             ]}
           />
           <div className="mt-10 flex">
-            <PrimaryCta href="/registrieren?rolle=studio">Studio anlegen</PrimaryCta>
+            <PrimaryCta href="/registrieren?rolle=studio">
+              Studio anlegen
+            </PrimaryCta>
           </div>
         </div>
       </div>
@@ -532,18 +647,22 @@ function ForClients() {
         <div className="grid gap-8 rounded-box bg-brand-fg p-8 text-white sm:p-10 lg:grid-cols-[1fr_1.3fr] lg:items-center">
           <div>
             <p className="text-sm font-semibold text-brand">Für deine Kunden</p>
-            <h2 id="kunden-titel" className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+            <h2
+              id="kunden-titel"
+              className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl"
+            >
               Kostenlos und per Einladung startklar.
             </h2>
             <p className="mt-3 text-white/70">
-              Deine Kunden brauchen kein Abo und keine Installation. Mit deinem Einladungscode sind sie in einer Minute
-              verbunden.
+              Deine Kunden brauchen kein Abo und keine Installation. Mit deinem
+              Einladungscode sind sie in einer Minute verbunden.
             </p>
             <Link
               href="/registrieren?rolle=kunde"
               className="mt-6 inline-flex items-center gap-2 rounded-control text-sm font-semibold text-brand hover:underline"
             >
-              Einladung erhalten? Hier beitreten <Icon name="arrow" className="size-4" />
+              Einladung erhalten? Hier beitreten{" "}
+              <Icon name="arrow" className="size-4" />
             </Link>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -555,7 +674,10 @@ function ForClients() {
                 ["chart", "Bestwerte, Streak und Körpermaße"],
               ] as [IconName, string][]
             ).map(([icon, text]) => (
-              <li key={text} className="flex items-center gap-3 rounded-tile bg-white/5 p-4 text-sm ring-1 ring-white/10">
+              <li
+                key={text}
+                className="flex items-center gap-3 rounded-tile bg-white/5 p-4 text-sm ring-1 ring-white/10"
+              >
                 <Icon name={icon} className="size-5 shrink-0 text-brand" />
                 {text}
               </li>
@@ -573,25 +695,39 @@ function ForClients() {
 
 function Faq() {
   return (
-    <section id="faq" aria-labelledby="faq-titel" className="scroll-mt-20 py-20 sm:py-28">
+    <section
+      id="faq"
+      aria-labelledby="faq-titel"
+      className="scroll-mt-20 py-20 sm:py-28"
+    >
       <div className={`${container} grid gap-12 lg:grid-cols-[1fr_1.6fr]`}>
         <div>
           <Eyebrow>FAQ</Eyebrow>
-          <h2 id="faq-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+          <h2
+            id="faq-titel"
+            className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl"
+          >
             Häufige Fragen
           </h2>
-          <p className="mt-4 text-fg-muted">Kurz beantwortet – für Personal Trainer und Studios.</p>
+          <p className="mt-4 text-fg-muted">
+            Kurz beantwortet – für Personal Trainer und Studios.
+          </p>
         </div>
         <div className="divide-y divide-line rounded-box bg-surface ring-1 ring-line">
           {FAQ.map((f) => (
-            <details key={f.q} className="group px-6 py-5 [&_summary::-webkit-details-marker]:hidden">
+            <details
+              key={f.q}
+              className="group px-6 py-5 [&_summary::-webkit-details-marker]:hidden"
+            >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-fg">
                 <h3>{f.q}</h3>
                 <span className="grid size-8 shrink-0 place-items-center rounded-control bg-surface-2 text-fg-muted transition group-open:rotate-45">
                   <Icon name="plus" className="size-4" />
                 </span>
               </summary>
-              <p className="mt-3 pr-12 text-sm leading-6 text-fg-muted">{f.a}</p>
+              <p className="mt-3 pr-12 text-sm leading-6 text-fg-muted">
+                {f.a}
+              </p>
             </details>
           ))}
         </div>
@@ -608,12 +744,15 @@ function FinalCta() {
   return (
     <section className="pb-20 sm:pb-28">
       <div className={container}>
-        <div className="relative isolate overflow-hidden rounded-box bg-brand px-6 py-14 text-center sm:px-12">
-          <h2 className="text-3xl font-extrabold tracking-tight text-brand-fg sm:text-4xl">Bereit, dein Coaching zu vereinfachen?</h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-fg/75">
-            7 Tage kostenlos testen, ohne Kreditkarte. Deine Kunden nutzen Voima Coach gratis.
+        <div className="relative isolate overflow-hidden rounded-box bg-brand px-6 py-14 sm:px-12">
+          <h2 className="text-3xl font-extrabold tracking-tight text-brand-fg sm:text-4xl">
+            Bereit, dein Coaching zu vereinfachen?
+          </h2>
+          <p className="mt-4 max-w-xl text-lg text-brand-fg/75">
+            7 Tage kostenlos testen, ohne Kreditkarte. Deine Kunden nutzen Voima
+            Coach gratis.
           </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/registrieren?rolle=trainer"
               className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand-fg px-6 font-semibold text-white transition hover:bg-black"
@@ -666,12 +805,14 @@ function Footer() {
   ];
   return (
     <footer className="border-t border-line">
-      <div className={`${container} grid gap-12 py-16 md:grid-cols-[2fr_1fr_1fr_1fr]`}>
+      <div
+        className={`${container} grid gap-12 py-16 md:grid-cols-[2fr_1fr_1fr_1fr]`}
+      >
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm text-fg-muted">
-            Software für Personal Trainer und Fitnessstudios: Trainingspläne, Termine, Kurse und Kundenbetreuung an einem
-            Ort.
+            Software für Personal Trainer und Fitnessstudios: Trainingspläne,
+            Termine, Kurse und Kundenbetreuung an einem Ort.
           </p>
         </div>
         {columns.map((c) => (

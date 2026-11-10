@@ -67,7 +67,7 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 - Startseite (Kunde): Die Kachel „Nächstes Training“ hat ein Gym-Foto als Hintergrund unter einer dunklen Ebene, weißen Text und einen Lime-Button (`public/images/dashboard-training.jpg`, zugeschnitten und auf 1600 px verkleinert).
 - Training: Die Abhak-Buttons für Sätze und Ausdauer-Einheiten sind kleiner und zeigen schon vor dem Abhaken einen grauen Haken. Erledigt werden sie Lime.
 - **Landingpage neu aufgebaut** – fokussiert auf Personal Trainer und Studios, kurz und übersichtlich:
-  - Hero mit klarer Zielgruppe („Die Software für Personal Trainer und Fitnessstudios“), CTAs „Als Trainer starten“ und „Studio anlegen“, Karten mit Plan, Terminanfrage und Kursbelegung. Testzeitraum überall **7 statt 14 Tage**.
+  - Hero mit klarer Zielgruppe („Die Software für Personal Trainer und Fitnessstudios“), CTAs „Als Trainer starten“ und „Studio anlegen“, Karten mit Plan, Terminanfrage und Kursbelegung, die beim Laden nacheinander von unten einschweben (nicht bei „Bewegung reduzieren“). Testzeitraum überall **7 statt 14 Tage**.
   - Neue Abschnitte: Funktionen auf einen Blick (mit Kennzeichnung Trainer/Studios), Für Trainer, Für Studios, ein kompakter Kunden-Block (kostenlos, per Einladung), Preise, FAQ und Abschluss-CTA.
   - Entfernt: erfundene Zahlen, Bewertungen und Stimmen sowie Aussagen, die das Produkt nicht erfüllt (800 Übungen mit Videos, Fortschrittsfotos, iOS-/Android-Apps, Check-in-Fragebögen).
   - Footer verlinkt echte Ziele statt Platzhaltern. Impressum, Datenschutz und AGB fehlen noch als Seiten.
