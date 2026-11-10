@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiClientError, useApi } from "@/lib/client/api";
 import { errorMessage } from "@/lib/client/errors";
-import { supabaseBrowser } from "@/lib/supabase/browser";
+import { isRealtimeDown, subscribeWithAuth } from "@/lib/client/realtime";
 import { Alert, Avatar, cx, Spinner } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import type { Conversation, ConversationPartner, MeResponse, Message } from "@/lib/types";
@@ -61,38 +61,35 @@ export function MessagingProvider({ me, children }: { me: MeResponse; children: 
 
   // Realtime: Änderungen an eigenen Nachrichten (RLS sorgt dafür, dass nur eigene ankommen)
   useEffect(() => {
-    const supabase = supabaseBrowser();
     const column = me.user.role === "trainer" ? "trainer_id" : "client_id";
-    const channel = supabase
-      .channel(`messages:${me.user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages", filter: `${column}=eq.${me.user.id}` },
-        (payload) => {
-          if (payload.eventType !== "INSERT" && payload.eventType !== "UPDATE") return;
-          const event: MessageEvent = { type: payload.eventType, message: toMessage(payload.new) };
-          listeners.current.forEach((l) => l(event));
-          reload();
-        },
-      )
-      .subscribe((status, err) => {
-        if (status === "SUBSCRIBED") {
-          if (!liveRef.current) {
-            // Wieder verbunden → alles nachholen, was in der Zwischenzeit passiert ist
+    // subscribeWithAuth: erst Login-Token an Realtime, dann abonnieren (sonst kommen nach einem Reload keine Ereignisse an)
+    return subscribeWithAuth((supabase) =>
+      supabase
+        .channel(`messages:${me.user.id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "messages", filter: `${column}=eq.${me.user.id}` },
+          (payload) => {
+            if (payload.eventType !== "INSERT" && payload.eventType !== "UPDATE") return;
+            const event: MessageEvent = { type: payload.eventType, message: toMessage(payload.new) };
+            listeners.current.forEach((l) => l(event));
+            reload();
+          },
+        )
+        .subscribe((status, err) => {
+          if (status === "SUBSCRIBED") {
+            // (Wieder) verbunden → nachholen, was beim Verbindungsaufbau bzw. in der Zwischenzeit kam
             reload();
             setResync((n) => n + 1);
+            liveRef.current = true;
+            setLive(true);
+          } else if (isRealtimeDown(status)) {
+            if (err) console.warn("[realtime]", status, err.message);
+            liveRef.current = false;
+            setLive(false); // supabase-js versucht automatisch neu zu verbinden
           }
-          liveRef.current = true;
-          setLive(true);
-        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-          if (err) console.warn("[realtime]", status, err.message);
-          liveRef.current = false;
-          setLive(false); // supabase-js versucht automatisch neu zu verbinden
-        }
-      });
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+        }),
+    );
   }, [me.user.id, me.user.role, reload]);
 
   // Fallback: solange Realtime gestört ist, alle 20 s nachladen

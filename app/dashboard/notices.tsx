@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, fmtDate, useApi } from "@/lib/client/api";
 import { cx } from "@/components/ui";
+import { isRealtimeDown, subscribeWithAuth } from "@/lib/client/realtime";
 import { Icon, IconTile } from "@/components/icons";
 import type { Notice, NoticeKind } from "@/lib/types";
 
@@ -65,29 +66,59 @@ const TEXT: Record<NoticeKind, (name: string, detail: string) => { title: string
   }),
 };
 
+/** Nachladen, solange Realtime gestört ist */
 const POLL_MS = 60_000;
+/** Sicherheitsnetz auch bei „verbunden“ (Realtime meldet fehlende Rechte nicht als Fehler) */
+const SAFETY_POLL_MS = 5 * 60_000;
 
 /**
- * Glocke im Header: Benachrichtigungen (Terminanfragen, beendete Verbindungen, …) als Dropdown.
+ * Glocke im Header: Benachrichtigungen (Terminanfragen, Kommentare, beendete Verbindungen, …) als Dropdown.
  * Der Zähler zeigt ungelesene; beim Öffnen werden alle als gelesen markiert. Wegklicken entfernt sie.
- * Neue Hinweise werden minütlich und beim Zurückkehren in den Tab geladen.
+ * Neue Hinweise kommen per Realtime sofort an; ist die Verbindung gestört, wird minütlich nachgeladen.
  */
-export function NotificationsButton() {
+export function NotificationsButton({ userId }: { userId: string }) {
   const { data, reload } = useApi<{ notices: Notice[] }>("/notices");
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [readLocally, setReadLocally] = useState(false);
+  const [live, setLive] = useState(true);
   const root = useRef<HTMLDivElement>(null);
 
+  // Realtime: eigene Hinweise (RLS-Policy „Nutzer lesen eigene Hinweise“) – neu, gelesen, entfernt
+  useEffect(() => {
+    // Mehrere Ereignisse kurz hintereinander (z. B. „alle gelesen“) → nur einmal nachladen
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reloadSoon = () => {
+      clearTimeout(timer);
+      timer = setTimeout(reload, 250);
+    };
+    const unsubscribe = subscribeWithAuth((supabase) =>
+      supabase
+        .channel(`notices:${userId}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "notices", filter: `user_id=eq.${userId}` }, reloadSoon)
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            setLive(true);
+            reloadSoon(); // nachholen, was beim Verbindungsaufbau kam
+          } else if (isRealtimeDown(status)) setLive(false);
+        }),
+    );
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
+  }, [userId, reload]);
+
+  // Zurück im Tab → nachladen; zusätzlich minütlich (Realtime gestört) bzw. alle 5 Minuten (Sicherheitsnetz)
   useEffect(() => {
     const onVisible = () => document.visibilityState === "visible" && reload();
-    const timer = setInterval(() => document.visibilityState === "visible" && reload(), POLL_MS);
     document.addEventListener("visibilitychange", onVisible);
+    const timer = setInterval(() => document.visibilityState === "visible" && reload(), live ? SAFETY_POLL_MS : POLL_MS);
     return () => {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [reload]);
+  }, [reload, live]);
 
   useEffect(() => {
     if (!open) return;

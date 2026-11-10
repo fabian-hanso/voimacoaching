@@ -37,23 +37,6 @@ export function FeatureWishProvider({ enabled, children }: { enabled: boolean; c
   );
 }
 
-/** Glühbirnen-Icon für den Header. */
-export function FeatureWishButton() {
-  const wish = useFeatureWish();
-  if (!wish) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => wish.open()}
-      aria-label="Feature wünschen"
-      title="Feature wünschen"
-      className="grid size-10 place-items-center rounded-full text-fg-muted transition hover:bg-surface-3 hover:text-fg"
-    >
-      <Icon name="lightbulb" className="size-5" />
-    </button>
-  );
-}
-
 /** Dezenter Kontext-Link, z. B. unter dem Plan-Editor: „Fehlt dir hier etwas?“ */
 export function WishLink({ context, className }: { context: string; className?: string }) {
   const wish = useFeatureWish();

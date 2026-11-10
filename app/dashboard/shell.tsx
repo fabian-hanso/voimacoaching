@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import logoMark from "@/public/logo.jpg";
 import { hardNavigate } from "@/lib/client/navigation";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useApi } from "@/lib/client/api";
@@ -10,7 +12,7 @@ import { Icon } from "@/components/icons";
 import type { MeResponse } from "@/lib/types";
 import { MessagesButton, MessagingProvider } from "./messaging";
 import { NotificationsButton } from "./notices";
-import { FeatureWishButton, FeatureWishProvider, useFeatureWish } from "./feature-wish";
+import { FeatureWishProvider, useFeatureWish } from "./feature-wish";
 import { StudioLogo } from "@/components/studio-logo";
 
 /**
@@ -65,23 +67,32 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <Logo href="/dashboard" />
-            {/* Studio-Branding: Trainer & Kunden sehen das Logo ihres Studios */}
-            {me.data?.studio && (
+            {/*
+              Branding: Im Studio-Kontext (Inhaber, Trainer und Kunden des Studios) erscheint nur das Studio –
+              Voima Coach steht dann als „powered by“ im Profilmenü. Während des Ladens ein neutraler
+              Platzhalter, damit nicht kurz das falsche Logo aufblitzt.
+            */}
+            {me.loading ? (
+              <span aria-hidden="true" className="flex items-center gap-2.5">
+                <span className="size-8 animate-pulse rounded-lg bg-surface-3" />
+                <span className="h-4 w-28 animate-pulse rounded bg-surface-3" />
+              </span>
+            ) : me.data?.studio ? (
               <Link
-                href="/dashboard/studio"
-                title={`${me.data.studio.name} – Infos & Öffnungszeiten`}
-                className="flex min-w-0 items-center gap-2 border-l border-line pl-3 text-fg-muted transition hover:text-fg"
+                href="/dashboard"
+                title={`${me.data.studio.name} – zum Dashboard`}
+                className="flex min-w-0 items-center gap-2.5 font-bold tracking-tight text-fg"
               >
-                <StudioLogo name={me.data.studio.name} logoUrl={me.data.studio.logoUrl} size="sm" />
-                <span className="hidden truncate text-sm font-semibold sm:inline">{me.data.studio.name}</span>
+                <StudioLogo name={me.data.studio.name} logoUrl={me.data.studio.logoUrl} className="size-8" />
+                <span className="truncate">{me.data.studio.name}</span>
               </Link>
+            ) : (
+              <Logo href="/dashboard" />
             )}
           </div>
           {me.data && (
             <div className="flex items-center gap-2">
-              <FeatureWishButton />
-              <NotificationsButton />
+              <NotificationsButton userId={me.data.user.id} />
               {me.data.user.role !== "studio" && <MessagesButton />}
               <UserMenu me={me.data} onLogout={logout} />
             </div>
@@ -148,7 +159,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
         aria-haspopup="menu"
         aria-expanded={open}
         className={cx(
-          "flex items-center gap-3 rounded-full py-1 pr-3 pl-1 transition hover:bg-surface-3 sm:rounded-xl",
+          "flex items-center gap-3 rounded-full p-1 transition hover:bg-surface-3 sm:rounded-xl sm:pr-3",
           open && "bg-surface-3",
         )}
       >
@@ -161,7 +172,7 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
-          className={cx("size-4 text-fg-subtle transition", open && "rotate-180")}
+          className={cx("hidden size-4 text-fg-subtle transition sm:block", open && "rotate-180")}
         >
           <path fillRule="evenodd" d="M5.2 7.2a.75.75 0 0 1 1.06 0L10 10.94l3.74-3.74a.75.75 0 1 1 1.06 1.06l-4.27 4.27a.75.75 0 0 1-1.06 0L5.2 8.26a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
         </svg>
@@ -181,6 +192,17 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
             </div>
           </div>
           <div className="space-y-0.5 p-2">
+            {me.studio && (
+              <Link
+                href="/dashboard/studio"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-fg transition hover:bg-surface-3 hover:text-fg"
+              >
+                <Icon name="building" className="size-4" />
+                {user.role === "studio" ? "Studio-Seite ansehen" : "Studio-Infos & Öffnungszeiten"}
+              </Link>
+            )}
             <Link
               href="/dashboard/einstellungen"
               role="menuitem"
@@ -214,6 +236,13 @@ function UserMenu({ me, onLogout }: { me: MeResponse; onLogout: () => void }) {
               Abmelden
             </button>
           </div>
+          {me.studio && (
+            <p className="flex items-center justify-center gap-1.5 border-t border-line px-4 py-2.5 text-[11px] text-fg-subtle">
+              powered by
+              <Image src={logoMark} alt="" width={16} height={16} className="size-4 rounded" />
+              <span className="font-semibold text-fg-muted">Voima Coach</span>
+            </p>
+          )}
         </div>
       )}
     </div>

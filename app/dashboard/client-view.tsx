@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { api, ApiClientError, fmtDate, useApi } from "@/lib/client/api";
 import { errorMessage } from "@/lib/client/errors";
@@ -200,10 +201,15 @@ function CoachCard({ trainer, studio }: { trainer: NonNullable<MeResponse["train
           <p className="text-xs font-medium text-fg-muted">Dein Coach</p>
           <p className="truncate font-semibold text-fg">{trainer.name}</p>
           {studio && (
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-fg-muted">
+            <Link
+              href="/dashboard/studio"
+              title={`${studio.name} – Infos & Öffnungszeiten`}
+              className="mt-1 flex items-center gap-1.5 text-xs text-fg-muted transition hover:text-brand-ink"
+            >
               <StudioLogo name={studio.name} logoUrl={studio.logoUrl} size="sm" className="size-5" />
               <span className="truncate">{studio.name}</span>
-            </p>
+              <Icon name="arrow" className="size-3 shrink-0" />
+            </Link>
           )}
         </div>
         <button
