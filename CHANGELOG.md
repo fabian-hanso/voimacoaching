@@ -48,6 +48,12 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
   - Kunden können ihr Studio in den Einstellungen verlassen – künftige Kurs- und Terminbuchungen werden storniert,
     ein Coach aus diesem Studio wird ebenfalls getrennt.
   - Studio erhält Benachrichtigungen, wenn Mitglieder beitreten oder austreten.
+- **Kunden aus dem Studio entfernen** (z. B. nach Vertragsende): neuer Button in der Studio-Kundenliste mit
+  Bestätigung („entfernen“). Ein Coach aus dem Studio wird getrennt (Planzuweisungen aufgehoben), ein eigenständiger
+  Coach bleibt. Künftige Kurs- und Terminbuchungen im Studio werden storniert; Kunde und ggf. Coach bekommen einen Hinweis.
+
+- **Demo-Daten:** `npm run seed:mock` legt 2 Studios, 4 Trainer und 5 Kunden mit Plänen, Workouts, Chats,
+  Terminen und Kursen an (wiederholbar; Zugänge in `mock.md`).
 
 ### Geändert
 
@@ -57,6 +63,7 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Datenbank
 
+- `20261124000000_member_removed.sql` – Hinweisarten `member_removed` und `studio_client_removed`. Eingespielt.
 - `20261123000000_studio_members.sql` – Mitglieds-Code `studios.join_code`, `profiles.studio_member`,
   Beitritt `join_studio_as_client`, Registrierung mit `studio_join_code`, Mitgliedschaft bleibt bei eigenständigen
   Coaches erhalten, Hinweisarten `member_joined`/`member_left`. Eingespielt.

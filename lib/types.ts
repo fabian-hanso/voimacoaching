@@ -257,7 +257,9 @@ export type NoticeKind =
   | "course_assigned"
   | "course_cancelled"
   | "member_joined"
-  | "member_left";
+  | "member_left"
+  | "member_removed"
+  | "studio_client_removed";
 
 /** Hinweis, dass eine Coach–Kunde-Verbindung geendet hat (30 Tage sichtbar, wegklickbar). */
 export interface Notice {

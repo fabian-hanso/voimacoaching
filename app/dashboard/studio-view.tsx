@@ -579,6 +579,7 @@ const needsCoach = (c: StudioClient) => !c.trainerId && !c.studioMember;
 function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void }) {
   const [filter, setFilter] = useState<"all" | "members" | "unassigned">(data.clients.some(needsCoach) ? "unassigned" : "all");
   const [pending, setPending] = useState<{ client: StudioClient; trainerId: string } | null>(null);
+  const [removing, setRemoving] = useState<StudioClient | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!data.clients.length) {
@@ -669,6 +670,15 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
                     ))}
                   </Select>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setRemoving(c)}
+                    aria-label={`${c.name} aus dem Studio entfernen`}
+                    title="Aus dem Studio entfernen"
+                    className="grid size-9 shrink-0 place-items-center rounded-lg text-fg-subtle ring-1 ring-line transition hover:bg-danger/10 hover:text-danger"
+                  >
+                    <Icon name="x" className="size-4" />
+                  </button>
                 </div>
               </div>
             );
@@ -676,6 +686,31 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
         </Card>
       )}
 
+      {removing && (
+        <ConfirmDialog
+          title={`${removing.name} aus dem Studio entfernen?`}
+          description={
+            <ul className="list-disc space-y-1 pl-5">
+              {removing.trainerId && removing.trainerName && (
+                <li>
+                  Die Verbindung zu {removing.trainerName} endet, Planzuweisungen werden aufgehoben.
+                </li>
+              )}
+              <li>Künftige Kursanmeldungen und Termine bei euren Trainern werden storniert.</li>
+              <li>Workouts und Messwerte bleiben bei {removing.name}; {removing.name} bekommt einen Hinweis.</li>
+              <li>Mit dem Mitglieds-Code kann {removing.name} später wieder beitreten – erneuere ihn bei Bedarf.</li>
+            </ul>
+          }
+          confirmWord="entfernen"
+          confirmLabel="Aus dem Studio entfernen"
+          onConfirm={async () => {
+            await api(`/studio/clients/${removing.id}`, { method: "DELETE" });
+            setRemoving(null);
+            reload();
+          }}
+          onClose={() => setRemoving(null)}
+        />
+      )}
       {pending && (
         <AssignDialog
           client={pending.client}

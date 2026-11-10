@@ -329,6 +329,7 @@ allen Trainern des Studios. `user.studioMember` zeigt die Mitgliedschaft an.
 | GET | `/studio-join/:code` | öffentlich | `{ valid, studioName }` |
 | POST | `/me/studio` | Kunde | `{ code }` Mitglieds-Code → Mitglied (Trainer: Studio-Einladungscode wie bisher). 400 bei ungültigem Code, bereits Mitglied oder Coach aus anderem Studio |
 | DELETE | `/me/studio` | Kunde | Studio verlassen (Coach aus diesem Studio wird ebenfalls getrennt) |
+| DELETE | `/studio/clients/:clientId` | Studio | Kunde/Mitglied aus dem Studio entfernen → 204. Coach aus dem Studio wird getrennt, künftige Kurs-/Terminbuchungen storniert |
 | POST | `/studio/join-code` | Studio | Neuen Mitglieds-Code erzeugen → `{ joinCode }` |
 
 Registrierung: Metadatum `studio_join_code` (zusätzlich zu `invite_code`). `GET /studio` liefert `studio.joinCode` und je Kunde `studioMember`.

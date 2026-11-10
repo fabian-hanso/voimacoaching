@@ -1223,6 +1223,27 @@ export async function leaveStudio(client: ProfileRow): Promise<ProfileRow> {
   return (await getProfile(client.id))!;
 }
 
+/**
+ * Studio entfernt einen Kunden bzw. ein Mitglied (z. B. nach Vertragsende).
+ * - Ein Coach aus diesem Studio wird getrennt (Planzuweisungen aufgehoben) und informiert.
+ * - Ein eigenständiger Coach außerhalb des Studios bleibt.
+ * - Künftige Kursanmeldungen und Termine bei Studio-Trainern storniert die Datenbank (Trigger).
+ */
+export async function removeStudioClient(owner: ProfileRow, clientId: string) {
+  const studio = await ownStudio(owner);
+  const client = await getProfile(clientId).catch(() => null);
+  if (!client || client.role !== "client" || client.studio_id !== studio.id) throw notFound("Dieser Kunde gehört nicht zu deinem Studio.");
+  if (client.trainer_id) {
+    const coach = await getProfile(client.trainer_id);
+    if (coach?.studio_id === studio.id) {
+      await removeClient(coach.id, client.id);
+      await addNotice(coach.id, "studio_client_removed", studio.name, client.name);
+    }
+  }
+  must(await sb().from("profiles").update({ studio_id: null, studio_member: false }).eq("id", client.id).eq("studio_id", studio.id));
+  await addNotice(client.id, "member_removed", studio.name);
+}
+
 /** Neuen Mitglieds-Code erzeugen – der alte (z. B. auf einem Aushang) funktioniert danach nicht mehr. */
 export async function renewJoinCode(owner: ProfileRow): Promise<{ joinCode: string }> {
   const studio = await ownStudio(owner);

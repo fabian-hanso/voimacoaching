@@ -22,6 +22,14 @@ const TEXT: Record<NoticeKind, (name: string, detail: string) => { title: string
   appointment_comment: (n, d) => ({ title: `${n} hat einen Termin kommentiert`, text: d }),
   course_assigned: (n, d) => ({ title: `Du leitest jetzt den Kurs „${d}“`, text: `${n} hat dich als Trainer eingetragen. Die Termine stehen in deinem Kalender.` }),
   member_joined: (n) => ({ title: `${n} ist deinem Studio beigetreten`, text: "Neues Mitglied über deinen Mitglieds-Code – ohne festen Coach. Kurse und 1:1-Termine sind direkt buchbar." }),
+  member_removed: (n) => ({
+    title: `${n} hat deine Mitgliedschaft beendet`,
+    text: "Deine Workouts und Messwerte bleiben erhalten. Künftige Kurs- und Terminbuchungen im Studio wurden storniert.",
+  }),
+  studio_client_removed: (n, d) => ({
+    title: `${n} hat ${d} aus dem Studio entfernt`,
+    text: "Damit endet auch eure Verbindung; Planzuweisungen wurden aufgehoben und künftige Termine storniert.",
+  }),
   member_left: (n) => ({ title: `${n} hat dein Studio verlassen`, text: "Künftige Kursanmeldungen und Termine bei deinen Trainern wurden storniert." }),
   course_cancelled: (n, d) => ({ title: "Ein Kurstermin entfällt", text: `${d} – ${n} hat den Termin abgesagt. Deine Anmeldung wurde storniert.` }),
   client_deleted: (n) => ({
