@@ -1,102 +1,167 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense, type ReactNode } from "react";
 import heroImage from "@/public/images/hero-training.jpg";
 import { Pricing } from "@/components/landing/pricing";
-import { Logo } from "@/components/ui";
-import { Suspense, type ReactNode } from "react";
 import { GuestActions, HeaderActions } from "@/components/landing/header-actions";
+import { Icon, type IconName } from "@/components/icons";
+import { Logo } from "@/components/ui";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 /* ------------------------------------------------------------------ */
-/* Icons                                                               */
+/* SEO                                                                 */
 /* ------------------------------------------------------------------ */
 
-function Icon({ children, className = "size-5" }: { children: ReactNode; className?: string }) {
+const TITLE = "Software für Personal Trainer & Fitnessstudios | Voima Coach";
+const DESCRIPTION =
+  "Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und Kundenverwaltung in einer App. Für Personal Trainer und Studios – 7 Tage kostenlos testen, Kunden nutzen Voima gratis.";
+
+export const metadata: Metadata = {
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "de_DE",
+    url: "/",
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+};
+
+/** FAQ – sichtbar auf der Seite und als strukturierte Daten (FAQPage) für Suchmaschinen. */
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: "Was kostet Voima Coach für meine Kunden?",
+    a: "Nichts. Kunden nutzen Voima Coach dauerhaft kostenlos. Bezahlt wird nur vom Trainer oder Studio – je nach Paket.",
+  },
+  {
+    q: "Wie kommen meine Kunden in die App?",
+    a: "Du schickst deinen Kunden einen Einladungscode. Damit registrieren sie sich und sind direkt mit dir verbunden. Studios hängen zusätzlich einen Mitglieds-QR-Code an der Rezeption aus.",
+  },
+  {
+    q: "Brauche ich als Personal Trainer ein Studio?",
+    a: "Nein. Als selbstständiger Trainer nutzt du Voima Coach allein – mit eigenen Kunden, Plänen und Terminen. Arbeitest du in einem Studio, lädt es dich ins Team ein.",
+  },
+  {
+    q: "Was bekommt ein Fitnessstudio zusätzlich?",
+    a: "Bis zu 10 Trainer im Team, Kunden zuweisen und bei Ausfall übertragen, Kurse mit Platzkontingent, einen gemeinsamen Wochenkalender, Mitglieds-Code mit QR und eine eigene Studio-Seite mit Logo, Öffnungszeiten und Team.",
+  },
+  {
+    q: "Können Kunden Termine und Kurse selbst buchen?",
+    a: "Ja. Trainer legen Angebote und ihre Verfügbarkeit fest, Kunden fragen freie Zeiten an und der Trainer bestätigt. Kurse buchen Studio-Mitglieder direkt – überbucht wird dabei nie.",
+  },
+  {
+    q: "Brauche ich eine App aus dem App Store?",
+    a: "Nein. Voima Coach läuft im Browser auf Smartphone, Tablet und Desktop – ohne Installation.",
+  },
+  {
+    q: "Kann ich Voima Coach kostenlos testen?",
+    a: "Ja, 7 Tage lang und ohne Kreditkarte. Danach ist das Abo monatlich kündbar.",
+  },
+];
+
+function StructuredData() {
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        name: SITE_NAME,
+        url: SITE_URL,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        inLanguage: "de",
+        description: DESCRIPTION,
+        offers: { "@type": "AggregateOffer", priceCurrency: "EUR", lowPrice: "0", highPrice: "299" },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: FAQ.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      {children}
-    </svg>
+    <script
+      type="application/ld+json"
+      // `<` maskieren, damit kein Inhalt aus dem Script-Tag ausbrechen kann
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
   );
 }
 
-const icons = {
-  plan: (
-    <>
-      <rect x="4" y="3" width="16" height="18" rx="2" />
-      <path d="M8 8h8M8 12h8M8 16h5" />
-    </>
-  ),
-  chart: (
-    <>
-      <path d="M3 3v18h18" />
-      <path d="m7 15 4-4 3 3 5-6" />
-    </>
-  ),
-  users: (
-    <>
-      <circle cx="9" cy="8" r="3.5" />
-      <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
-      <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 20a6.5 6.5 0 0 0-3-5.5" />
-    </>
-  ),
-  chat: (
-    <>
-      <path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z" />
-    </>
-  ),
-  check: <path d="m5 12 5 5 9-10" />,
-  flame: (
-    <path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 0-8Z" />
-  ),
-  bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
-  calendar: (
-    <>
-      <rect x="3" y="4" width="18" height="17" rx="2" />
-      <path d="M3 9h18M8 2v4M16 2v4" />
-    </>
-  ),
-  phone: (
-    <>
-      <rect x="6" y="2" width="12" height="20" rx="2.5" />
-      <path d="M11 18h2" />
-    </>
-  ),
-  arrow: <path d="M5 12h14m-6-6 6 6-6 6" />,
-  library: (
-    <>
-      <path d="M4 19V5M8 19V5M12 19 15 5M20 19l-3-14" />
-    </>
-  ),
-  trophy: (
-    <>
-      <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" />
-      <path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" />
-    </>
-  ),
-};
+/* ------------------------------------------------------------------ */
+/* Bausteine                                                           */
+/* ------------------------------------------------------------------ */
+
+const container = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+
+function Eyebrow({ children }: { children: ReactNode }) {
+  return (
+    <p className="inline-flex items-center gap-2 text-sm font-semibold text-fg-muted">
+      <span className="size-1.5 rounded-full bg-brand ring-2 ring-brand/40" aria-hidden="true" />
+      {children}
+    </p>
+  );
+}
+
+function CheckList({ items }: { items: ReactNode[] }) {
+  return (
+    <ul className="mt-8 space-y-3 text-fg-muted">
+      {items.map((item, i) => (
+        <li key={i} className="flex gap-3">
+          <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand text-brand-fg">
+            <Icon name="check" className="size-3.5" />
+          </span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PrimaryCta({ href, children, dark }: { href: string; children: ReactNode; dark?: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={`flex h-12 items-center justify-center gap-2 rounded-control bg-brand px-6 font-semibold text-brand-fg transition hover:bg-brand-hover focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:outline-none ${dark ? "focus:ring-offset-black" : "focus:ring-offset-bg"}`}
+    >
+      {children}
+      <Icon name="arrow" className="size-4" />
+    </Link>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Header                                                              */
 /* ------------------------------------------------------------------ */
 
+const NAV = [
+  ["#trainer", "Für Trainer"],
+  ["#studios", "Für Studios"],
+  ["#funktionen", "Funktionen"],
+  ["#preise", "Preise"],
+  ["#faq", "FAQ"],
+] as const;
+
 function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-line bg-bg/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className={`${container} flex h-16 items-center justify-between`}>
         <Logo />
-        <nav className="hidden items-center gap-8 text-sm font-semibold text-fg md:flex">
-          <a href="#trainer" className="hover:text-brand-ink/80">Für Trainer</a>
-          <a href="#kunden" className="hover:text-brand-ink/80">Für Kunden</a>
-          <a href="#features" className="hover:text-brand-ink/80">Features</a>
-          <a href="#preise" className="hover:text-brand-ink/80">Preise</a>
+        <nav aria-label="Hauptnavigation" className="hidden items-center gap-8 text-sm font-semibold text-fg md:flex">
+          {NAV.map(([href, label]) => (
+            <a key={href} href={href} className="text-fg-muted transition hover:text-fg">
+              {label}
+            </a>
+          ))}
         </nav>
         <div className="flex items-center gap-3">
           {/* Angemeldet → „Zum Dashboard“ (pro Anfrage ermittelt, Rest der Seite bleibt statisch) */}
@@ -113,498 +178,421 @@ function Header() {
 /* Hero                                                                */
 /* ------------------------------------------------------------------ */
 
-function BackgroundGlow() {
+function Hero() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklab,var(--color-black)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--color-black)_5%,transparent)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-      <div className="absolute left-1/2 top-[-10rem] h-[30rem] w-[60rem] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,var(--color-brand)_0%,transparent_65%)] opacity-40 blur-3xl" />
+    <section className="relative isolate overflow-hidden bg-brand-fg">
+      <Image
+        src={heroImage}
+        alt="Gruppentraining im Studio: drei Personen machen Kniebeugen mit der Langhantel"
+        fill
+        placeholder="blur"
+        loading="eager"
+        fetchPriority="high"
+        sizes="100vw"
+        className="-z-20 object-cover object-[60%_35%]"
+      />
+      {/* Verlauf für Lesbarkeit: mobil von unten, Desktop von links (feste Farben – gehören zum Foto, nicht zum Theme) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-linear-to-t from-black/90 via-black/60 to-black/20 lg:bg-linear-to-r lg:from-black/90 lg:via-black/55 lg:to-black/5"
+      />
+
+      <div
+        className={`${container} grid min-h-[max(36rem,calc(100svh-4rem))] items-end gap-10 py-12 sm:py-16 lg:max-h-[56rem] lg:min-h-[max(40rem,calc(100svh-8rem))] lg:grid-cols-[1.15fr_1fr] lg:items-center`}
+      >
+        <div className="max-w-2xl">
+          <a
+            href="#funktionen"
+            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white ring-1 ring-white/20 backdrop-blur-md ring-inset hover:bg-white/15"
+          >
+            <span className="size-1.5 rounded-full bg-brand" />
+            Neu: Übungskatalog mit Anleitungen
+          </a>
+          <h1 className="mt-6 text-4xl leading-[1.08] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <span className="block">Die Software für</span>
+            {/* Eigener Block mit Abstand, damit der Balken die Unterlängen der Zeile darüber nicht verdeckt */}
+            <span className="my-2 inline-block max-w-full rounded-control bg-brand px-3 py-1 leading-[1.05] text-brand-fg sm:my-3">
+              Personal Trainer
+            </span>
+            <span className="block">und Fitnessstudios.</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-white/75">
+            Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und Kundenverwaltung – an einem Ort. Deine Kunden
+            trainieren nach Plan, du siehst jeden Fortschritt.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <PrimaryCta href="/registrieren?rolle=trainer" dark>
+              Als Trainer starten
+            </PrimaryCta>
+            <Link
+              href="/registrieren?rolle=studio"
+              className="flex h-12 items-center justify-center gap-2 rounded-control bg-white/10 px-6 font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition ring-inset hover:bg-white/20"
+            >
+              <Icon name="building" className="size-4" />
+              Studio anlegen
+            </Link>
+          </div>
+          <p className="mt-6 text-xs text-white/55">7 Tage kostenlos · Keine Kreditkarte nötig · Für Kunden immer gratis</p>
+        </div>
+
+        <HeroCards />
+      </div>
+    </section>
+  );
+}
+
+/** Schwebende App-Karten (nur Desktop, dekorativ). */
+function HeroCards() {
+  return (
+    <div aria-hidden="true" className="relative hidden h-[30rem] opacity-85 lg:block">
+      <div className="absolute top-2 right-0 w-72 rounded-box bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
+        <p className="text-xs font-medium text-fg-muted">Plan · Kraft 3× pro Woche</p>
+        <p className="mt-1 text-lg font-bold">Unterkörper A</p>
+        <ul className="mt-4 space-y-2.5 text-sm">
+          {[
+            ["Kniebeuge", "4 × 6 · 85 kg", true],
+            ["Rumän. Kreuzheben", "3 × 8 · 70 kg", false],
+            ["Laufband", "20 min · Zone 2", false],
+          ].map(([name, detail, note]) => (
+            <li key={String(name)} className="flex items-center gap-2">
+              <span className="font-medium">{name}</span>
+              {note && <span className="size-1.5 rounded-full bg-accent" />}
+              <span className="ml-auto font-mono text-[10px] text-fg-subtle">{detail}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 rounded-tile bg-brand/30 px-3 py-2 text-xs text-fg">
+          <span className="font-semibold">Hinweis:</span> Knie aktiv nach außen drücken.
+        </p>
+      </div>
+
+      <div className="absolute top-52 left-0 w-64 rounded-box bg-brand p-4 text-brand-fg shadow-2xl motion-safe:animate-float [animation-delay:-2s]">
+        <p className="flex items-center gap-2 text-xs font-semibold">
+          <Icon name="calendar" className="size-3.5" /> Neue Terminanfrage
+        </p>
+        <p className="mt-1.5 font-bold">Personal Training</p>
+        <p className="text-sm text-brand-fg/75">Do · 18:00 – 19:00 · Lena M.</p>
+        <div className="mt-3 flex gap-2 text-xs font-semibold">
+          <span className="rounded-inner bg-brand-fg px-2.5 py-1.5 text-white">Bestätigen</span>
+          <span className="rounded-inner bg-brand-fg/10 px-2.5 py-1.5">Ablehnen</span>
+        </div>
+      </div>
+
+      <div className="absolute right-6 bottom-0 w-72 rounded-box bg-white/95 p-4 text-brand-fg shadow-2xl backdrop-blur motion-safe:animate-float [animation-delay:-4s]">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold">Yoga Flow</p>
+          <span className="text-xs text-fg-muted">Mi · 19:00</span>
+        </div>
+        <div className="mt-2.5 h-2 rounded-full bg-surface-3">
+          <div className="h-2 w-4/5 rounded-full bg-brand-fg" />
+        </div>
+        <p className="mt-1.5 text-xs text-fg-muted">12 von 15 Plätzen gebucht</p>
+      </div>
     </div>
   );
 }
 
-function Hero() {
-  return (
-    <section className="relative isolate">
-      <BackgroundGlow />
-      {/* Volle Breite: Bild von Rand zu Rand, Inhalt bleibt auf der Seitenbreite (max-w-7xl) */}
-      <div>
-        <div className="relative isolate overflow-hidden bg-brand-fg">
-          <Image
-            src={heroImage}
-            alt="Gruppentraining: drei Personen machen Kniebeugen mit der Langhantel"
-            fill
-            placeholder="blur"
-            loading="eager"
-            fetchPriority="high"
-            sizes="100vw"
-            className="-z-20 object-cover object-[60%_35%]"
-          />
-          {/* Verlauf für Lesbarkeit: mobil von unten, Desktop von links (feste Farben – gehören zum Foto, nicht zum Theme) */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/55 to-black/15 lg:bg-gradient-to-r lg:from-black/90 lg:via-black/50 lg:to-black/0"
-          />
-          <div aria-hidden="true" className="absolute -bottom-48 -left-24 -z-10 size-[30rem] rounded-full bg-brand opacity-25 blur-3xl" />
-
-          <div className="mx-auto grid min-h-[max(36rem,calc(100svh-4rem))] max-w-7xl items-end gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:max-h-[56rem] lg:min-h-[max(40rem,calc(100svh-8rem))] lg:grid-cols-[1.1fr_1fr] lg:items-center lg:px-8">
-            {/* Text */}
-            <div className="max-w-2xl">
-              <a
-                href="#trainer"
-                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white ring-1 ring-white/20 backdrop-blur-md ring-inset hover:bg-white/15"
-              >
-                <span className="size-1.5 rounded-full bg-brand" />
-                Neu: Fortschrittsfotos & Körpermaße im Vergleich
-              </a>
-              <h1 className="mt-6 text-4xl leading-[1.08] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                <span className="block">Trainingspläne teilen.</span>
-                {/* Eigener Block mit Abstand, damit der Balken die Unterlängen der Zeile darüber nicht verdeckt */}
-                <span className="my-2 inline-block max-w-full rounded-control bg-brand px-3 py-1 leading-[1.05] text-brand-fg sm:my-3">
-                  Fortschritt sehen.
-                </span>
-                <span className="block">Gemeinsam ans Ziel.</span>
-              </h1>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-white/75">
-                Voima Coach verbindet Personal Trainer und ihre Kunden. Trainer erstellen Pläne in Minuten –
-                Kunden trainieren, loggen ihre Workouts und sehen jeden Erfolg schwarz auf weiß.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/registrieren?rolle=trainer"
-                  className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand px-6 font-semibold text-brand-fg transition hover:bg-brand-hover focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black focus:outline-none"
-                >
-                  Ich bin Trainer
-                  <Icon className="size-4">{icons.arrow}</Icon>
-                </Link>
-                <Link
-                  href="/registrieren?rolle=kunde"
-                  className="flex h-12 items-center justify-center gap-2 rounded-control bg-white/10 px-6 font-semibold text-white ring-1 ring-white/25 backdrop-blur-md transition ring-inset hover:bg-white/20"
-                >
-                  Ich trainiere mit Coach
-                </Link>
-              </div>
-
-              <p className="mt-6 text-xs text-white/55">7 Tage kostenlos · Keine Kreditkarte nötig</p>
-            </div>
-
-            {/* Schwebende App-Karten (Desktop) */}
-            <div aria-hidden="true" className="relative hidden h-[30rem] opacity-85 lg:block">
-              <div className="absolute top-4 right-0 w-72 rounded-box bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
-                <p className="text-xs font-medium text-fg-muted">Heute · von Coach Marco</p>
-                <p className="mt-1 text-lg font-bold">Unterkörper A</p>
-                <div className="mt-3 h-2 rounded-full bg-surface-3">
-                  <div className="h-2 w-1/2 rounded-full bg-brand" />
-                </div>
-                <p className="mt-1.5 text-xs text-fg-muted">2 von 4 Übungen · ca. 55 min</p>
-                <ul className="mt-4 space-y-2 text-sm">
-                  {[
-                    ["Kniebeuge", "4 × 6 @ 85 kg", true],
-                    ["Rumän. Kreuzheben", "3 × 8 @ 70 kg", true],
-                    ["Laufband", "20 min · Zone 2", false],
-                  ].map(([name, detail, done]) => (
-                    <li key={String(name)} className="flex items-center gap-2">
-                      <span
-                        className={`grid size-4 place-items-center rounded ${done ? "bg-brand-fg text-brand" : "ring-1 ring-line-strong"}`}
-                      >
-                        {done && <Icon className="size-3">{icons.check}</Icon>}
-                      </span>
-                      <span className={done ? "text-fg-muted line-through" : "font-medium"}>{name}</span>
-                      <span className="ml-auto font-mono text-[10px] text-fg-subtle">{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="absolute bottom-24 left-0 flex w-64 items-center gap-3 rounded-box bg-brand p-4 text-brand-fg shadow-2xl motion-safe:animate-float [animation-delay:-2s]">
-                <span className="grid size-10 shrink-0 place-items-center rounded-control bg-brand-fg text-brand">
-                  <Icon className="size-5">{icons.trophy}</Icon>
-                </span>
-                <div>
-                  <p className="font-bold">Neuer Bestwert!</p>
-                  <p className="text-sm text-brand-fg/75">Kniebeuge 85 kg × 6</p>
-                </div>
-              </div>
-
-              <div className="absolute right-6 bottom-2 flex w-72 items-start gap-3 rounded-box bg-white/95 p-4 text-brand-fg shadow-2xl backdrop-blur motion-safe:animate-float [animation-delay:-4s]">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-fg">M</span>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold">Coach Marco</p>
-                  <p className="mt-0.5 text-sm text-fg-muted">Stark heute! Achte beim Split Squat auf die Knieposition 💪</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ------------------------------------------------------------------ */
-/* Stats                                                               */
+/* Funktionen auf einen Blick                                          */
 /* ------------------------------------------------------------------ */
 
-function Stats() {
-  const stats = [
-    { value: "2.400+", label: "Personal Trainer" },
-    { value: "38.000", label: "aktive Kunden" },
-    { value: "1,2 Mio.", label: "geloggte Workouts" },
-    { value: "4,9 / 5", label: "Bewertung im App Store" },
-  ];
-  return (
-    <section className="border-y border-line bg-surface-2">
-      <dl className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
-        {stats.map((s) => (
-          <div key={s.label} className="text-center">
-            <dt className="text-sm text-fg-muted">{s.label}</dt>
-            <dd className="mt-1 text-3xl font-bold tracking-tight text-fg">{s.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
+type Audience = "Trainer" | "Studios";
 
-/* ------------------------------------------------------------------ */
-/* Audience sections                                                   */
-/* ------------------------------------------------------------------ */
-
-function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="text-sm font-semibold text-brand-ink">{children}</p>;
-}
-
-function CheckList({ items }: { items: string[] }) {
-  return (
-    <ul className="mt-8 space-y-3 text-fg-muted">
-      {items.map((item) => (
-        <li key={item} className="flex gap-3">
-          <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand/30 text-brand-ink">
-            <Icon className="size-3.5">{icons.check}</Icon>
-          </span>
-          {item}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function ForTrainers() {
-  return (
-    <section id="trainer" className="scroll-mt-20 py-24 sm:py-32">
-      <div className="mx-auto grid max-w-7xl items-center gap-16 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <div>
-          <Eyebrow>Für Personal Trainer</Eyebrow>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-            Mehr Kunden betreuen – ohne mehr Excel.
-          </h2>
-          <p className="mt-4 text-lg text-fg-muted">
-            Erstelle Pläne aus Vorlagen, weise sie mit einem Klick zu und behalte alle Kunden in einem Dashboard im
-            Blick. Du siehst sofort, wer dranbleibt – und wer gerade Unterstützung braucht.
-          </p>
-          <CheckList
-            items={[
-              "Plan-Builder mit über 800 Übungen inkl. Videos",
-              "Vorlagen speichern und für neue Kunden anpassen",
-              "Automatische Hinweise bei verpassten Einheiten",
-              "Check-ins, Notizen und Chat an einem Ort",
-            ]}
-          />
-          <Link
-            href="/registrieren?rolle=trainer"
-            className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-brand-ink hover:text-brand-ink/80"
-          >
-            Trainer-Account erstellen <Icon className="size-4">{icons.arrow}</Icon>
-          </Link>
-        </div>
-
-        {/* Plan builder mock */}
-        <div className="relative">
-          <div className="absolute -inset-4 -z-10 rounded-box bg-gradient-to-tr from-brand/10 to-surface" />
-          <div className="rounded-box bg-surface p-6 shadow-xl ring-1 ring-line-strong">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-fg">Plan-Builder</p>
-              <span className="rounded-inner bg-brand px-2.5 py-1 text-xs font-semibold text-brand-fg">
-                Zuweisen an 3 Kunden
-              </span>
-            </div>
-            <div className="mt-5 grid grid-cols-3 gap-3 text-center text-xs font-medium">
-              {["Mo · Push", "Mi · Pull", "Fr · Beine"].map((d, i) => (
-                <div
-                  key={d}
-                  className={`rounded-inner py-2 ${
-                    i === 0
-                      ? "bg-brand text-brand-fg"
-                      : "bg-surface-3 text-fg-muted"
-                  }`}
-                >
-                  {d}
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 divide-y divide-line">
-              {[
-                ["Bankdrücken", "4", "8", "RPE 8"],
-                ["Schulterdrücken KH", "3", "10", "RPE 7"],
-                ["Dips", "3", "AMRAP", "—"],
-                ["Seitheben", "3", "15", "RPE 9"],
-              ].map(([ex, sets, reps, int]) => (
-                <div key={ex} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 py-3 text-sm">
-                  <span className="font-medium text-fg">{ex}</span>
-                  <span className="font-mono text-xs text-fg-muted">{sets} Sätze</span>
-                  <span className="font-mono text-xs text-fg-muted">{reps} Wdh.</span>
-                  <span className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-fg-muted">
-                    {int}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="mt-4 w-full rounded-control border border-dashed border-line-strong py-2 text-sm text-fg-muted"
-            >
-              + Übung hinzufügen
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ForClients() {
-  return (
-    <section id="kunden" className="scroll-mt-20 bg-surface-2 py-24 sm:py-32">
-      <div className="mx-auto grid max-w-7xl items-center gap-16 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        {/* Phone mock */}
-        <div className="order-last flex justify-center lg:order-first">
-          <div className="w-72 rounded-[2.5rem] bg-black p-3 shadow-2xl ring-1 ring-line-strong">
-            <div className="overflow-hidden rounded-[2rem] bg-surface">
-              <div className="bg-gradient-to-br from-brand to-brand-strong px-5 pt-8 pb-6 text-brand-fg">
-                <p className="text-sm opacity-80">Guten Morgen, Lena 👋</p>
-                <p className="mt-1 text-xl font-bold">Unterkörper A</p>
-                <p className="text-sm opacity-80">von Coach Marco · ca. 55 Min.</p>
-                <div className="mt-4 h-2 rounded-full bg-fg/25">
-                  <div className="h-2 w-1/2 rounded-full bg-surface" />
-                </div>
-                <p className="mt-1 text-xs opacity-80">2 von 4 Übungen erledigt</p>
-              </div>
-              <div className="space-y-3 p-4">
-                <div className="rounded-tile p-3 ring-1 ring-line">
-                  <p className="text-xs text-fg-muted">Nächster Satz</p>
-                  <p className="font-semibold text-fg">Bulgarian Split Squat</p>
-                  <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
-                    {["Satz 1", "Satz 2", "Satz 3"].map((s, i) => (
-                      <span
-                        key={s}
-                        className={`rounded-inner py-1.5 ${
-                          i === 0
-                            ? "bg-brand font-semibold text-brand-fg"
-                            : "bg-surface-3 text-fg-muted"
-                        }`}
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 rounded-tile p-3 ring-1 ring-line">
-                  <span className="grid size-9 place-items-center rounded-control bg-warning/15 text-warning">
-                    <Icon className="size-5">{icons.trophy}</Icon>
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-fg">Neuer Bestwert!</p>
-                    <p className="text-xs text-fg-muted">Kniebeuge 85 kg × 6</p>
-                  </div>
-                </div>
-                <div className="rounded-tile bg-surface-2 p-3 text-xs text-fg-muted">
-                  <span className="font-semibold text-fg">Coach Marco:</span> Stark heute!
-                  Achte beim Split Squat auf die Knieposition 💪
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <Eyebrow>Für Kunden</Eyebrow>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-            Dein Coach in der Hosentasche.
-          </h2>
-          <p className="mt-4 text-lg text-fg-muted">
-            Kein Zettel, keine Zettelwirtschaft: Dein Trainingsplan ist immer dabei. Logge Sätze und Gewichte mit
-            einem Tipp, sieh deine Fortschritte als Grafik und bleib mit deinem Coach im direkten Austausch.
-          </p>
-          <CheckList
-            items={[
-              "Tagesplan mit Übungsvideos und Hinweisen deines Coaches",
-              "Gewichte, Wiederholungen & Körpermaße in Sekunden erfassen",
-              "Bestwerte, Streaks und Fortschrittsfotos im Überblick",
-              "Direkter Chat mit deinem Trainer – auch offline nutzbar",
-            ]}
-          />
-          <Link
-            href="/registrieren?rolle=kunde"
-            className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-brand-ink hover:text-brand-ink/80"
-          >
-            Einladung erhalten? Jetzt beitreten <Icon className="size-4">{icons.arrow}</Icon>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Features grid                                                       */
-/* ------------------------------------------------------------------ */
-
-const features = [
+const FEATURES: { icon: IconName; title: string; text: string; for: Audience[] }[] = [
   {
-    icon: icons.plan,
-    title: "Individuelle Trainingspläne",
-    text: "Baue periodisierte Pläne mit Sätzen, Wiederholungen, RPE und Pausen – oder starte aus einer Vorlage.",
+    icon: "dumbbell",
+    title: "Trainingspläne",
+    text: "Kraft- und Ausdauerübungen mit Sätzen, Wiederholungen, Gewicht und Pausen. Einmal bauen, mehreren Kunden zuweisen.",
+    for: ["Trainer"],
   },
   {
-    icon: icons.chart,
-    title: "Progress-Tracking",
-    text: "Kraftwerte, Volumen, Körpermaße und Fotos werden automatisch zu aussagekräftigen Verläufen.",
+    icon: "book",
+    title: "Übungskatalog mit Anleitungen",
+    text: "46 Übungen mit Muskeln, Ausführung Schritt für Schritt und typischen Fehlern – ergänzt um deinen persönlichen Hinweis.",
+    for: ["Trainer", "Studios"],
   },
   {
-    icon: icons.users,
-    title: "Kundenverwaltung",
-    text: "Alle Kunden, Ziele und Termine in einer Übersicht. Lade neue Kunden per Link oder QR-Code ein.",
+    icon: "chart",
+    title: "Fortschritt im Blick",
+    text: "Workouts, Bestwerte, Trainings-Streak, Volumen, Ausdauer und Körpermaße. Du siehst sofort, wer dranbleibt.",
+    for: ["Trainer"],
   },
   {
-    icon: icons.chat,
-    title: "Chat & Feedback",
-    text: "Kommentiere einzelne Workouts, schicke Formchecks per Video und motiviere zur richtigen Zeit.",
+    icon: "calendar",
+    title: "Termine & Wochenkalender",
+    text: "Angebote und Verfügbarkeit festlegen, Anfragen bestätigen, Termine auch für Gäste eintragen – ohne Doppelbuchung.",
+    for: ["Trainer", "Studios"],
   },
   {
-    icon: icons.calendar,
-    title: "Check-ins & Termine",
-    text: "Wöchentliche Check-in-Fragebögen und Terminplanung für Live-Sessions – automatisch erinnert.",
+    icon: "users",
+    title: "Kurse & Mitglieder",
+    text: "Kurse mit festen Plätzen pro Termin, Anmeldung durch Mitglieder und ein Mitglieds-QR-Code für die Rezeption.",
+    for: ["Studios"],
   },
   {
-    icon: icons.phone,
-    title: "Apps für iOS & Android",
-    text: "Kunden trainieren mit der nativen App, Trainer planen bequem am Desktop. Alles synchron.",
+    icon: "chat",
+    title: "Chat & Benachrichtigungen",
+    text: "Direkter Chat mit jedem Kunden in Echtzeit. Neue Anfragen, Absagen und Kommentare landen sofort in der Glocke.",
+    for: ["Trainer", "Studios"],
   },
 ];
 
-function Features() {
+function FeatureOverview() {
   return (
-    <section id="features" className="scroll-mt-20 py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="funktionen" aria-labelledby="funktionen-titel" className="scroll-mt-20 py-20 sm:py-28">
+      <div className={container}>
         <div className="mx-auto max-w-2xl text-center">
-          <Eyebrow>Alles, was ihr braucht</Eyebrow>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-            Eine Plattform. Zwei Perspektiven.
+          <Eyebrow>Funktionen</Eyebrow>
+          <h2 id="funktionen-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+            Alles fürs Coaching. Nichts, was du nicht brauchst.
           </h2>
           <p className="mt-4 text-lg text-fg-muted">
-            Trainer planen und analysieren, Kunden trainieren und wachsen – mit denselben Daten, in Echtzeit.
+            Pläne, Termine, Kurse und Kommunikation in einer Plattform – statt Excel, WhatsApp und Terminkalender.
           </p>
         </div>
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="group relative rounded-box bg-surface p-6 ring-1 ring-line transition hover:shadow-lg hover:ring-line-strong"
-            >
-              <span className="grid size-10 place-items-center rounded-control bg-brand/30 text-brand-ink ring-1 ring-brand-ink/20 transition group-hover:bg-brand group-hover:text-brand-fg">
-                <Icon>{f.icon}</Icon>
-              </span>
+        <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f) => (
+            <li key={f.title} className="rounded-box bg-surface p-6 ring-1 ring-line">
+              <div className="flex items-start justify-between gap-3">
+                <span className="grid size-10 place-items-center rounded-control bg-brand text-brand-fg">
+                  <Icon name={f.icon} />
+                </span>
+                <span className="flex gap-1.5">
+                  {f.for.map((a) => (
+                    <span key={a} className="rounded-full bg-surface-3 px-2 py-0.5 text-[11px] font-semibold text-fg-muted">
+                      {a}
+                    </span>
+                  ))}
+                </span>
+              </div>
               <h3 className="mt-5 font-semibold text-fg">{f.title}</h3>
               <p className="mt-2 text-sm leading-6 text-fg-muted">{f.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* How it works                                                        */
-/* ------------------------------------------------------------------ */
-
-function HowItWorks() {
-  const steps = [
-    { title: "Trainer erstellt Plan", text: "Aus Vorlage oder von Grund auf – in wenigen Minuten fertig." },
-    { title: "Kunde wird eingeladen", text: "Per Link oder QR-Code. Der Plan ist sofort in der App." },
-    { title: "Training & Logging", text: "Der Kunde trainiert und erfasst Sätze, Gewichte und Notizen." },
-    { title: "Fortschritt & Anpassung", text: "Der Trainer sieht die Daten live und passt den Plan an." },
-  ];
-  return (
-    <section className="bg-surface py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-brand-ink">So funktioniert&apos;s</p>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-            Vom Plan zum Ergebnis in vier Schritten.
-          </h2>
-        </div>
-        <ol className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s, i) => (
-            <li key={s.title} className="relative border-l border-line pl-6">
-              <span className="font-mono text-sm text-brand-ink">0{i + 1}</span>
-              <h3 className="mt-2 font-semibold text-fg">{s.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-fg-subtle">{s.text}</p>
             </li>
           ))}
-        </ol>
+        </ul>
       </div>
     </section>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Testimonials                                                        */
+/* Für Trainer                                                         */
 /* ------------------------------------------------------------------ */
 
-function Testimonials() {
-  const quotes = [
-    {
-      text: "Ich betreue inzwischen 40 Online-Kunden statt 15. Das Dashboard zeigt mir sofort, wo ich nachhaken muss.",
-      name: "Marco Weber",
-      role: "Personal Trainer, Köln",
-    },
-    {
-      text: "Endlich sehe ich schwarz auf weiß, wie stark ich geworden bin. Das motiviert mich mehr als jeder Spiegel.",
-      name: "Lena Müller",
-      role: "Kundin seit 8 Monaten",
-    },
-    {
-      text: "Vorlagen, Check-ins, Chat – alles an einem Ort. Ich spare locker fünf Stunden pro Woche an Verwaltung.",
-      name: "Sarah Koch",
-      role: "Coach für Frauenfitness, Berlin",
-    },
-  ];
+function ForTrainers() {
   return (
-    <section className="py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <Eyebrow>Stimmen</Eyebrow>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-            Von Trainern und Kunden geliebt.
+    <section id="trainer" aria-labelledby="trainer-titel" className="scroll-mt-20 bg-surface-2 py-20 sm:py-28">
+      <div className={`${container} grid items-center gap-14 lg:grid-cols-2`}>
+        <div>
+          <Eyebrow>Für Personal Trainer</Eyebrow>
+          <h2 id="trainer-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+            Mehr Zeit fürs Coaching, weniger für Verwaltung.
           </h2>
+          <p className="mt-4 text-lg text-fg-muted">
+            Erstelle Trainingspläne in Minuten, gib jeder Übung eine Anleitung mit und sieh, wie deine Kunden trainieren –
+            online wie vor Ort.
+          </p>
+          <CheckList
+            items={[
+              "Plan-Editor mit Übungen aus dem Katalog oder frei eingetragen",
+              "Persönlicher Hinweis je Übung – deine Kunden sehen ihn direkt neben der Anleitung",
+              "Kundenliste mit Status Aktiv, Inaktiv, Neu und Eingeladen",
+              "Terminbuchung: Kunden fragen an, du bestätigst mit einem Klick",
+              "Echtzeit-Chat und Benachrichtigungen bei allem Wichtigen",
+            ]}
+          />
+          <div className="mt-10 flex">
+            <PrimaryCta href="/registrieren?rolle=trainer">Trainer-Konto erstellen</PrimaryCta>
+          </div>
         </div>
-        <div className="mt-16 grid gap-6 lg:grid-cols-3">
-          {quotes.map((q) => (
-            <figure
-              key={q.name}
-              className="flex flex-col rounded-box bg-surface-2 p-8 ring-1 ring-line"
-            >
-              <blockquote className="flex-1 text-fg">„{q.text}“</blockquote>
-              <figcaption className="mt-6 flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-brand to-brand-strong font-semibold text-brand-fg">
-                  {q.name[0]}
-                </span>
-                <div>
-                  <p className="font-semibold text-fg">{q.name}</p>
-                  <p className="text-sm text-fg-muted">{q.role}</p>
+
+        {/* Plan-Editor (Illustration) */}
+        <div aria-hidden="true" className="rounded-box bg-surface p-6 shadow-xl ring-1 ring-line-strong">
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-semibold text-fg">Oberkörper · Tag A</p>
+            <span className="inline-flex items-center gap-1.5 rounded-control bg-surface-3 px-3 py-1.5 text-xs font-semibold text-fg">
+              <Icon name="book" className="size-3.5" /> Aus Katalog wählen
+            </span>
+          </div>
+          <div className="mt-5 space-y-3">
+            {[
+              ["Bankdrücken", "4 × 8 · 60 kg", "Schulterblätter zusammen, Füße fest am Boden."],
+              ["Klimmzüge", "3 × 6", null],
+              ["Schulterdrücken", "3 × 10 · 14 kg", null],
+            ].map(([name, detail, note]) => (
+              <div key={name} className="rounded-tile bg-surface-2 p-3 ring-1 ring-line">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-fg">{name}</span>
+                  <Icon name="info" className="size-4 text-fg-subtle" />
+                  <span className="ml-auto font-mono text-xs text-fg-muted">{detail}</span>
                 </div>
-              </figcaption>
-            </figure>
+                {note && (
+                  <p className="mt-2 rounded-inner bg-surface px-2.5 py-1.5 text-xs text-fg-muted ring-1 ring-line">
+                    <span className="font-semibold text-fg">Hinweis für den Kunden:</span> {note}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between rounded-tile bg-brand px-4 py-3 text-sm font-semibold text-brand-fg">
+            Zuweisen an 3 Kunden
+            <Icon name="arrow" className="size-4" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Für Studios                                                         */
+/* ------------------------------------------------------------------ */
+
+function ForStudios() {
+  return (
+    <section id="studios" aria-labelledby="studios-titel" className="scroll-mt-20 py-20 sm:py-28">
+      <div className={`${container} grid items-center gap-14 lg:grid-cols-2`}>
+        {/* Studio-Dashboard (Illustration) */}
+        <div aria-hidden="true" className="order-last space-y-4 lg:order-first">
+          <div className="rounded-box bg-surface p-6 shadow-xl ring-1 ring-line-strong">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-fg">Kurse diese Woche</p>
+              <span className="text-xs text-fg-muted">Iron Gym</span>
+            </div>
+            <ul className="mt-4 space-y-4">
+              {[
+                ["Yoga Flow", "Mo · 18:00 · Raum 1", 12, 15],
+                ["Spinning", "Mi · 07:00 · Cycling", 20, 20],
+                ["Rücken-Fit", "Fr · 17:30 · Raum 2", 6, 12],
+              ].map(([name, when, booked, cap]) => (
+                <li key={name as string}>
+                  <div className="flex items-baseline justify-between text-sm">
+                    <span className="font-medium text-fg">{name}</span>
+                    <span className="text-xs text-fg-muted">
+                      {booked === cap ? "ausgebucht" : `${booked}/${cap} Plätze`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-fg-subtle">{when}</p>
+                  <div className="mt-1.5 h-1.5 rounded-full bg-surface-3">
+                    <div
+                      className={`h-1.5 rounded-full ${booked === cap ? "bg-fg" : "bg-brand-fg/70"}`}
+                      style={{ width: `${((booked as number) / (cap as number)) * 100}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="grid grid-cols-[auto_1fr] items-center gap-4 rounded-box bg-brand p-5 text-brand-fg shadow-xl">
+            <span className="grid size-14 place-items-center rounded-tile bg-white">
+              <Icon name="qr" className="size-9" />
+            </span>
+            <div>
+              <p className="font-bold">Mitglieds-Code für die Rezeption</p>
+              <p className="text-sm text-brand-fg/75">Scannen, registrieren, Kurse buchen.</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Eyebrow>Für Fitnessstudios</Eyebrow>
+          <h2 id="studios-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+            Ein Dashboard für Team, Kunden und Kurse.
+          </h2>
+          <p className="mt-4 text-lg text-fg-muted">
+            Behalte alle Trainer und Mitglieder im Blick, organisiere Kurse ohne Überbuchung und präsentiere dein Studio
+            mit eigener Seite und Logo.
+          </p>
+          <CheckList
+            items={[
+              "Bis zu 10 Trainer per Code ins Team einladen",
+              "Kunden Trainern zuweisen – oder bei Ausfall komplett übertragen",
+              "Kurse mit Plätzen pro Termin, Mitglieder buchen selbst",
+              "Gemeinsamer Wochenkalender aller Trainer inkl. Auslastung",
+              "Studio-Seite mit Logo, Öffnungszeiten, Ausstattung und Team",
+            ]}
+          />
+          <div className="mt-10 flex">
+            <PrimaryCta href="/registrieren?rolle=studio">Studio anlegen</PrimaryCta>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Kunden (kurz – kommen meist per Einladung)                          */
+/* ------------------------------------------------------------------ */
+
+function ForClients() {
+  return (
+    <section aria-labelledby="kunden-titel" className="pb-20 sm:pb-28">
+      <div className={container}>
+        <div className="grid gap-8 rounded-box bg-brand-fg p-8 text-white sm:p-10 lg:grid-cols-[1fr_1.3fr] lg:items-center">
+          <div>
+            <p className="text-sm font-semibold text-brand">Für deine Kunden</p>
+            <h2 id="kunden-titel" className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+              Kostenlos und per Einladung startklar.
+            </h2>
+            <p className="mt-3 text-white/70">
+              Deine Kunden brauchen kein Abo und keine Installation. Mit deinem Einladungscode sind sie in einer Minute
+              verbunden.
+            </p>
+            <Link
+              href="/registrieren?rolle=kunde"
+              className="mt-6 inline-flex items-center gap-2 rounded-control text-sm font-semibold text-brand hover:underline"
+            >
+              Einladung erhalten? Hier beitreten <Icon name="arrow" className="size-4" />
+            </Link>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["list", "Trainingsplan mit Anleitung zu jeder Übung"],
+                ["check", "Workouts nach Plan oder frei loggen"],
+                ["calendar", "Termine und Kurse selbst buchen"],
+                ["chart", "Bestwerte, Streak und Körpermaße"],
+              ] as [IconName, string][]
+            ).map(([icon, text]) => (
+              <li key={text} className="flex items-center gap-3 rounded-tile bg-white/5 p-4 text-sm ring-1 ring-white/10">
+                <Icon name={icon} className="size-5 shrink-0 text-brand" />
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* FAQ                                                                 */
+/* ------------------------------------------------------------------ */
+
+function Faq() {
+  return (
+    <section id="faq" aria-labelledby="faq-titel" className="scroll-mt-20 py-20 sm:py-28">
+      <div className={`${container} grid gap-12 lg:grid-cols-[1fr_1.6fr]`}>
+        <div>
+          <Eyebrow>FAQ</Eyebrow>
+          <h2 id="faq-titel" className="mt-3 text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
+            Häufige Fragen
+          </h2>
+          <p className="mt-4 text-fg-muted">Kurz beantwortet – für Personal Trainer und Studios.</p>
+        </div>
+        <div className="divide-y divide-line rounded-box bg-surface ring-1 ring-line">
+          {FAQ.map((f) => (
+            <details key={f.q} className="group px-6 py-5 [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-fg">
+                <h3>{f.q}</h3>
+                <span className="grid size-8 shrink-0 place-items-center rounded-control bg-surface-2 text-fg-muted transition group-open:rotate-45">
+                  <Icon name="plus" className="size-4" />
+                </span>
+              </summary>
+              <p className="mt-3 pr-12 text-sm leading-6 text-fg-muted">{f.a}</p>
+            </details>
           ))}
         </div>
       </div>
@@ -613,39 +601,32 @@ function Testimonials() {
 }
 
 /* ------------------------------------------------------------------ */
-/* CTA + Footer                                                        */
+/* Abschluss + Footer                                                  */
 /* ------------------------------------------------------------------ */
 
 function FinalCta() {
   return (
-    <section className="relative isolate overflow-hidden py-24 sm:py-32">
-      <div
-        aria-hidden="true"
-        className="absolute top-1/2 left-1/2 -z-10 h-[30rem] w-[50rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-brand/15 to-brand/5 blur-3xl"
-      />
-      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-          Bereit für messbare Ergebnisse?
-        </h2>
-        <p className="mt-4 text-lg text-fg-muted">
-          Starte heute als Trainer oder nimm die Einladung deines Coaches an. Das erste Workout ist nur ein paar
-          Klicks entfernt.
-        </p>
-        <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-          <Link
-            href="/registrieren?rolle=trainer"
-            className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand px-6 font-semibold text-brand-fg hover:bg-brand-hover"
-          >
-            <Icon className="size-4">{icons.bolt}</Icon>
-            Als Trainer starten
-          </Link>
-          <Link
-            href="/registrieren?rolle=kunde"
-            className="flex h-12 items-center justify-center gap-2 rounded-control bg-surface px-6 font-semibold text-fg shadow-sm ring-1 ring-line-strong hover:bg-surface-2"
-          >
-            <Icon className="size-4">{icons.flame}</Icon>
-            Als Kunde beitreten
-          </Link>
+    <section className="pb-20 sm:pb-28">
+      <div className={container}>
+        <div className="relative isolate overflow-hidden rounded-box bg-brand px-6 py-14 text-center sm:px-12">
+          <h2 className="text-3xl font-extrabold tracking-tight text-brand-fg sm:text-4xl">Bereit, dein Coaching zu vereinfachen?</h2>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-fg/75">
+            7 Tage kostenlos testen, ohne Kreditkarte. Deine Kunden nutzen Voima Coach gratis.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/registrieren?rolle=trainer"
+              className="flex h-12 items-center justify-center gap-2 rounded-control bg-brand-fg px-6 font-semibold text-white transition hover:bg-black"
+            >
+              Als Trainer starten <Icon name="arrow" className="size-4" />
+            </Link>
+            <Link
+              href="/registrieren?rolle=studio"
+              className="flex h-12 items-center justify-center gap-2 rounded-control bg-white/60 px-6 font-semibold text-brand-fg ring-1 ring-brand-fg/15 transition ring-inset hover:bg-white"
+            >
+              <Icon name="building" className="size-4" /> Studio anlegen
+            </Link>
+          </div>
         </div>
       </div>
     </section>
@@ -653,33 +634,65 @@ function FinalCta() {
 }
 
 function Footer() {
-  const columns = [
-    { title: "Produkt", links: ["Für Trainer", "Für Kunden", "Features", "Preise"] },
-    { title: "Ressourcen", links: ["Hilfe-Center", "Übungsbibliothek", "Blog", "Status"] },
-    { title: "Rechtliches", links: ["Impressum", "Datenschutz", "AGB", "Cookies"] },
+  const columns: { title: string; links: [string, string][] }[] = [
+    {
+      title: "Produkt",
+      links: [
+        ["#trainer", "Für Trainer"],
+        ["#studios", "Für Studios"],
+        ["#funktionen", "Funktionen"],
+        ["#preise", "Preise"],
+        ["#faq", "FAQ"],
+      ],
+    },
+    {
+      title: "Konto",
+      links: [
+        ["/login", "Anmelden"],
+        ["/registrieren?rolle=trainer", "Als Trainer registrieren"],
+        ["/registrieren?rolle=studio", "Studio anlegen"],
+        ["/registrieren?rolle=kunde", "Einladung annehmen"],
+      ],
+    },
+    {
+      // TODO: Impressum & Datenschutz als eigene Seiten anlegen (in Deutschland Pflicht) und hier verlinken
+      title: "Rechtliches",
+      links: [
+        ["#", "Impressum"],
+        ["#", "Datenschutz"],
+        ["#", "AGB"],
+      ],
+    },
   ];
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 md:grid-cols-[2fr_1fr_1fr_1fr] lg:px-8">
+      <div className={`${container} grid gap-12 py-16 md:grid-cols-[2fr_1fr_1fr_1fr]`}>
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm text-fg-muted">
-            Die Plattform für Personal Trainer und ihre Kunden. Made in Germany, DSGVO-konform.
+            Software für Personal Trainer und Fitnessstudios: Trainingspläne, Termine, Kurse und Kundenbetreuung an einem
+            Ort.
           </p>
         </div>
         {columns.map((c) => (
-          <div key={c.title}>
+          <nav key={c.title} aria-label={c.title}>
             <p className="text-sm font-semibold text-fg">{c.title}</p>
             <ul className="mt-4 space-y-3 text-sm text-fg-muted">
-              {c.links.map((l) => (
-                <li key={l}>
-                  <a href="#" className="hover:text-fg">
-                    {l}
-                  </a>
+              {c.links.map(([href, label]) => (
+                <li key={label}>
+                  {href.startsWith("/") ? (
+                    <Link href={href} className="hover:text-fg">
+                      {label}
+                    </Link>
+                  ) : (
+                    <a href={href} className="hover:text-fg">
+                      {label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         ))}
       </div>
       <div className="border-t border-line py-6 text-center text-sm text-fg-muted">
@@ -690,22 +703,22 @@ function Footer() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Page                                                                */
+/* Seite                                                               */
 /* ------------------------------------------------------------------ */
 
 export default function Home() {
   return (
     <>
+      <StructuredData />
       <Header />
       <main className="flex-1">
         <Hero />
-        <Stats />
+        <FeatureOverview />
         <ForTrainers />
+        <ForStudios />
         <ForClients />
-        <Features />
-        <HowItWorks />
-        <Testimonials />
         <Pricing />
+        <Faq />
         <FinalCta />
       </main>
       <Footer />

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Urbanist } from "next/font/google";
 import "./globals.css";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const urbanist = Urbanist({
   variable: "--font-urbanist",
@@ -10,8 +11,11 @@ const urbanist = Urbanist({
 export const viewport: Viewport = { themeColor: "#f7f7f7", colorScheme: "light" };
 
 export const metadata: Metadata = {
-  title: "Voima Coach – Trainingspläne & Progress-Tracking für Trainer und Kunden",
-  description: "Personal Trainer erstellen individuelle Pläne, Kunden trainieren und tracken ihren Fortschritt – alles in einer App.",
+  metadataBase: new URL(SITE_URL),
+  title: "Voima Coach – Software für Personal Trainer & Fitnessstudios",
+  description:
+    "Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und Kundenverwaltung für Personal Trainer und Studios. Kunden nutzen Voima Coach kostenlos.",
+  applicationName: SITE_NAME,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

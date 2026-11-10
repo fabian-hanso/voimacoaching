@@ -66,7 +66,12 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 - Studio-Seite: Erst die Studio-Infos (Ausstattung, Team, Öffnungszeiten, Kontakt), danach freie Termine bei Trainern und Kurse.
 - Startseite (Kunde): Die Kachel „Nächstes Training“ hat ein Gym-Foto als Hintergrund unter einer dunklen Ebene, weißen Text und einen Lime-Button (`public/images/dashboard-training.jpg`, zugeschnitten und auf 1600 px verkleinert).
 - Training: Die Abhak-Buttons für Sätze und Ausdauer-Einheiten sind kleiner und zeigen schon vor dem Abhaken einen grauen Haken. Erledigt werden sie Lime.
-- Landingpage: Die Hero-Überschrift hat mehr Luft, sodass der Lime-Balken die Zeile darüber nicht mehr verdeckt. Die Karten rechts sind etwas dezenter, die Bewertungszeile ist entfernt. Testzeitraum überall **7 statt 14 Tage**.
+- **Landingpage neu aufgebaut** – fokussiert auf Personal Trainer und Studios, kurz und übersichtlich:
+  - Hero mit klarer Zielgruppe („Die Software für Personal Trainer und Fitnessstudios“), CTAs „Als Trainer starten“ und „Studio anlegen“, Karten mit Plan, Terminanfrage und Kursbelegung. Testzeitraum überall **7 statt 14 Tage**.
+  - Neue Abschnitte: Funktionen auf einen Blick (mit Kennzeichnung Trainer/Studios), Für Trainer, Für Studios, ein kompakter Kunden-Block (kostenlos, per Einladung), Preise, FAQ und Abschluss-CTA.
+  - Entfernt: erfundene Zahlen, Bewertungen und Stimmen sowie Aussagen, die das Produkt nicht erfüllt (800 Übungen mit Videos, Fortschrittsfotos, iOS-/Android-Apps, Check-in-Fragebögen).
+  - Footer verlinkt echte Ziele statt Platzhaltern. Impressum, Datenschutz und AGB fehlen noch als Seiten.
+- **SEO:** eigener Seitentitel und Beschreibung, Canonical-URL, Open-Graph-/Twitter-Vorschau mit Bild (`app/opengraph-image.jpg`), strukturierte Daten (`SoftwareApplication` und `FAQPage`), `robots.txt` (Dashboard und API ausgeschlossen) und `sitemap.xml`. Die Live-Adresse steht fest in `lib/site.ts` (aktuell Platzhalter `https://voima.example`, vor dem Livegang durch die echte Domain ersetzen).
 - **Einheitliche Rundungen:** feste Stufen als Design-Tokens (`rounded-box` 24 px für äußere Flächen, `rounded-tile` 16 px für Flächen in Karten, `rounded-control` 12 px für Buttons/Felder, `rounded-inner` 8 px). Alle CTAs haben jetzt dieselbe Form, keine Pillen-Buttons mehr.
 - Aktiver Tab in den Dashboards (Team, Kunden, …) ist jetzt schwarz statt dunkelgrün.
 - Studio-Kundenliste: Status **„Mitglied“** für Mitglieder ohne Coach, Filter „Mitglieder“ und „Coach fehlt“.
