@@ -15,6 +15,7 @@ import { Icon, type IconName } from "@/components/icons";
 import { StudioLogo } from "@/components/studio-logo";
 import type { BookingProvider, OpeningHoursDay, StudioProfile } from "@/lib/types";
 import { BookingDialog, nextFreeLabel } from "../appointments";
+import { StudioCourseList } from "../courses";
 import { useMe } from "../shell";
 
 export const WEEKDAYS = [
@@ -268,6 +269,7 @@ export function StudioPage() {
           </ul>
         </section>
       )}
+      <StudioCourseList canBook={me.user.role === "client"} />
       {bookingFor && (
         <BookingDialog providers={bookable} initialTrainerId={bookingFor} onClose={() => setBookingFor(null)} onBooked={booking.reload} />
       )}

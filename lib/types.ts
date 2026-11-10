@@ -14,6 +14,8 @@ export interface User {
   avatarUrl: string | null;
   /** Optionale Telefonnummer (sehen Trainer/Studio bei Terminen) */
   phone: string | null;
+  /** Kunde ist selbst Mitglied seines Studios (per Mitglieds-Code) – unabhängig vom Coach */
+  studioMember: boolean;
   createdAt: string;
 }
 
@@ -95,10 +97,13 @@ export interface StudioClient {
   joinedAt: string;
   lastWorkoutAt: string | null;
   workoutsLast7Days: number;
+  /** Per Mitglieds-Code beigetreten (braucht keinen festen Trainer) */
+  studioMember: boolean;
 }
 
 export interface StudioOverview {
-  studio: StudioInfo & { maxTrainers: number };
+  /** joinCode: wiederverwendbarer Mitglieds-Code (QR an der Rezeption) */
+  studio: StudioInfo & { maxTrainers: number; joinCode: string };
   trainers: StudioTrainer[];
   clients: StudioClient[];
   invitations: Invitation[];
@@ -248,7 +253,11 @@ export type NoticeKind =
   | "appointment_declined"
   | "appointment_cancelled"
   | "appointment_booked"
-  | "appointment_comment";
+  | "appointment_comment"
+  | "course_assigned"
+  | "course_cancelled"
+  | "member_joined"
+  | "member_left";
 
 /** Hinweis, dass eine Coach–Kunde-Verbindung geendet hat (30 Tage sichtbar, wegklickbar). */
 export interface Notice {
@@ -382,4 +391,63 @@ export interface Schedule {
   /** Kunden, für die der Nutzer Termine eintragen darf (inkl. Kontaktdaten aus dem Profil) */
   clients: { id: string; name: string; email: string; phone: string | null }[];
   appointments: Appointment[];
+  /** Kurstermine der Woche (Studio: alle, Trainer: eigene) */
+  courseSessions: (CourseSession & { title: string; trainerId: string | null; location: string | null })[];
+}
+
+/* ------------------------------------------------------------------ */
+/* Kurse                                                               */
+/* ------------------------------------------------------------------ */
+
+/** Wöchentlicher Kurstermin (0 = Montag … 6 = Sonntag), Beginn in Ortszeit Europe/Berlin. */
+export interface CourseSlot {
+  day: number;
+  start: string;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  category: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  location: string | null;
+  /** Plätze pro Termin */
+  capacity: number;
+  durationMin: number;
+  schedule: CourseSlot[];
+  /** Optionaler Zeitraum (YYYY-MM-DD) */
+  startsOn: string | null;
+  endsOn: string | null;
+  active: boolean;
+  trainer: { id: string; name: string; avatarUrl: string | null } | null;
+}
+
+export interface CourseSession {
+  courseId: string;
+  startsAt: string;
+  endsAt: string;
+  booked: number;
+  capacity: number;
+  /** Nur für Kunden: selbst angemeldet */
+  bookedByMe: boolean;
+}
+
+/** Kurs inkl. der nächsten Termine (4 Wochen) */
+export interface CourseWithSessions extends Course {
+  sessions: CourseSession[];
+}
+
+export interface CourseParticipant {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  bookedAt: string;
+}
+
+export interface MyCourseBooking {
+  id: string;
+  course: { id: string; title: string; imageUrl: string | null; location: string | null; trainerName: string | null };
+  startsAt: string;
+  endsAt: string;
 }

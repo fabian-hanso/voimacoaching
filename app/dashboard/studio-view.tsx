@@ -13,8 +13,9 @@ import type { Appointment, OpeningHoursDay, StaffCategory, StudioClient, StudioO
 import { WEEKDAYS } from "./studio/studio-page";
 import { WishLink } from "./feature-wish";
 import { CalendarView, openRequests } from "./appointments";
+import { StudioCourses } from "./courses";
 
-type Tab = "team" | "clients" | "appointments" | "invitations" | "profile";
+type Tab = "team" | "clients" | "appointments" | "courses" | "invitations" | "profile";
 
 /**
  * Dashboard für Studio-Inhaber: Trainer verwalten, Kunden zuweisen/übertragen,
@@ -31,12 +32,14 @@ export function StudioView() {
   if (overview.loading) return <Spinner />;
   if (!overview.data) return <LoadError message={overview.error?.message ?? "Studio konnte nicht geladen werden."} onRetry={overview.reload} />;
   const data = overview.data;
-  const unassigned = data.clients.filter((c) => !c.trainerId).length;
+  // Nur Kunden, deren Coach weggefallen ist – Mitglieder (per Code) brauchen keinen festen Trainer
+  const unassigned = data.clients.filter((c) => !c.trainerId && !c.studioMember).length;
 
   const tabs: [Tab, string, number | null][] = [
     ["team", "Team", data.trainers.length],
     ["clients", "Kunden", data.clients.length],
     ["appointments", "Termine", openRequests(appointments.data?.appointments, now) || null],
+    ["courses", "Kurse", null],
     ["invitations", "Einladungen", null],
     ["profile", "Studio-Profil", null],
   ];
@@ -92,6 +95,7 @@ export function StudioView() {
       {tab === "team" && <TeamTab data={data} reload={overview.reload} onInvite={() => setTab("invitations")} />}
       {tab === "clients" && <ClientsTab data={data} reload={overview.reload} />}
       {tab === "appointments" && <CalendarView role="studio" onChanged={appointments.reload} />}
+      {tab === "courses" && <StudioCourses trainers={data.trainers} />}
       {tab === "invitations" && <InvitationsTab data={data} reload={overview.reload} />}
       {tab === "profile" && <ProfileTab data={data} reload={overview.reload} />}
 
@@ -565,25 +569,30 @@ function TransferAllDialog({
 /* ------------------------------------------------------------------ */
 
 function clientStatus(c: StudioClient): { label: string; tone: BadgeTone } {
-  if (!c.trainerId) return { label: "Ohne Trainer", tone: "accent" };
+  if (!c.trainerId) return c.studioMember ? { label: "Mitglied", tone: "brand" } : { label: "Ohne Trainer", tone: "accent" };
   if (!c.lastWorkoutAt) return { label: "Neu", tone: "neutral" };
   return c.workoutsLast7Days > 0 ? { label: "Aktiv", tone: "success" } : { label: "Inaktiv", tone: "warning" };
 }
 
+const needsCoach = (c: StudioClient) => !c.trainerId && !c.studioMember;
+
 function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void }) {
-  const [filter, setFilter] = useState<"all" | "unassigned">(data.clients.some((c) => !c.trainerId) ? "unassigned" : "all");
+  const [filter, setFilter] = useState<"all" | "members" | "unassigned">(data.clients.some(needsCoach) ? "unassigned" : "all");
   const [pending, setPending] = useState<{ client: StudioClient; trainerId: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!data.clients.length) {
-    return <EmptyState title="Noch keine Kunden" text="Sobald deine Trainer Kunden einladen, erscheinen sie hier." />;
-  }
-  if (!data.trainers.length) {
-    return <Alert tone="info">Lade zuerst einen Trainer ein, um Kunden zuweisen zu können.</Alert>;
+    return (
+      <div className="space-y-6">
+        <MemberCodeCard code={data.studio.joinCode} studioName={data.studio.name} onRenewed={reload} />
+        <EmptyState title="Noch keine Kunden" text="Neue Mitglieder kommen über deinen Mitglieds-Code bzw. QR-Code – oder über die Einladungen deiner Trainer." />
+      </div>
+    );
   }
 
-  const shown = data.clients.filter((c) => filter === "all" || !c.trainerId);
-  const unassigned = data.clients.filter((c) => !c.trainerId).length;
+  const shown = data.clients.filter((c) => filter === "all" || (filter === "members" ? c.studioMember : needsCoach(c)));
+  const unassigned = data.clients.filter(needsCoach).length;
+  const members = data.clients.filter((c) => c.studioMember).length;
 
   async function assign(client: StudioClient, trainerId: string) {
     setError(null);
@@ -598,11 +607,14 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
 
   return (
     <div className="space-y-4">
+      <MemberCodeCard code={data.studio.joinCode} studioName={data.studio.name} onRenewed={reload} />
+      {!data.trainers.length && <Alert tone="info">Lade Trainer ein, um Kunden einen festen Coach zuweisen zu können.</Alert>}
       <div className="flex flex-wrap items-center gap-2">
         {(
           [
             ["all", `Alle (${data.clients.length})`],
-            ["unassigned", `Ohne Trainer (${unassigned})`],
+            ["members", `Mitglieder (${members})`],
+            ["unassigned", `Coach fehlt (${unassigned})`],
           ] as const
         ).map(([v, l]) => (
           <button
@@ -621,7 +633,10 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
       {error && <Alert>{error}</Alert>}
 
       {shown.length === 0 ? (
-        <EmptyState title="Alle Kunden haben einen Trainer 🎉" text="Wechsle auf „Alle“, um Kunden umzuverteilen." />
+        <EmptyState
+          title={filter === "members" ? "Noch keine Mitglieder" : "Allen Kunden ist ein Coach zugeordnet 🎉"}
+          text={filter === "members" ? "Teile deinen Mitglieds-Code oder hänge den QR-Code an der Rezeption aus." : "Mitglieder ohne festen Coach brauchen keinen – sie buchen Kurse und 1:1-Termine direkt."}
+        />
       ) : (
         <Card className="divide-y divide-line p-0">
           {shown.map((c) => {
@@ -640,18 +655,20 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
                   </div>
                 </div>
                 <div className="flex items-center gap-2 sm:w-80">
+                  {data.trainers.length > 0 && (
                   <Select
                     aria-label={`Trainer für ${c.name}`}
                     value={c.trainerId ?? ""}
                     onChange={(e) => e.target.value && setPending({ client: c, trainerId: e.target.value })}
                   >
-                    {!c.trainerId && <option value="">– Trainer wählen –</option>}
+                    {!c.trainerId && <option value="">{c.studioMember ? "Kein fester Coach" : "– Trainer wählen –"}</option>}
                     {data.trainers.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.name}
                       </option>
                     ))}
                   </Select>
+                  )}
                 </div>
               </div>
             );
@@ -668,6 +685,97 @@ function ClientsTab({ data, reload }: { data: StudioOverview; reload: () => void
         />
       )}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Mitglieds-Code & QR                                                 */
+/* ------------------------------------------------------------------ */
+
+function MemberCodeCard({ code, studioName, onRenewed }: { code: string; studioName: string; onRenewed: () => void }) {
+  const [qr, setQr] = useState<string | null>(null);
+  const [link, setLink] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [renew, setRenew] = useState(false);
+
+  useEffect(() => {
+    const url = `${window.location.origin}/registrieren?rolle=kunde&mitglied=${code}`;
+    let cancelled = false;
+    void import("qrcode").then((QR) =>
+      QR.toDataURL(url, { width: 640, margin: 1, errorCorrectionLevel: "M", color: { dark: "#11120e", light: "#ffffff" } }).then((data) => {
+        if (cancelled) return;
+        setQr(data);
+        setLink(url);
+      }),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
+
+  return (
+    <Card className="flex flex-col gap-6 sm:flex-row sm:items-center">
+      <div className="grid size-36 shrink-0 place-items-center self-center rounded-xl bg-white p-2 ring-1 ring-line">
+        {qr ? (
+          // eslint-disable-next-line @next/next/no-img-element -- lokal erzeugter QR-Code (data:-URL)
+          <img src={qr} alt={`QR-Code zum Beitritt bei ${studioName}`} className="size-full" />
+        ) : (
+          <span className="size-6 animate-spin rounded-full border-2 border-line border-t-brand-ink" />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-fg">Mitglieder einladen</p>
+        <p className="mt-1 text-sm text-fg-muted">
+          Hänge den QR-Code an der Rezeption aus oder teile den Code. Mitglieder brauchen keinen festen Coach – sie sehen eure Kurse,
+          buchen 1:1-Termine bei allen Trainern und bekommen eure Benachrichtigungen.
+        </p>
+        <p className="mt-3 font-mono text-2xl font-bold tracking-[0.25em] text-fg">{code}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={!link}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(link);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              } catch {
+                window.prompt("Link kopieren:", link);
+              }
+            }}
+          >
+            <Icon name={copied ? "check" : "arrow"} className="size-3.5" /> {copied ? "Kopiert" : "Link kopieren"}
+          </Button>
+          {qr && (
+            <a
+              href={qr}
+              download={`qr-${studioName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`}
+              className="inline-flex items-center gap-2 rounded-lg bg-surface-3 px-2.5 py-1.5 text-xs font-semibold text-fg ring-1 ring-line-strong transition hover:bg-line-strong"
+            >
+              <Icon name="camera" className="size-3.5" /> QR-Code herunterladen
+            </a>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => setRenew(true)}>
+            Code erneuern
+          </Button>
+        </div>
+      </div>
+      {renew && (
+        <ConfirmDialog
+          title="Mitglieds-Code erneuern?"
+          description="Der bisherige Code und ausgehängte QR-Codes funktionieren danach nicht mehr. Bestehende Mitglieder bleiben Mitglieder."
+          confirmWord="erneuern"
+          confirmLabel="Neuen Code erzeugen"
+          onConfirm={async () => {
+            await api("/studio/join-code", { method: "POST" });
+            setRenew(false);
+            onRenewed();
+          }}
+          onClose={() => setRenew(false)}
+        />
+      )}
+    </Card>
   );
 }
 

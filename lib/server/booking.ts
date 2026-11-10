@@ -4,6 +4,7 @@ import { supabaseAdmin } from "../supabase/admin";
 import { ApiError, badRequest, conflict, forbidden, notFound } from "./http";
 import { addNotice, avatarUrl, iso, must, ownStudio, studioOf, type ProfileRow } from "./repo";
 import { addDays, computeSlots, DAY, MIN, TZ, toMin, weekday, zonedToUtc } from "../booking-time";
+import { courseSessionsForWeek } from "./courses";
 import type { AppointmentRequestInput, BookingSettingsInput, StudioAppointmentInput } from "../schemas";
 import type {
   Appointment,
@@ -467,6 +468,7 @@ export async function getSchedule(user: ProfileRow, weekOf: string | null): Prom
     }),
     clients,
     appointments: await toAppointments(rows, user),
+    courseSessions: await courseSessionsForWeek(user, weekStart),
   };
 }
 

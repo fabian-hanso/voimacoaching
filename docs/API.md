@@ -318,9 +318,45 @@ Status: `requested` → `confirmed` | `declined` | `cancelled`. `cancelledBy`: `
 
 „Beteiligte“ = Kunde, Trainer und das Studio des Trainers. Jeder Termin enthält `commentCount`. Trainer und Studio bekommen zusätzlich `contact: { email, phone, emailFromProfile, phoneFromProfile, overrideEmail, overridePhone }` (Kunden: `null`) und `canEditContact`. Am Termin hinterlegte Werte haben Vorrang vor dem Profil (E-Mail aus dem Konto, Telefon aus `PATCH /me { phone }`).
 
+## Studio-Mitglieder
+
+Kunden können einem Studio per wiederverwendbarem **Mitglieds-Code** beitreten (z. B. QR-Code an der Rezeption,
+Link `/registrieren?rolle=kunde&mitglied=CODE`) – ohne festen Coach. Mitglieder buchen Kurse und 1:1-Termine bei
+allen Trainern des Studios. `user.studioMember` zeigt die Mitgliedschaft an.
+
+| Methode | Pfad | Wer | Beschreibung |
+| --- | --- | --- | --- |
+| GET | `/studio-join/:code` | öffentlich | `{ valid, studioName }` |
+| POST | `/me/studio` | Kunde | `{ code }` Mitglieds-Code → Mitglied (Trainer: Studio-Einladungscode wie bisher). 400 bei ungültigem Code, bereits Mitglied oder Coach aus anderem Studio |
+| DELETE | `/me/studio` | Kunde | Studio verlassen (Coach aus diesem Studio wird ebenfalls getrennt) |
+| POST | `/studio/join-code` | Studio | Neuen Mitglieds-Code erzeugen → `{ joinCode }` |
+
+Registrierung: Metadatum `studio_join_code` (zusätzlich zu `invite_code`). `GET /studio` liefert `studio.joinCode` und je Kunde `studioMember`.
+
+## Kurse
+
+Studios legen Kurse an; Kunden des Studios melden sich für einzelne Termine an (`startsAt` = Beginn des Termins, ISO).
+Termine werden aus `schedule` (`[{ day: 0 (Mo)–6 (So), start: "HH:MM" }]`, Ortszeit Europe/Berlin) und dem optionalen
+Zeitraum `startsOn`/`endsOn` berechnet; buchbar sind die nächsten 4 Wochen. Das Kontingent (`capacity`) gilt pro Termin.
+
+| Methode | Pfad | Wer | Beschreibung |
+| --- | --- | --- | --- |
+| GET | `/courses` | alle im Studio | Aktive Kurse des eigenen Studios inkl. `sessions: [{ startsAt, endsAt, booked, capacity, bookedByMe }]` |
+| POST | `/courses/:id/bookings` | Kunde | `{ startsAt }` → 201 (Kurs inkl. Termine). 409 bei ausgebucht / bereits angemeldet / Termin existiert nicht |
+| DELETE | `/courses/:id/bookings?startsAt=…` | Kunde | Abmelden (vor Beginn) |
+| GET | `/courses/:id/participants?startsAt=…` | Studio, Kurstrainer | Teilnehmende eines Termins |
+| GET | `/me/course-bookings` | Kunde | Eigene kommende Anmeldungen |
+| GET | `/studio/courses` | Studio | Alle Kurse inkl. pausierter |
+| POST | `/studio/courses` | Studio | `{ title, category?, description?, location?, trainerId?, capacity, durationMin, schedule, startsOn?, endsOn?, active }` → 201 |
+| PUT | `/studio/courses/:id` | Studio | Kurs ersetzen. Anmeldungen auf Terminen, die danach nicht mehr existieren, werden storniert (mit Hinweis) |
+| DELETE | `/studio/courses/:id` | Studio | Löschen; künftige Anmeldungen werden storniert (mit Hinweis) |
+| POST/DELETE | `/studio/courses/:id/image` | Studio | Titelbild (multipart, Feld `file`, max. 5 MB) |
+
+`/schedule` enthält zusätzlich `courseSessions` (Studio: alle aktiven Kurse, Trainer: eigene) mit Belegung.
+
 ## Benachrichtigungen
 
-Terminanfragen, Bestätigungen, Absagen und beendete Verbindungen erscheinen als Benachrichtigung (`/notices`, 30 Tage sichtbar). Termin-Arten `appointment_requested|confirmed|declined|cancelled|booked|comment` enthalten in `detail` z. B. „Personal Training · Di., 18. Nov., 17:00 Uhr“. `readAt: null` = ungelesen (Zähler an der Glocke).
+Terminanfragen, Bestätigungen, Absagen und beendete Verbindungen erscheinen als Benachrichtigung (`/notices`, 30 Tage sichtbar). Termin-Arten `appointment_requested|confirmed|declined|cancelled|booked|comment`, Kurs-Arten `course_assigned|course_cancelled` enthalten in `detail` z. B. „Personal Training · Di., 18. Nov., 17:00 Uhr“. `readAt: null` = ungelesen (Zähler an der Glocke).
 
 | Methode | Pfad | Beschreibung |
 | --- | --- | --- |

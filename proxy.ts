@@ -58,6 +58,11 @@ export async function proxy(request: NextRequest) {
     if (studioCode && claims.user_metadata?.role === "trainer") {
       return redirect("/dashboard/einstellungen", `?studio=${encodeURIComponent(studioCode)}`, "#studio");
     }
+    // Bereits angemeldeter Kunde scannt den Mitglieds-QR eines Studios → Beitritt in den Einstellungen
+    const memberCode = params.get("mitglied");
+    if (memberCode && claims.user_metadata?.role === "client") {
+      return redirect("/dashboard/einstellungen", `?mitglied=${encodeURIComponent(memberCode)}`, "#studio");
+    }
     // Bereits angemeldeter Kunde öffnet einen Einladungslink → Code im Dashboard vorausgefüllt
     if (clientCode) return redirect("/dashboard", `?code=${encodeURIComponent(clientCode)}`);
     return redirect("/dashboard");

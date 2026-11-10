@@ -89,3 +89,25 @@ export function computeSlots(
   return days;
 }
 
+
+/**
+ * Kurstermine zwischen `fromDate` (inkl.) und `fromDate + days` (exkl.), sortiert.
+ * Berücksichtigt den optionalen Zeitraum (startsOn/endsOn, YYYY-MM-DD in Ortszeit).
+ */
+export function courseOccurrences(
+  course: { schedule: { day: number; start: string }[]; durationMin: number; startsOn: string | null; endsOn: string | null },
+  fromDate: string,
+  days: number,
+): { start: number; end: number }[] {
+  const out: { start: number; end: number }[] = [];
+  for (let i = 0; i < days; i++) {
+    const date = addDays(fromDate, i);
+    if (course.startsOn && date < course.startsOn) continue;
+    if (course.endsOn && date > course.endsOn) continue;
+    for (const slot of course.schedule.filter((s) => s.day === weekday(date))) {
+      const start = zonedToUtc(date, toMin(slot.start));
+      out.push({ start, end: start + course.durationMin * MIN });
+    }
+  }
+  return out.sort((a, b) => a.start - b.start);
+}

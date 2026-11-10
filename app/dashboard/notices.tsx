@@ -20,6 +20,10 @@ const TEXT: Record<NoticeKind, (name: string, detail: string) => { title: string
   appointment_cancelled: (n, d) => ({ title: `${n} hat einen Termin abgesagt`, text: d }),
   appointment_booked: (n, d) => ({ title: `${n} hat einen Termin eingetragen`, text: d }),
   appointment_comment: (n, d) => ({ title: `${n} hat einen Termin kommentiert`, text: d }),
+  course_assigned: (n, d) => ({ title: `Du leitest jetzt den Kurs „${d}“`, text: `${n} hat dich als Trainer eingetragen. Die Termine stehen in deinem Kalender.` }),
+  member_joined: (n) => ({ title: `${n} ist deinem Studio beigetreten`, text: "Neues Mitglied über deinen Mitglieds-Code – ohne festen Coach. Kurse und 1:1-Termine sind direkt buchbar." }),
+  member_left: (n) => ({ title: `${n} hat dein Studio verlassen`, text: "Künftige Kursanmeldungen und Termine bei deinen Trainern wurden storniert." }),
+  course_cancelled: (n, d) => ({ title: "Ein Kurstermin entfällt", text: `${d} – ${n} hat den Termin abgesagt. Deine Anmeldung wurde storniert.` }),
   client_deleted: (n) => ({
     title: `${n} hat das Konto gelöscht`,
     text: `Alle Daten von ${n} wurden auf eigenen Wunsch entfernt – auch Trainingsverlauf und Nachrichten.`,
@@ -191,7 +195,7 @@ export function NotificationsButton({ userId }: { userId: string }) {
             <ul className="max-h-[min(70vh,28rem)] divide-y divide-line overflow-y-auto">
               {notices.map((n) => {
                 const { title, text } = TEXT[n.kind](n.actorName, n.detail ?? "");
-                const appointment = n.kind.startsWith("appointment_");
+                const appointment = n.kind.startsWith("appointment_") || n.kind.startsWith("course_");
                 return (
                   <li key={n.id} className={cx("flex items-start gap-3 px-4 py-3", !n.readAt && "bg-brand/10")}>
                     <IconTile

@@ -17,7 +17,7 @@ const ROLES: [Role, string][] = [
 
 function initialRole(params: URLSearchParams): Role {
   const r = params.get("rolle");
-  if (r === "kunde" || params.get("code")) return "client";
+  if (r === "kunde" || params.get("code") || params.get("mitglied")) return "client";
   if (r === "studio") return "studio";
   return "trainer";
 }
@@ -25,9 +25,9 @@ function initialRole(params: URLSearchParams): Role {
 export function RegisterForm() {
   const params = useSearchParams();
   const [role, setRole] = useState<Role>(() => initialRole(params));
-  // Kunden: Einladungscode des Trainers · Trainer: Studio-Code (beides optional)
-  const [code, setCode] = useState(() => (params.get("code") ?? params.get("studio") ?? "").toUpperCase());
-  const [check, setCheck] = useState<{ key: string; name: string | null } | null>(null);
+  // Kunden: Einladungscode eines Trainers ODER Mitglieds-Code eines Studios (QR) · Trainer: Studio-Code – alles optional
+  const [code, setCode] = useState(() => (params.get("code") ?? params.get("mitglied") ?? params.get("studio") ?? "").toUpperCase());
+  const [check, setCheck] = useState<{ key: string; name: string | null; kind: "coach" | "member" | "studio" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -35,14 +35,25 @@ export function RegisterForm() {
   const usesCode = role === "client" || role === "trainer";
   const checkKey = `${role}:${code}`;
 
-  // Code live prüfen und Trainer- bzw. Studionamen anzeigen
+  // Code live prüfen und Trainer- bzw. Studionamen anzeigen (Kunden: erst Einladung eines Coaches, dann Mitglieds-Code)
   useEffect(() => {
     if (!usesCode || code.length < 6) return;
     let cancelled = false;
-    const url = role === "client" ? `/invitations/${encodeURIComponent(code)}` : `/studio-invitations/${encodeURIComponent(code)}`;
-    api<{ valid: boolean; trainerName?: string | null; studioName?: string | null }>(url)
-      .then((r) => !cancelled && setCheck({ key: checkKey, name: r.valid ? (r.trainerName ?? r.studioName ?? null) : null }))
-      .catch(() => !cancelled && setCheck({ key: checkKey, name: null }));
+    type Check = { valid: boolean; trainerName?: string | null; studioName?: string | null };
+    const enc = encodeURIComponent(code);
+    const run = async (): Promise<{ name: string | null; kind: "coach" | "member" | "studio" }> => {
+      if (role === "trainer") {
+        const r = await api<Check>(`/studio-invitations/${enc}`);
+        return { name: r.valid ? (r.studioName ?? null) : null, kind: "studio" };
+      }
+      const coach = await api<Check>(`/invitations/${enc}`);
+      if (coach.valid) return { name: coach.trainerName ?? null, kind: "coach" };
+      const member = await api<Check>(`/studio-join/${enc}`);
+      return { name: member.valid ? (member.studioName ?? null) : null, kind: "member" };
+    };
+    run()
+      .then((r) => !cancelled && setCheck({ key: checkKey, ...r }))
+      .catch(() => !cancelled && setCheck({ key: checkKey, name: null, kind: role === "trainer" ? "studio" : "coach" }));
     return () => {
       cancelled = true;
     };
@@ -70,7 +81,9 @@ export function RegisterForm() {
           data: {
             name: String(form.get("name")).trim(),
             role,
-            invite_code: role === "client" && code ? code : undefined,
+            // Ist noch nicht klar, welche Art Code es ist, beide versuchen – ungültige ignoriert die Datenbank
+            invite_code: role === "client" && code && (!checked || check?.kind === "coach") ? code : undefined,
+            studio_join_code: role === "client" && code && (!checked || check?.kind === "member") ? code : undefined,
             studio_code: role === "trainer" && code ? code : undefined,
             studio_name: role === "studio" ? String(form.get("studioName")).trim() : undefined,
           },
@@ -148,10 +161,10 @@ export function RegisterForm() {
 
       {usesCode && (
         <Field
-          label={role === "client" ? "Einladungscode (optional)" : "Studio-Code (optional)"}
+          label={role === "client" ? "Einladungs- oder Studio-Code (optional)" : "Studio-Code (optional)"}
           hint={
             role === "client"
-              ? "Du bekommst ihn von deinem Trainer. Du kannst ihn auch später eingeben."
+              ? "Von deinem Trainer oder deinem Studio (z. B. per QR-Code an der Rezeption). Du kannst ihn auch später eingeben."
               : "Nur wenn dich ein Studio eingeladen hat. Du kannst später in den Einstellungen beitreten."
           }
         >
@@ -165,7 +178,13 @@ export function RegisterForm() {
       )}
       {checked &&
         (check?.name ? (
-          <Alert tone="success">{role === "client" ? `Du trainierst mit ${check.name}.` : `Du trittst dem Studio ${check.name} bei.`}</Alert>
+          <Alert tone="success">
+            {check.kind === "coach"
+              ? `Du trainierst mit ${check.name}.`
+              : check.kind === "member"
+                ? `Du wirst Mitglied bei ${check.name} – mit Kursen und 1:1-Terminen bei allen Trainern.`
+                : `Du trittst dem Studio ${check.name} bei.`}
+          </Alert>
         ) : (
           <Alert>Dieser Code ist ungültig oder abgelaufen.</Alert>
         ))}

@@ -9,6 +9,7 @@ import { Icon, IconTile, type IconName, type Tone } from "@/components/icons";
 import type { AssignedPlan, BookingProvider, MeResponse, Progress } from "@/lib/types";
 import type { LoggedExercise, PlanDay } from "@/lib/schemas";
 import { ClientAppointments } from "./appointments";
+import { MyCourses } from "./courses";
 import { ProgressView } from "./progress-view";
 import { StudioLogo } from "@/components/studio-logo";
 import { useMessaging } from "./messaging";
@@ -85,7 +86,31 @@ export function ClientView({ me, onMeChange }: { me: MeResponse; onMeChange: () 
 
   return (
     <div className="space-y-12">
-      {!me.trainer && me.studio && (
+      {!me.trainer && me.studio && me.user.studioMember && (
+        <Card className="flex flex-col gap-4 bg-gradient-to-br from-brand/15 to-surface sm:flex-row sm:items-center">
+          <StudioLogo name={me.studio.name} logoUrl={me.studio.logoUrl} size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-fg">Willkommen bei {me.studio.name}!</p>
+            <p className="mt-0.5 text-sm text-fg-muted">
+              Als Mitglied meldest du dich für Kurse an und buchst 1:1-Termine bei allen Trainern – einen festen Coach brauchst du dafür nicht.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/dashboard/studio#kurse"
+              className="inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-2 text-sm font-semibold text-fg ring-1 ring-line-strong transition hover:bg-surface-3"
+            >
+              <Icon name="users" className="size-4" /> Kurse
+            </Link>
+            {providers.length > 0 && (
+              <Button onClick={() => setBookingFor("any")}>
+                <Icon name="calendar" className="size-4" /> 1:1-Termin buchen
+              </Button>
+            )}
+          </div>
+        </Card>
+      )}
+      {!me.trainer && me.studio && !me.user.studioMember && (
         <Card className="flex items-center gap-4">
           <StudioLogo name={me.studio.name} logoUrl={me.studio.logoUrl} size="lg" />
           <p className="text-sm text-fg-muted">
@@ -151,6 +176,7 @@ export function ClientView({ me, onMeChange }: { me: MeResponse; onMeChange: () 
       </section>
 
       <ClientAppointments providers={providers} booking={bookingFor} setBooking={setBookingFor} />
+      <MyCourses />
 
       {/* Pläne */}
       <section>
@@ -397,14 +423,24 @@ function JoinTrainer({ onJoined }: { onJoined: () => void }) {
       await api("/me/trainer", { body: { inviteCode: code } });
       onJoined();
     } catch (err) {
+      // Kein Einladungscode eines Coaches? Vielleicht der Mitglieds-Code eines Studios (QR an der Rezeption).
+      if (err instanceof ApiClientError && err.status === 400) {
+        try {
+          await api("/me/studio", { body: { code } });
+          onJoined();
+          return;
+        } catch {
+          // ursprüngliche Fehlermeldung anzeigen
+        }
+      }
       setError(errorMessage(err));
     }
   }
 
   return (
     <Card className="bg-gradient-to-br from-brand/10 to-surface">
-      <h2 className="font-semibold text-fg">Mit deinem Trainer verbinden</h2>
-      <p className="mt-1 text-sm text-fg-muted">Gib den Einladungscode ein, den du von deinem Trainer bekommen hast.</p>
+      <h2 className="font-semibold text-fg">Mit deinem Trainer oder Studio verbinden</h2>
+      <p className="mt-1 text-sm text-fg-muted">Gib den Einladungscode deines Trainers ein – oder den Studio-Code von der Rezeption.</p>
       <form onSubmit={submit} className="mt-4 flex max-w-md gap-2">
         <Input
           value={code}

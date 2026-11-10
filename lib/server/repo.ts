@@ -62,6 +62,7 @@ export interface ProfileRow {
   studio_id: string | null;
   avatar_path: string | null;
   phone: string | null;
+  studio_member: boolean;
   created_at: string;
 }
 
@@ -142,6 +143,10 @@ const INVITE_ERRORS: Record<string, string> = {
   CLIENT_NOT_IN_STUDIO: "Dieser Kunde gehört nicht zu deinem Studio.",
   TRAINER_NOT_IN_STUDIO: "Dieser Trainer gehört nicht zu deinem Studio.",
   SAME_TRAINER: "Der Kunde wird bereits von diesem Trainer betreut.",
+  STUDIO_JOIN_NOT_CLIENT: "Nur Kunden können per Mitglieds-Code beitreten.",
+  STUDIO_CODE_INVALID: "Dieser Studio-Code ist ungültig oder wurde erneuert.",
+  STUDIO_ALREADY_MEMBER: "Du bist bereits Mitglied dieses Studios.",
+  CLIENT_COACH_OTHER_STUDIO: "Dein Coach gehört zu einem anderen Studio. Trenne zuerst die Verbindung zu deinem Coach.",
 };
 const CONFLICT_ERRORS: Record<string, string> = {
   TRAINER_HAS_CLIENTS: "Der Trainer betreut noch Kunden. Übertrage sie zuerst an einen anderen Trainer.",
@@ -177,6 +182,7 @@ export const toUser = (r: ProfileRow): User => ({
   trainerId: r.trainer_id,
   avatarUrl: avatarUrl(r.avatar_path),
   phone: r.phone ?? null,
+  studioMember: !!r.studio_member,
   createdAt: iso(r.created_at),
 });
 
@@ -365,8 +371,15 @@ export async function removeClient(trainerId: string, clientId: string) {
   if (planIds.length) {
     must(await sb().from("plan_assignments").delete().eq("client_id", clientId).in("plan_id", planIds));
   }
-  // Kunde verlässt damit auch ein evtl. Studio des Trainers
-  must(await sb().from("profiles").update({ trainer_id: null, studio_id: null }).eq("id", clientId).eq("trainer_id", trainerId));
+  // Kunde verlässt damit auch das Studio des Trainers – außer er ist selbst Mitglied (per Code beigetreten)
+  const client = await getProfile(clientId);
+  must(
+    await sb()
+      .from("profiles")
+      .update(client?.studio_member ? { trainer_id: null } : { trainer_id: null, studio_id: null })
+      .eq("id", clientId)
+      .eq("trainer_id", trainerId),
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -915,7 +928,7 @@ export async function deleteAccount(user: ProfileRow) {
   if (user.role === "studio") {
     const studio = await studioOf(user);
     if (studio) {
-      for (const folder of [`studios/${studio.id}`, `studios/${studio.id}/staff`]) {
+      for (const folder of [`studios/${studio.id}`, `studios/${studio.id}/staff`, `studios/${studio.id}/courses`]) {
         const { data: files } = await sb().storage.from(AVATAR_BUCKET).list(folder);
         const real = (files ?? []).filter((f) => f.id); // Unterordner haben keine id
         if (real.length) await sb().storage.from(AVATAR_BUCKET).remove(real.map((f) => `${folder}/${f.name}`));
@@ -983,6 +996,7 @@ export interface StudioRow {
   instagram: string | null;
   opening_hours: OpeningHoursDay[];
   amenities: string[];
+  join_code: string;
   created_at: string;
 }
 
@@ -1023,6 +1037,7 @@ export async function getStudioOverview(owner: ProfileRow): Promise<StudioOvervi
         joined_at: string;
         last_workout_at: string | null;
         workouts_last_7_days: number;
+        studio_member: boolean;
       }[]
     >,
     sb()
@@ -1043,6 +1058,7 @@ export async function getStudioOverview(owner: ProfileRow): Promise<StudioOvervi
     joinedAt: iso(c.joined_at),
     lastWorkoutAt: isoOrNull(c.last_workout_at),
     workoutsLast7Days: c.workouts_last_7_days,
+    studioMember: !!c.studio_member,
   }));
   const trainers: StudioTrainer[] = trainerRows.map((t) => {
     const own = clients.filter((c) => c.trainerId === t.id);
@@ -1057,7 +1073,7 @@ export async function getStudioOverview(owner: ProfileRow): Promise<StudioOvervi
   });
 
   return {
-    studio: { ...toStudioInfo(studio), maxTrainers: studio.max_trainers },
+    studio: { ...toStudioInfo(studio), maxTrainers: studio.max_trainers, joinCode: studio.join_code },
     trainers,
     clients,
     invitations: inviteRows.map(toInvitation),
@@ -1170,6 +1186,53 @@ export async function checkStudioInvitation(code: string): Promise<{ valid: bool
 export async function joinStudio(trainer: ProfileRow, code: string): Promise<ProfileRow> {
   must(await sb().rpc("redeem_studio_invitation", { p_code: code, p_trainer: trainer.id }));
   return (await getProfile(trainer.id))!;
+}
+
+/* ------------------------------------------------------------------ */
+/* Studio-Mitglieder (per wiederverwendbarem Code, ohne festen Coach)   */
+/* ------------------------------------------------------------------ */
+
+/** Öffentliche Prüfung eines Mitglieds-Codes (Registrierung / QR). */
+export async function checkStudioJoinCode(code: string): Promise<{ valid: boolean; studioName: string | null }> {
+  const studio = must(
+    await sb().from("studios").select("name").eq("join_code", code.trim().toUpperCase()).maybeSingle<{ name: string }>(),
+  );
+  return { valid: !!studio, studioName: studio?.name ?? null };
+}
+
+/** Kunde tritt per Mitglieds-Code bei (atomar in Postgres). */
+export async function joinStudioAsClient(client: ProfileRow, code: string): Promise<ProfileRow> {
+  must(await sb().rpc("join_studio_as_client", { p_code: code, p_client: client.id }));
+  return (await getProfile(client.id))!;
+}
+
+/**
+ * Kunde verlässt sein Studio. Gehört sein Coach zum Studio, endet auch diese Verbindung
+ * (Pläne werden entkoppelt, der Coach bekommt einen Hinweis).
+ */
+export async function leaveStudio(client: ProfileRow): Promise<ProfileRow> {
+  if (client.role !== "client") throw forbidden("Nur Kunden können ein Studio verlassen.");
+  const studio = await studioOf(client);
+  if (!studio) throw badRequest("Du gehörst zu keinem Studio.");
+  if (client.trainer_id) {
+    const coach = await getProfile(client.trainer_id);
+    if (coach?.studio_id === studio.id) await leaveTrainer(client);
+  }
+  must(await sb().from("profiles").update({ studio_id: null, studio_member: false }).eq("id", client.id));
+  await addNotice(studio.owner_id, "member_left", client.name);
+  return (await getProfile(client.id))!;
+}
+
+/** Neuen Mitglieds-Code erzeugen – der alte (z. B. auf einem Aushang) funktioniert danach nicht mehr. */
+export async function renewJoinCode(owner: ProfileRow): Promise<{ joinCode: string }> {
+  const studio = await ownStudio(owner);
+  for (let i = 0; i < 5; i++) {
+    const code = generateCode(8);
+    const { data, error } = await sb().from("studios").update({ join_code: code }).eq("id", studio.id).select("join_code").maybeSingle<{ join_code: string }>();
+    if (!error && data) return { joinCode: data.join_code };
+    if (error && error.code !== "23505") throw dbError(error);
+  }
+  throw new ApiError(500, "code_failed", "Code konnte nicht erzeugt werden. Bitte versuche es erneut.");
 }
 
 /** Kunden einem Trainer des Studios zuweisen bzw. übertragen (Pläne werden kopiert). */

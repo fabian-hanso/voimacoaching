@@ -53,3 +53,34 @@ export async function toLogo(file: File): Promise<Blob> {
   if (!blob) throw new Error("Logo konnte nicht verarbeitet werden.");
   return blob;
 }
+
+/** Titelbild (z. B. für Kurse): mittig auf 16:9 zuschneiden, max. 1600×900, WebP (sonst JPEG). */
+export async function toCover(file: File): Promise<Blob> {
+  if (!file.type.startsWith("image/")) throw new Error("Bitte wähle eine Bilddatei aus.");
+  if (file.size > 30 * 1024 * 1024) throw new Error("Das Bild ist zu groß (max. 30 MB vor dem Zuschneiden).");
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error("Dieses Bildformat wird nicht unterstützt. Bitte JPEG, PNG oder WebP verwenden.");
+  }
+  const ratio = 16 / 9;
+  let sw = bitmap.width;
+  let sh = Math.round(sw / ratio);
+  if (sh > bitmap.height) {
+    sh = bitmap.height;
+    sw = Math.round(sh * ratio);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.min(1600, sw);
+  canvas.height = Math.round(canvas.width / ratio);
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, (bitmap.width - sw) / 2, (bitmap.height - sh) / 2, sw, sh, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const encode = (type: string) => new Promise<Blob | null>((res) => canvas.toBlob(res, type, 0.82));
+  const webp = await encode("image/webp");
+  const blob = webp?.type === "image/webp" ? webp : await encode("image/jpeg");
+  if (!blob) throw new Error("Bild konnte nicht verarbeitet werden.");
+  return blob;
+}

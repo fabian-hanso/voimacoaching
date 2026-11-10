@@ -292,6 +292,37 @@ export type StudioAppointmentInput = z.infer<typeof studioAppointmentSchema>;
 /** Kontaktdaten am Termin (null/leer = aus dem Profil übernehmen) */
 export const appointmentContactSchema = z.object({ email: optEmailSchema, phone: phoneSchema });
 
+/* ------------------------------------------------------------------ */
+/* Kurse                                                               */
+/* ------------------------------------------------------------------ */
+
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Datum im Format JJJJ-MM-TT.");
+
+export const courseSlotSchema = z.object({ day: z.number().int().min(0).max(6), start: hhmm });
+
+export const courseInputSchema = z
+  .object({
+    title: z.string().trim().min(1, "Titel fehlt.").max(80),
+    category: optText(40),
+    description: optText(2000),
+    location: optText(80),
+    trainerId: z.string().min(1).nullable().optional(),
+    capacity: z.number().int().min(1, "Mindestens 1 Platz.").max(500, "Höchstens 500 Plätze."),
+    durationMin: z.number().int().min(15).max(240).multipleOf(15, "In 15-Minuten-Schritten."),
+    schedule: z
+      .array(courseSlotSchema)
+      .min(1, "Lege mindestens einen Kurstermin (Tag & Uhrzeit) fest.")
+      .max(21)
+      .refine((s) => new Set(s.map((x) => `${x.day}-${x.start}`)).size === s.length, "Ein Kurstermin ist doppelt."),
+    startsOn: isoDate.nullable().optional(),
+    endsOn: isoDate.nullable().optional(),
+    active: z.boolean().default(true),
+  })
+  .refine((c) => !c.startsOn || !c.endsOn || c.endsOn >= c.startsOn, { message: "„Bis“ muss nach „Ab“ liegen.", path: ["endsOn"] });
+export type CourseInput = z.infer<typeof courseInputSchema>;
+
+export const courseBookingSchema = z.object({ startsAt: z.iso.datetime({ offset: true }) });
+
 export const appointmentCommentSchema = z.object({ body: z.string().trim().min(1, "Kommentar ist leer.").max(1000) });
 export const trainerNoteSchema = z.object({ note: z.string().trim().max(2000).transform((v) => v || null).nullable() });
 

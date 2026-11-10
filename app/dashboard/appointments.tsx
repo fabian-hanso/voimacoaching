@@ -6,6 +6,8 @@ import { errorMessage } from "@/lib/client/errors";
 import { Alert, Avatar, Badge, Button, Card, cx, EmptyState, Field, Input, LoadError, Select, Spinner, Textarea, type BadgeTone } from "@/components/ui";
 import { Icon, IconTile, type IconName } from "@/components/icons";
 import { bookingSettingsSchema } from "@/lib/schemas";
+import { Modal, ModalHeader } from "./modal";
+import { CourseSessionModal } from "./courses";
 import type {
   Appointment,
   AppointmentCategory,
@@ -76,41 +78,6 @@ function split(appointments: Appointment[], now: number) {
 /** Offene Anfragen (für den Zähler am Tab). */
 export const openRequests = (list: Appointment[] | undefined, now = 0) =>
   (list ?? []).filter((a) => a.status === "requested" && Date.parse(a.endsAt) > now).length;
-
-function Modal({ label, onClose, busy, children, wide }: { label: string; onClose: () => void; busy?: boolean; children: ReactNode; wide?: boolean }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose, busy]);
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={label}>
-      <button aria-label="Schließen" tabIndex={-1} onClick={() => !busy && onClose()} className="absolute inset-0 bg-fg/30 backdrop-blur-[2px]" />
-      <div
-        className={cx(
-          "relative max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-2xl bg-surface p-6 shadow-2xl ring-1 ring-line-strong",
-          wide ? "max-w-2xl" : "max-w-md",
-        )}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle?: string; onClose: () => void }) {
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <h2 className="text-lg font-bold text-fg">{title}</h2>
-        {subtitle && <p className="mt-0.5 text-sm text-fg-muted">{subtitle}</p>}
-      </div>
-      <button type="button" aria-label="Schließen" onClick={onClose} className="grid size-8 shrink-0 place-items-center rounded-lg text-fg-subtle hover:bg-surface-3 hover:text-fg">
-        <Icon name="x" className="size-4" />
-      </button>
-    </div>
-  );
-}
 
 /** Rückfrage mit optionaler Nachricht (Ablehnen / Absagen). */
 function ReasonDialog({
@@ -700,18 +667,21 @@ function BookingSettingsEditor({ initial, onSaved }: { initial: BookingSettings;
 const HOUR_PX = 44;
 
 /** Überlappende Termine eines Tages nebeneinander anordnen (Spuren). */
-function layoutDay(items: Appointment[]) {
+function layoutDay<T extends { startsAt: string; endsAt: string }>(items: T[]) {
   const sorted = [...items].sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
   const lanes: number[] = []; // Ende je Spur
-  const placed = sorted.map((a) => {
-    const s = Date.parse(a.startsAt);
+  const placed = sorted.map((item) => {
+    const s = Date.parse(item.startsAt);
     let lane = lanes.findIndex((end) => end <= s);
     if (lane === -1) lane = lanes.push(0) - 1;
-    lanes[lane] = Date.parse(a.endsAt);
-    return { a, lane };
+    lanes[lane] = Date.parse(item.endsAt);
+    return { item, lane };
   });
   return { placed, lanes: Math.max(lanes.length, 1) };
 }
+
+type CourseBlock = Schedule["courseSessions"][number];
+type CalendarItem = { kind: "appointment"; a: Appointment; startsAt: string; endsAt: string } | { kind: "course"; c: CourseBlock; startsAt: string; endsAt: string };
 
 const minutesOfDay = (iso: string) => {
   const d = new Date(iso);
@@ -727,6 +697,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
   const schedule = useApi<Schedule>(`/schedule?week=${week}`);
   const [filter, setFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<Appointment | null>(null);
+  const [course, setCourse] = useState<CourseBlock | null>(null);
   const [create, setCreate] = useState<{ date: string } | null>(null);
   const now = useNow();
   const today = localDate(new Date(now));
@@ -744,10 +715,15 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
   const trainers = data.trainers.filter((t) => !filter || t.id === filter);
   const visible = data.appointments.filter((a) => (a.status === "requested" || a.status === "confirmed") && (!filter || a.trainer.id === filter));
   const cancelledCount = data.appointments.filter((a) => (a.status === "cancelled" || a.status === "declined") && (!filter || a.trainer.id === filter)).length;
+  const courses = (data.courseSessions ?? []).filter((c) => !filter || c.trainerId === filter);
+  const items: CalendarItem[] = [
+    ...visible.map((a) => ({ kind: "appointment" as const, a, startsAt: a.startsAt, endsAt: a.endsAt })),
+    ...courses.map((c) => ({ kind: "course" as const, c, startsAt: c.startsAt, endsAt: c.endsAt })),
+  ];
 
   // Sichtbarer Zeitraum: mindestens 7–21 Uhr, erweitert um Zeitfenster und Termine
-  const mins = [7 * 60, ...trainers.flatMap((t) => t.windows.map((w) => toMin(w.start))), ...visible.map((a) => minutesOfDay(a.startsAt))];
-  const maxs = [21 * 60, ...trainers.flatMap((t) => t.windows.map((w) => toMin(w.end))), ...visible.map((a) => minutesOfDay(a.endsAt) || 24 * 60)];
+  const mins = [7 * 60, ...trainers.flatMap((t) => t.windows.map((w) => toMin(w.start))), ...items.map((x) => minutesOfDay(x.startsAt))];
+  const maxs = [21 * 60, ...trainers.flatMap((t) => t.windows.map((w) => toMin(w.end))), ...items.map((x) => minutesOfDay(x.endsAt) || 24 * 60)];
   const startH = Math.floor(Math.min(...mins) / 60);
   const endH = Math.min(24, Math.ceil(Math.max(...maxs) / 60));
   const hours = Array.from({ length: endH - startH }, (_, i) => startH + i);
@@ -814,6 +790,11 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
             <span className="inline-flex items-center gap-1.5">
               <span className="size-3 rounded bg-surface ring-1 ring-accent" /> Angefragt{requested ? ` (${requested})` : ""}
             </span>
+            {courses.length > 0 && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-3 rounded bg-brand-fg" /> Kurs
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5">
               <span className="size-3 rounded bg-brand/25" /> {multi ? "Verfügbar – je kräftiger, desto mehr Trainer" : "Deine Verfügbarkeit"}
             </span>
@@ -826,7 +807,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
               <div className="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] border-b border-line">
                 <div />
                 {days.map((d, i) => {
-                  const count = visible.filter((a) => localDate(new Date(a.startsAt)) === d).length;
+                  const count = items.filter((x) => localDate(new Date(x.startsAt)) === d).length;
                   const available = trainers.filter((t) => t.enabled && t.windows.some((w) => w.day === i)).length;
                   return (
                     <button
@@ -857,7 +838,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
                   ))}
                 </div>
                 {days.map((d, i) => {
-                  const { placed, lanes } = layoutDay(visible.filter((a) => localDate(new Date(a.startsAt)) === d));
+                  const { placed, lanes } = layoutDay(items.filter((x) => localDate(new Date(x.startsAt)) === d));
                   const nowLine = d === today ? minutesOfDay(new Date(now).toISOString()) : null;
                   return (
                     <div key={d} className={cx("relative border-l border-line", d === today && "bg-brand/5")}>
@@ -881,10 +862,44 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
                           <span className="absolute -top-1 -left-1 size-2 rounded-full bg-accent" />
                         </div>
                       )}
-                      {placed.map(({ a, lane }) => {
-                        const start = minutesOfDay(a.startsAt);
-                        const duration = Math.max(15, Math.round((Date.parse(a.endsAt) - Date.parse(a.startsAt)) / 60000));
+                      {placed.map(({ item, lane }) => {
+                        const start = minutesOfDay(item.startsAt);
+                        const duration = Math.max(15, Math.round((Date.parse(item.endsAt) - Date.parse(item.startsAt)) / 60000));
                         const height = (duration / 60) * HOUR_PX;
+                        const position = {
+                          top: top(start) + 1,
+                          height: height - 2,
+                          left: `calc(${(lane / lanes) * 100}% + 2px)`,
+                          width: `calc(${100 / lanes}% - 4px)`,
+                        };
+                        if (item.kind === "course") {
+                          const c = item.c;
+                          const trainerName = data.trainers.find((t) => t.id === c.trainerId)?.name;
+                          return (
+                            <button
+                              key={`course-${c.courseId}-${c.startsAt}`}
+                              type="button"
+                              onClick={() => setCourse(c)}
+                              title={`${time(c.startsAt)}–${time(c.endsAt)} ${c.title} · ${c.booked}/${c.capacity} Plätze${trainerName ? ` · ${trainerName}` : ""}`}
+                              className="absolute overflow-hidden rounded-md bg-brand-fg px-1.5 py-1 text-left text-[11px] leading-tight text-white shadow-sm transition hover:z-10 hover:shadow-md"
+                              style={position}
+                            >
+                              <span className="flex items-center gap-1 truncate font-semibold">
+                                {time(c.startsAt)} {c.title}
+                                <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-brand">
+                                  <Icon name="users" className="size-2.5" />
+                                  {c.booked}/{c.capacity}
+                                </span>
+                              </span>
+                              {height > 34 && (
+                                <span className="block truncate opacity-75">
+                                  {[multi && trainerName ? trainerName.split(" ")[0] : null, c.location].filter(Boolean).join(" · ") || "Kurs"}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        }
+                        const a = item.a;
                         const who = multi ? `${a.trainer.name.split(" ")[0]} · ${partyName(a)}` : partyName(a);
                         return (
                           <button
@@ -896,12 +911,7 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
                               "absolute overflow-hidden rounded-md px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm transition hover:z-10 hover:shadow-md",
                               a.status === "confirmed" ? "bg-brand text-brand-fg" : "bg-surface text-fg ring-1 ring-accent ring-inset",
                             )}
-                            style={{
-                              top: top(start) + 1,
-                              height: height - 2,
-                              left: `calc(${(lane / lanes) * 100}% + 2px)`,
-                              width: `calc(${100 / lanes}% - 4px)`,
-                            }}
+                            style={position}
                           >
                             <span className="flex items-center gap-1 truncate font-semibold">
                               {time(a.startsAt)} {a.title}
@@ -932,6 +942,12 @@ export function CalendarView({ role, onChanged }: { role: "trainer" | "studio"; 
           now={now}
           onClose={() => setSelected(null)}
           onChanged={reload}
+        />
+      )}
+      {course && (
+        <CourseSessionModal
+          session={{ courseId: course.courseId, title: course.title, startsAt: course.startsAt, endsAt: course.endsAt, booked: course.booked, capacity: course.capacity, location: course.location }}
+          onClose={() => setCourse(null)}
         />
       )}
       {create && (
