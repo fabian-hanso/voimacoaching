@@ -23,8 +23,10 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 - **Übungskatalog mit Erklärungen:** Alle 46 Katalogübungen haben eine Anleitung mit Muskeln, Equipment, Niveau, Ausführung Schritt für Schritt und typischen Fehlern.
   - Trainer: neuer Tab „Übungen“ zum Durchsuchen, nach Übung, Muskel oder Gerät und mit Kategorien. Im Plan-Editor gibt es „Aus Katalog wählen“ je Trainingstag, ein Erklär-Icon am Übungsnamen und das Feld **„Hinweis für den Kunden“** je Übung.
-  - Kunden: An jeder Übung im Plan und beim Training gibt es „Erklärung“, mit Katalog-Anleitung und persönlichem Hinweis des Coaches. Der Katalog ist als Schnellaktion auf der Startseite erreichbar.
-  - API: `GET /exercises` liefert je Übung `guide`.
+  - Studios: ebenfalls ein Tab „Übungen“ mit dem kompletten Katalog.
+  - Kunden: An jeder Übung im Plan und beim Training gibt es „Erklärung“, mit Katalog-Anleitung und persönlichem Hinweis des Coaches. Kunden sehen nur Anleitungen zu Übungen aus ihren zugewiesenen Plänen, einen freien Katalog gibt es für sie nicht.
+  - Im Katalog ist die ganze Übungskachel klickbar und hat einen Hover-Zustand.
+  - API: neuer Endpunkt `GET /exercises/guides` (angemeldet). Trainer und Studios bekommen alle Anleitungen, Kunden nur die ihrer Pläne. `GET /exercises` bleibt öffentlich und enthält keine Anleitungen.
 - **Kurse im Studio** (z. B. Yoga, Spinning, Rücken-Fit):
   - Studios legen Kurse an – mit Titel, Kategorie, Beschreibung, Titelbild (16:9), Raum, zugewiesenem Trainer,
     **Plätzen pro Termin** (Kontingent), Dauer und wöchentlichen Zeiten (mehrere Tage/Uhrzeiten möglich),

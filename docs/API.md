@@ -60,7 +60,8 @@ Legende: 🌐 öffentlich · 👤 alle angemeldeten Nutzer · 🏋️ nur Traine
 
 | Methode | Pfad          | Wer | Beschreibung                                                                 |
 | ------- | ------------- | --- | ---------------------------------------------------------------------------- |
-| GET     | `/exercises`  | 🌐  | `{ exercises, cardioMetrics, defaultCardioMetrics }`: Übungskatalog für Kraft und Ausdauer, inklusive der Messwerte pro Gerät (z. B. Laufband: Dauer, Distanz, Steigung, Puls, kcal). Jede Übung hat `guide` mit `summary`, `muscles[]`, `equipment`, `level` (`Einsteiger`/`Fortgeschritten`), `steps[]`, `tips[]` – oder `null`. Apps zeigen damit „Übung erklären“ an. |
+| GET     | `/exercises`  | 🌐  | `{ exercises, cardioMetrics, defaultCardioMetrics }`: Übungskatalog für Kraft und Ausdauer, inklusive der Messwerte pro Gerät (z. B. Laufband: Dauer, Distanz, Steigung, Puls, kcal). Ohne Anleitungen, die gibt es über `/exercises/guides`. |
+| GET     | `/exercises/guides` | 👤  | `{ guides }`: Objekt Übungsname → Anleitung mit `summary`, `muscles[]`, `equipment`, `level` (`Einsteiger`/`Fortgeschritten`), `steps[]`, `tips[]`. Trainer und Studios bekommen alle Anleitungen, Kunden nur die zu Übungen aus ihren zugewiesenen Plänen. Apps zeigen damit „Übung erklären“ an. |
 
 Übungsnamen sind frei wählbar. Der Katalog liefert nur Vorschläge.
 
@@ -130,7 +131,7 @@ Einladungslink für das Web: `/registrieren?rolle=kunde&code=<CODE>`
 ```
 
 `reps` ist ein Text, damit auch Angaben wie `"8-10"`, `"AMRAP"` oder `"30s"` möglich sind.
-`notes` (max. 500 Zeichen) ist der persönliche Hinweis des Trainers an den Kunden. Apps zeigen ihn zusammen mit der Katalog-Erklärung (`GET /exercises`, Abgleich über den Übungsnamen, Groß-/Kleinschreibung egal).
+`notes` (max. 500 Zeichen) ist der persönliche Hinweis des Trainers an den Kunden. Apps zeigen ihn zusammen mit der Katalog-Erklärung (`GET /exercises/guides`, Abgleich über den Übungsnamen, Groß-/Kleinschreibung egal).
 Kraftübungen brauchen `sets` und `reps`, Ausdauerübungen `durationMin` oder `distanceKm`. Sonst kommt `422`.
 
 ### Workouts
