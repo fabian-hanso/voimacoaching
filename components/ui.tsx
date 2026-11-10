@@ -1,8 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import logoMark from "@/public/logo.jpg";
+import { LegalLinks } from "./legal/legal-links";
 import { twMerge } from "tailwind-merge";
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
+import { SITE_NAME } from "@/lib/site";
 
 /** Kleine UI-Bausteine im Tailwind-Look, geteilt von Login, Registrierung und Dashboard. */
 
@@ -11,12 +19,30 @@ export function cx(...classes: (string | false | null | undefined)[]) {
   return twMerge(classes.filter(Boolean).join(" "));
 }
 
-/** Voima-Coach-Logo (Bildmarke aus /public/logo.jpg) mit Schriftzug. */
-export function Logo({ href = "/", className }: { href?: string; className?: string }) {
+/** Logo (Bildmarke aus /public/logo.jpg) mit Schriftzug – Name aus lib/site.ts. */
+export function Logo({
+  href = "/",
+  className,
+}: {
+  href?: string;
+  className?: string;
+}) {
   return (
-    <Link href={href} className={cx("flex items-center gap-2.5 font-bold tracking-tight text-fg", className)}>
-      <Image src={logoMark} alt="" width={32} height={32} className="size-8 rounded-inner" />
-      Voima Coach
+    <Link
+      href={href}
+      className={cx(
+        "flex items-center gap-2.5 font-bold tracking-tight text-fg",
+        className,
+      )}
+    >
+      <Image
+        src={logoMark}
+        alt=""
+        width={32}
+        height={32}
+        className="size-8 rounded-inner"
+      />
+      {SITE_NAME}
     </Link>
   );
 }
@@ -25,47 +51,106 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 const variants: Record<Variant, string> = {
   primary: "bg-brand text-brand-fg hover:bg-brand-hover",
-  secondary: "bg-surface-3 text-fg ring-1 ring-line-strong hover:bg-line-strong",
+  secondary:
+    "bg-surface-3 text-fg ring-1 ring-line-strong hover:bg-line-strong",
   ghost: "text-fg-muted hover:bg-fg/5 hover:text-fg",
   danger: "text-danger hover:bg-danger/10",
 };
+
+const buttonClass = (variant: Variant, size: "sm" | "md", className?: string) =>
+  cx(
+    "inline-flex items-center justify-center gap-2 rounded-control font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
+    size === "sm" ? "px-2.5 py-1.5 text-xs" : "px-4 py-2.5 text-sm",
+    variants[variant],
+    className,
+  );
 
 export function Button({
   variant = "primary",
   size = "md",
   className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: "sm" | "md" }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: Variant;
+  size?: "sm" | "md";
+}) {
   return (
-    <button
-      {...props}
-      className={cx(
-        "inline-flex items-center justify-center gap-2 rounded-control font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
-        size === "sm" ? "px-2.5 py-1.5 text-xs" : "px-4 py-2.5 text-sm",
-        variants[variant],
-        className,
+    <button {...props} className={buttonClass(variant, size, className)} />
+  );
+}
+
+/** Link im Button-Look (gleiche Varianten und Größen wie `Button`). */
+export function ButtonLink({
+  href,
+  variant = "primary",
+  size = "md",
+  className,
+  children,
+}: {
+  href: string;
+  variant?: Variant | "outline";
+  size?: "sm" | "md";
+  className?: string;
+  children: ReactNode;
+}) {
+  const v = variant === "outline" ? "ghost" : variant;
+  return (
+    <Link
+      href={href}
+      className={buttonClass(
+        v,
+        size,
+        cx(
+          variant === "outline" &&
+            "text-fg ring-1 ring-line-strong hover:bg-surface-2",
+          className,
+        ),
       )}
-    />
+    >
+      {children}
+    </Link>
   );
 }
 
 const fieldBase =
   "block w-full rounded-control border-0 bg-surface-2 px-3 py-2 text-sm text-fg ring-1 ring-line-strong ring-inset placeholder:text-fg-subtle focus:ring-2 focus:ring-brand-ink focus:outline-none";
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({
+  className,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(fieldBase, className)} />;
 }
 
-export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Textarea({
+  className,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...props} className={cx(fieldBase, className)} />;
 }
 
-export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({
+  className,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement>) {
   // select-chevron (globals.css): eigener, eingerückter Pfeil statt des bündigen Browser-Pfeils
-  return <select {...props} className={cx(fieldBase, "select-chevron pr-10", className)} />;
+  return (
+    <select
+      {...props}
+      className={cx(fieldBase, "select-chevron pr-10", className)}
+    />
+  );
 }
 
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+export function Field({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: ReactNode;
+  hint?: string;
+}) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-medium text-fg">{label}</span>
@@ -75,26 +160,59 @@ export function Field({ label, children, hint }: { label: string; children: Reac
   );
 }
 
-export function Card({ children, className, id }: { children: ReactNode; className?: string; id?: string }) {
+export function Card({
+  children,
+  className,
+  id,
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+}) {
   return (
-    <div id={id} className={cx("rounded-box bg-surface p-6 ring-1 ring-line", className)}>
+    <div
+      id={id}
+      className={cx("rounded-box bg-surface p-6 ring-1 ring-line", className)}
+    >
       {children}
     </div>
   );
 }
 
-export function Alert({ children, tone = "error" }: { children: ReactNode; tone?: "error" | "success" | "info" }) {
+export function Alert({
+  children,
+  tone = "error",
+}: {
+  children: ReactNode;
+  tone?: "error" | "success" | "info";
+}) {
   const tones = {
     error: "bg-danger/10 text-danger ring-danger/25",
     success: "bg-success/10 text-success ring-success/25",
     info: "bg-brand/30 text-brand-ink ring-brand-ink/20",
   };
-  return <div className={cx("rounded-tile px-3 py-2 text-sm ring-1 ring-inset", tones[tone])}>{children}</div>;
+  return (
+    <div
+      className={cx(
+        "rounded-tile px-3 py-2 text-sm ring-1 ring-inset",
+        tones[tone],
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
-export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger" | "accent";
+export type BadgeTone =
+  "neutral" | "brand" | "success" | "warning" | "danger" | "accent";
 
-export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: BadgeTone }) {
+export function Badge({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: BadgeTone;
+}) {
   const tones: Record<BadgeTone, string> = {
     neutral: "bg-surface-3 text-fg-muted",
     brand: "bg-brand/30 text-brand-ink ring-1 ring-brand-ink/20 ring-inset",
@@ -103,7 +221,16 @@ export function Badge({ children, tone = "neutral" }: { children: ReactNode; ton
     danger: "bg-danger/10 text-danger ring-1 ring-danger/25 ring-inset",
     accent: "bg-accent/20 text-accent-soft ring-1 ring-accent/40 ring-inset",
   };
-  return <span className={cx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", tones[tone])}>{children}</span>;
+  return (
+    <span
+      className={cx(
+        "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
+        tones[tone],
+      )}
+    >
+      {children}
+    </span>
+  );
 }
 
 export function Spinner() {
@@ -114,7 +241,15 @@ export function Spinner() {
   );
 }
 
-export function EmptyState({ title, text, action }: { title: string; text: string; action?: ReactNode }) {
+export function EmptyState({
+  title,
+  text,
+  action,
+}: {
+  title: string;
+  text: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="rounded-box border border-dashed border-line-strong px-6 py-12 text-center">
       <p className="font-semibold text-fg">{title}</p>
@@ -124,7 +259,15 @@ export function EmptyState({ title, text, action }: { title: string; text: strin
   );
 }
 
-export function AuthShell({ title, subtitle, children }: { title: string; subtitle: ReactNode; children: ReactNode }) {
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className="relative isolate flex flex-1 flex-col items-center justify-center px-4 py-16">
       <div
@@ -137,6 +280,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
         <p className="mt-1 text-sm text-fg-muted">{subtitle}</p>
         <div className="mt-6">{children}</div>
       </div>
+      <LegalLinks className="mt-8" />
     </div>
   );
 }
@@ -167,17 +311,31 @@ export function Avatar({
     .slice(0, 2)
     .map((p) => p[0]!.toUpperCase())
     .join("");
-  const base = cx("shrink-0 rounded-full ring-2 ring-surface", avatarSizes[size], className);
+  const base = cx(
+    "shrink-0 rounded-full ring-2 ring-surface",
+    avatarSizes[size],
+    className,
+  );
   if (src) {
     // Bereits serverseitig auf 512×512 verkleinert → kein next/image nötig
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} loading="lazy" className={cx(base, "bg-surface-3 object-cover")} />;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={name}
+        loading="lazy"
+        className={cx(base, "bg-surface-3 object-cover")}
+      />
+    );
   }
   return (
     <span
       role="img"
       aria-label={name}
-      className={cx(base, "grid place-items-center bg-gradient-to-br from-brand to-brand-strong font-semibold text-brand-fg")}
+      className={cx(
+        base,
+        "grid place-items-center bg-gradient-to-br from-brand to-brand-strong font-semibold text-brand-fg",
+      )}
     >
       {initials || "?"}
     </span>
@@ -185,12 +343,21 @@ export function Avatar({
 }
 
 /** Fehler beim Laden – mit „Erneut versuchen“. */
-export function LoadError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+export function LoadError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry?: () => void;
+}) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-box bg-danger/10 px-4 py-3 text-sm text-danger ring-1 ring-danger/25 ring-inset">
       <span>{message}</span>
       {onRetry && (
-        <button onClick={onRetry} className="font-semibold underline-offset-2 hover:underline">
+        <button
+          onClick={onRetry}
+          className="font-semibold underline-offset-2 hover:underline"
+        >
           Erneut versuchen
         </button>
       )}

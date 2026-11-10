@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { supabaseAdmin } from "../supabase/admin";
 import { ApiError, badRequest, conflict, forbidden, notFound } from "./http";
+import { getBillingStatus } from "./billing";
 import type {
   FeatureRequestInput,
   LoggedExercise,
@@ -63,6 +64,8 @@ export interface ProfileRow {
   avatar_path: string | null;
   phone: string | null;
   studio_member: boolean;
+  /** Ende der kostenlosen Testphase (Trainer & Studios) */
+  trial_ends_at: string;
   created_at: string;
 }
 
@@ -146,6 +149,7 @@ const INVITE_ERRORS: Record<string, string> = {
   STUDIO_JOIN_NOT_CLIENT: "Nur Kunden können per Mitglieds-Code beitreten.",
   STUDIO_CODE_INVALID: "Dieser Studio-Code ist ungültig oder wurde erneuert.",
   STUDIO_ALREADY_MEMBER: "Du bist bereits Mitglied dieses Studios.",
+  TRAINER_CLIENT_LIMIT: "Dein Coach kann gerade keine weiteren Kunden aufnehmen. Bitte sprich ihn direkt an.",
   CLIENT_COACH_OTHER_STUDIO: "Dein Coach gehört zu einem anderen Studio. Trenne zuerst die Verbindung zu deinem Coach.",
 };
 const CONFLICT_ERRORS: Record<string, string> = {
@@ -1275,8 +1279,8 @@ export async function removeStudioTrainer(owner: ProfileRow, trainerId: string) 
 
 /** Einheitliche Antwort für /me & Co.: Nutzer, Coach (bei Kunden) und Studio. */
 export async function meResponse(user: ProfileRow): Promise<MeResponse> {
-  const [trainer, studio] = await Promise.all([getTrainer(user.trainer_id), getStudioInfo(user)]);
-  return { user: toUser(user), trainer, studio };
+  const [trainer, studio, billing] = await Promise.all([getTrainer(user.trainer_id), getStudioInfo(user), getBillingStatus(user)]);
+  return { user: toUser(user), trainer, studio, billing };
 }
 
 /* ------------------------------------------------------------------ */

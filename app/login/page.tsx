@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { AuthSwitchLink } from "@/components/auth/auth-switch-link";
 import { Suspense } from "react";
 import { AuthShell, Spinner } from "@/components/ui";
-import { LoginForm } from "./login-form";
+import { LoginForm } from "@/components/auth/login-form";
 
-export const metadata: Metadata = { title: "Anmelden · Voima Coach" };
+export const metadata: Metadata = { title: "Anmelden" };
 
 export default function LoginPage() {
   return (
     <AuthShell
       title="Willkommen zurück"
       subtitle={
-        <>
-          Noch kein Konto?{" "}
-          <Link href="/registrieren" className="font-semibold text-brand-ink hover:text-brand-ink/80">
-            Jetzt registrieren
-          </Link>
-        </>
+        <AuthSwitchLink
+          question="Noch kein Konto?"
+          href="/registrieren"
+          label="Jetzt registrieren"
+        />
       }
     >
       <Suspense fallback={<Spinner />}>

@@ -330,3 +330,9 @@ export const appointmentActionSchema = z.object({
   action: z.enum(["confirm", "decline", "cancel"]),
   message: optText(500),
 });
+
+/* Abrechnung */
+export const checkoutSchema = z.object({
+  plan: z.enum(["trainer_10", "trainer_20", "trainer_unlimited", "studio"]),
+  interval: z.enum(["month", "year"]),
+});

@@ -8,23 +8,28 @@ const urbanist = Urbanist({
   subsets: ["latin", "latin-ext"],
 });
 
-export const viewport: Viewport = { themeColor: "#f7f7f7", colorScheme: "light" };
+export const viewport: Viewport = {
+  themeColor: "#f7f7f7",
+  colorScheme: "light",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Voima Coach – Software für Personal Trainer & Fitnessstudios",
-  description:
-    "Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und Kundenverwaltung für Personal Trainer und Studios. Kunden nutzen Voima Coach kostenlos.",
+  title: {
+    default: `${SITE_NAME} – Software für Personal Trainer & Fitnessstudios`,
+    // Unterseiten setzen nur ihren Namen, z. B. „Anmelden“ → „Anmelden · <Name>“
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: `Trainingspläne mit Übungsanleitungen, Terminbuchung, Kurse und Kundenverwaltung für Personal Trainer und Studios. Kunden nutzen ${SITE_NAME} kostenlos.`,
   applicationName: SITE_NAME,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="de"
-      className={`${urbanist.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-bg font-sans text-fg">{children}</body>
+    <html lang="de" className={`${urbanist.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-bg font-sans text-fg">
+        {children}
+      </body>
     </html>
   );
 }

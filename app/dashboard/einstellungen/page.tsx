@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { SettingsPage } from "./settings";
+import { SettingsPage } from "@/components/dashboard/settings/settings-page";
 
-export const metadata: Metadata = { title: "Einstellungen · Voima Coach" };
+export const metadata: Metadata = { title: "Einstellungen" };
 
 /**
  * Keine Instant-Navigation-Prüfung: Die Dashboard-Shell rendert Seiten erst, wenn das Profil (/me)

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { DashboardHome } from "./dashboard";
+import { DashboardHome } from "@/components/dashboard/dashboard";
 
-export const metadata: Metadata = { title: "Dashboard · Voima Coach" };
+export const metadata: Metadata = { title: "Dashboard" };
 
 /**
  * Keine Instant-Navigation-Prüfung: Die Dashboard-Shell rendert Seiten erst, wenn das Profil (/me)

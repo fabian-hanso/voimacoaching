@@ -21,6 +21,40 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Hinzugefügt
 
+- **Abo & Abrechnung mit Stripe** für Trainer und Studios (Kunden zahlen nie). Einrichtung: [`docs/STRIPE.md`](docs/STRIPE.md).
+  - **7 Tage kostenlos testen** ab Registrierung, ohne Zahlungsdaten. Eine Hinweisleiste zeigt die verbleibenden Tage.
+  - Neue Seite **Abo & Rechnungen** (`/dashboard/abo`, im Profilmenü): Paket wählen (Trainer: bis 10, bis 20 oder unbegrenzt Kunden; Studio), monatlich oder jährlich, Bezahlung über die Stripe-Bezahlseite. Eine laufende Testphase bleibt kostenlos.
+  - **Abo verwalten** über das Stripe-Kundenportal: Paket wechseln, kündigen zum Periodenende, Zahlungsart ändern, Rechnungen herunterladen.
+  - **Nach Ablauf ohne Abo** ist das Dashboard für Trainer und Studios gesperrt. Erreichbar bleiben die Abo-Seite, die Einstellungen (inkl. Konto löschen) und Abmelden. Kunden trainieren normal weiter.
+  - **Kundenlimit** je Paket: Bei 10 bzw. 20 Kunden lassen sich keine neuen Einladungen erstellen oder einlösen. Bestehende Kunden bleiben verbunden.
+  - **Trainer im Studio** sind über das Studio-Abo abgedeckt.
+  - Fehlgeschlagene Zahlung: Das Konto bleibt nutzbar, eine Warnleiste bittet, die Zahlungsart zu aktualisieren.
+  - **Gekündigtes Abo:** Eine Hinweisleiste im ganzen Dashboard zeigt das Enddatum („Abo fortsetzen“), die Abo-Seite den Status „Gekündigt“. Erkennt auch Kündigungen über `cancel_at`, wie sie neuere Stripe-Versionen aus dem Kundenportal melden.
+  - Kleinunternehmer: keine Umsatzsteuer, der Hinweis nach § 19 UStG steht automatisch auf jeder Rechnung.
+  - API: `GET /billing`, `POST /billing/checkout`, `POST /billing/portal`, `POST /billing/webhook`. `GET /me` liefert zusätzlich `billing`. Neuer Fehlercode `402 billing_required`.
+  - `npm run stripe:setup` legt Produkte, Preise und das Kundenportal in Stripe an. Neue Variablen `STRIPE_SECRET_KEY` und `STRIPE_WEBHOOK_SECRET`.
+  - Demo-Daten (`npm run seed:mock`): Demo-Trainer und -Studios bekommen ein Jahr Testphase. Neu ist der gesperrte Demo-Trainer `demo.kai@example.com` (Testphase abgelaufen, kein Abo) mit Kundin `demo.greta@example.com` sowie das gesperrte Studio „Pulse Fitness Bonn“ (`demo.pulse@example.com`) mit Trainer `demo.jan@example.com` und Kunde `demo.ben@example.com`.
+
+- **Impressum, Datenschutzerklärung und AGB** (`/impressum`, `/datenschutz`, `/agb`), im Footer verlinkt. Die Texte sind Muster, zugeschnitten auf die eingesetzten Dienste (Vercel, Supabase, Stripe), die Kleinunternehmerregelung und Geschäftskunden. Alle persönlichen Angaben stehen gesammelt in `lib/legal.ts`. Solange `draft: true` gesetzt ist, zeigen die Seiten einen Entwurfs-Hinweis und werden nicht indexiert. Preise und Testphase in den AGB kommen aus `lib/billing-plans.ts`. Die Links stehen auch unter Login, Registrierung und Passwort-Seiten sowie am Ende jeder Dashboard-Seite (Impressum muss von überall erreichbar sein).
+
+### Geändert
+
+- **Markenname zentral:** „Voima Coach“ steht nur noch in `lib/site.ts` (`SITE_NAME`). Seitentitel nutzen eine Vorlage im Root-Layout („Anmelden · Voima Coach“). Stripe-Produktnamen werden beim Einrichten aus dem Namen zusammengesetzt. Die Stellen außerhalb des Codes (Logo, Supabase-E-Mails, Stripe-Dashboard) sind dort aufgelistet.
+- Preise der Landingpage kommen aus derselben Quelle wie die Abrechnung (`lib/billing-plans.ts`). Die Jahressumme zeigt jetzt den echten Jahrespreis (z. B. 190 € statt 192 €).
+- Preise: „Unbegrenzte Pläne & Vorlagen“ heißt jetzt „Unbegrenzt viele Trainingspläne“, weil es keine Vorlagen gibt.
+- Landingpage: Im Hero ist „Fitnessstudios“ jetzt lila hervorgehoben, passend zum Lime-Balken bei „Personal Trainer“.
+
+### Datenbank
+
+- `20261125000000_billing.sql` – `profiles.trial_ends_at` (bestehende Trainer/Studios: 7 Tage ab Einspielen), Tabelle `subscriptions` (RLS, nur über die API), Funktion `trainer_client_limit`, Kundenlimit in `redeem_invitation`. Eingespielt.
+
+## [1.0.0] – 2026-11-10
+
+Erste stabile Version. Ab hier gilt Semantic Versioning streng: Änderungen an der API, die Apps anpassen müssen,
+kommen nur noch mit einer neuen Hauptversion (2.0.0).
+
+### Hinzugefügt
+
 - **Übungskatalog mit Erklärungen:** Alle 46 Katalogübungen haben eine Anleitung mit Muskeln, Equipment, Niveau, Ausführung Schritt für Schritt und typischen Fehlern.
   - Trainer: neuer Tab „Übungen“ zum Durchsuchen, nach Übung, Muskel oder Gerät und mit Kategorien. Im Plan-Editor gibt es „Aus Katalog wählen“ je Trainingstag, ein Erklär-Icon am Übungsnamen und das Feld **„Hinweis für den Kunden“** je Übung.
   - Studios: ebenfalls ein Tab „Übungen“ mit dem kompletten Katalog.
@@ -71,7 +105,13 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
   - Neue Abschnitte: Funktionen auf einen Blick (mit Kennzeichnung Trainer/Studios), Für Trainer, Für Studios, ein kompakter Kunden-Block (kostenlos, per Einladung), Preise, FAQ und Abschluss-CTA.
   - Entfernt: erfundene Zahlen, Bewertungen und Stimmen sowie Aussagen, die das Produkt nicht erfüllt (800 Übungen mit Videos, Fortschrittsfotos, iOS-/Android-Apps, Check-in-Fragebögen).
   - Footer verlinkt echte Ziele statt Platzhaltern. Impressum, Datenschutz und AGB fehlen noch als Seiten.
-- **SEO:** eigener Seitentitel und Beschreibung, Canonical-URL, Open-Graph-/Twitter-Vorschau mit Bild (`app/opengraph-image.jpg`), strukturierte Daten (`SoftwareApplication` und `FAQPage`), `robots.txt` (Dashboard und API ausgeschlossen) und `sitemap.xml`. Die Live-Adresse steht fest in `lib/site.ts` (aktuell Platzhalter `https://voima.example`, vor dem Livegang durch die echte Domain ersetzen).
+- **Landingpage in Komponenten zerlegt:** `app/page.tsx` setzt die Seite nur noch zusammen. Jeder Abschnitt ist eine eigene Komponente in `components/landing/` (Header, Hero, Hero-Karten, Funktionen, Trainer/Studios/Kunden, Vorschauen, FAQ, Abschluss, Footer, strukturierte Daten), dazu gemeinsame Bausteine (`Section`, `SectionHeading`, `CheckList`, `CtaLink`, `AudienceSection`). Alle Texte und Listen stehen in `components/landing/content.ts`. Die Preis-Überschrift nutzt jetzt denselben Kopf wie die anderen Abschnitte.
+- **Alle Seiten in eigenständige Komponenten zerlegt:** In `app/` liegen nur noch Routen (Seiten, Layouts, Fehlerseiten, API). Die großen Feature-Dateien sind nach `components/` gezogen und nach Bereichen aufgeteilt, eine Datei pro Komponente oder Abschnitt:
+  - `components/dashboard/appointments/` (vorher eine Datei mit 1.900 Zeilen), `studio/`, `trainer/`, `client/`, `courses/`, `settings/`, `messaging/` und `studio-page/`, jeweils mit `utils.ts` für gemeinsame Hilfsfunktionen.
+  - Kleinere Dashboard-Bausteine (Shell, Modal, Benachrichtigungen, Fortschritt, Übungsanleitungen …) liegen direkt in `components/dashboard/`, die Formulare für Login, Registrierung und Passwort in `components/auth/`.
+  - Neu: `ButtonLink` (Link im Button-Look) in `components/ui.tsx`, `AuthSwitchLink` für die Auth-Seiten, `NotFoundState` und `GlobalErrorState`.
+  - Keine Verhaltensänderung, keine Import-Zyklen.
+- **SEO:** eigener Seitentitel und Beschreibung, Canonical-URL, Open-Graph-/Twitter-Vorschau mit Bild (`app/opengraph-image.jpg`), strukturierte Daten (`SoftwareApplication` und `FAQPage`), `robots.txt` (Dashboard und API ausgeschlossen) und `sitemap.xml`. Die Live-Adresse steht fest in `lib/site.ts` (vorläufig `https://voimacoach.vercel.app`, später durch die echte Domain ersetzen).
 - **Einheitliche Rundungen:** feste Stufen als Design-Tokens (`rounded-box` 24 px für äußere Flächen, `rounded-tile` 16 px für Flächen in Karten, `rounded-control` 12 px für Buttons/Felder, `rounded-inner` 8 px). Alle CTAs haben jetzt dieselbe Form, keine Pillen-Buttons mehr.
 - Aktiver Tab in den Dashboards (Team, Kunden, …) ist jetzt schwarz statt dunkelgrün.
 - Studio-Kundenliste: Status **„Mitglied“** für Mitglieder ohne Coach, Filter „Mitglieder“ und „Coach fehlt“.
@@ -223,6 +263,7 @@ Alle Migrationen in `supabase/migrations/` sind auf dem Projekt eingespielt:
 | `20261119000000_appointment_comments` | Kommentare & private Trainer-Notizen |
 | `20261120000000_contact_details` | Telefon im Profil, Kontaktdaten am Termin |
 
-[Unreleased]: https://github.com/fabian-hanso/voimacoaching/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fabian-hanso/voimacoaching/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/fabian-hanso/voimacoaching/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/fabian-hanso/voimacoaching/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fabian-hanso/voimacoaching/releases/tag/v0.1.0

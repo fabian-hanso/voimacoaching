@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { StudioPage } from "./studio-page";
+import { StudioPage } from "@/components/dashboard/studio-page/studio-page";
 
-export const metadata: Metadata = { title: "Studio · Voima Coach" };
+export const metadata: Metadata = { title: "Studio" };
 
 /**
  * Keine Instant-Navigation-Prüfung: Die Dashboard-Shell rendert Seiten erst, wenn das Profil (/me)

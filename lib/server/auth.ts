@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { supabaseFromCookies, supabaseVerifier } from "../supabase/server";
 import { ApiError, forbidden, unauthorized } from "./http";
 import { getProfile, type ProfileRow } from "./repo";
+import { assertBillingAccess } from "./billing";
 
 /**
  * Authentifizierung über Supabase Auth – für Web UND Apps:
@@ -63,5 +64,7 @@ export async function requireUser(req: NextRequest, role?: ProfileRow["role"]): 
   if (role && profile.role !== role) {
     throw forbidden(role === "trainer" ? "Nur für Trainer." : "Nur für Kunden.");
   }
+  // Trainer/Studios ohne Testphase oder aktives Abo: alles außer Profil, Konto und Abrechnung gesperrt (402)
+  await assertBillingAccess(profile, req.nextUrl.pathname);
   return profile;
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Voima Coach – Demo-/Mockdaten anlegen (2 Studios, 4 Trainer, 5 Kunden inkl. Pläne, Workouts, Termine, Kurse, Chats).
+ * Demo-/Mockdaten anlegen (2 Studios, 4 Trainer, 5 Kunden inkl. Pläne, Workouts, Termine, Kurse, Chats).
  *
  * Läuft über die echte API, damit alle Verknüpfungen und Regeln wie in der App entstehen.
  * Vorher werden alle bisherigen Demo-Konten (demo.…@example.com) gelöscht – das Skript ist also wiederholbar.
@@ -326,7 +326,65 @@ async function seed() {
   await call("POST", `/courses/${ruecken.id}/bookings`, mia.token, { startsAt: ruecken.sessions[1].startsAt });
   await call("POST", `/courses/${vinyasa.id}/bookings`, elif.token, { startsAt: vinyasa.sessions[0].startsAt });
 
-  return { ironOwner, flowOwner, marco, sara, nina, tom, lena, jonas, mia, paul, elif, ironCode };
+  // Demo-Trainer und -Studios nicht nach 7 Tagen sperren: Testphase auf ein Jahr verlängern (ohne Stripe)
+  const { error: trialError } = await admin
+    .from("profiles")
+    .update({ trial_ends_at: new Date(Date.now() + 365 * 86_400_000).toISOString() })
+    .in("id", [ironOwner, flowOwner, marco, sara, nina, tom].map((a) => a.id));
+  if (trialError) throw trialError;
+
+  // Gesperrter Trainer zum Testen der Abo-Sperre: Testphase abgelaufen, kein Abo. Kunde und Plan bleiben erhalten.
+  const kai = await account("kai", { role: "trainer", name: "Kai Berger" });
+  const greta = await account("greta", { role: "client", name: "Greta Hoffmann", invite_code: await invite(kai) });
+  const kaiPlan = await call("POST", "/plans", kai.token, {
+    title: "Ganzkörper Basis",
+    description: "2× pro Woche",
+    days: [
+      {
+        name: "Tag A",
+        exercises: [
+          { name: "Kniebeuge", type: "strength", sets: 3, reps: "10", weightKg: 40, restSec: 90, notes: null },
+          { name: "Bankdrücken", type: "strength", sets: 3, reps: "10", weightKg: 30, restSec: 90, notes: null },
+        ],
+      },
+    ],
+  });
+  await call("POST", `/plans/${kaiPlan.id}/assignments`, kai.token, { clientId: greta.id });
+  const { error: expireError } = await admin
+    .from("profiles")
+    .update({ trial_ends_at: new Date(Date.now() - 86_400_000).toISOString() })
+    .eq("id", kai.id);
+  if (expireError) throw expireError;
+
+  // Gesperrtes Studio: Testphase des Inhabers abgelaufen, kein Abo → Studio und seine Trainer gesperrt, Kunden nicht.
+  const pulse = await account("pulse", { role: "studio", name: "Lea Vogel", studio_name: "Pulse Fitness Bonn" });
+  const jan = await account("jan", {
+    role: "trainer",
+    name: "Jan Krüger",
+    studio_code: (await call("POST", "/studio/invitations", pulse.token, {})).code,
+  });
+  const ben = await account("ben", { role: "client", name: "Ben Schulz", invite_code: await invite(jan) });
+  const janPlan = await call("POST", "/plans", jan.token, {
+    title: "Oberkörper Aufbau",
+    description: null,
+    days: [
+      {
+        name: "Tag A",
+        exercises: [
+          { name: "Klimmzüge", type: "strength", sets: 3, reps: "6", weightKg: null, restSec: 120, notes: null },
+          { name: "Schulterdrücken", type: "strength", sets: 3, reps: "10", weightKg: 14, restSec: 90, notes: null },
+        ],
+      },
+    ],
+  });
+  await call("POST", `/plans/${janPlan.id}/assignments`, jan.token, { clientId: ben.id });
+  const { error: expireStudioError } = await admin
+    .from("profiles")
+    .update({ trial_ends_at: new Date(Date.now() - 86_400_000).toISOString() })
+    .eq("id", pulse.id);
+  if (expireStudioError) throw expireStudioError;
+
+  return { ironOwner, flowOwner, marco, sara, nina, tom, lena, jonas, mia, paul, elif, kai, greta, pulse, jan, ben, ironCode };
 }
 
 const removed = await removeDemoAccounts();

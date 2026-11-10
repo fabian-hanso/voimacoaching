@@ -1,4 +1,5 @@
 import type { LoggedExercise, PlanDay } from "./schemas";
+import type { BillingInterval, PlanId } from "./billing-plans";
 
 /** Antwort-Typen der API v1 – identisch für Web und Apps. */
 
@@ -44,6 +45,34 @@ export interface MeResponse {
   user: User;
   trainer: Trainer | null;
   studio: StudioInfo | null;
+  /** Abo-Status für Trainer und Studios; null für Kunden */
+  billing: BillingStatus | null;
+}
+
+/** Abo-Status eines Trainers oder Studios. */
+export interface BillingStatus {
+  /** Dashboard nutzbar (Testphase läuft oder Abo aktiv); false → gesperrt bis zum Abschluss */
+  access: boolean;
+  /** Woher der Zugang kommt: Testphase, eigenes Abo, Studio-Abo (Trainer im Studio) oder keiner */
+  source: "trial" | "subscription" | "studio" | "none";
+  /** Trainer im Studio: Abo läuft über das Studio, selbst nichts abzuschließen */
+  managedByStudio: boolean;
+  trialEndsAt: string | null;
+  plan: PlanId | null;
+  interval: BillingInterval | null;
+  /** Stripe-Status (active, trialing, past_due, canceled, …) */
+  status: string | null;
+  /** nächste Abbuchung bzw. Ende bei Kündigung */
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  /** max. Kunden laut Paket; null = unbegrenzt */
+  clientLimit: number | null;
+  /** aktuelle Anzahl Kunden (nur Trainer) */
+  clientCount: number | null;
+  /** Stripe-Kunde existiert → Kundenportal verfügbar */
+  hasCustomer: boolean;
+  /** Stripe ist auf dem Server eingerichtet */
+  checkoutAvailable: boolean;
 }
 
 export interface OpeningHoursDay {

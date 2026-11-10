@@ -7,11 +7,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureTour } from "@/components/features/feature-tour";
 import { Logo } from "@/components/ui";
+import { SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Alle Features · Voima Coach",
+  title: "Alle Features",
   description:
-    "Alle Funktionen von Voima Coach – erzählt als Chat zwischen Coach und Kundin. Scroll los und sammle XP.",
+    `Alle Funktionen von ${SITE_NAME} – erzählt als Chat zwischen Coach und Kundin. Scroll los und sammle XP.`,
 };
 
 export default function FeaturesPage() {

@@ -47,6 +47,7 @@ Das Supabase-SDK erneuert Tokens automatisch. Bei `401` die Session erneuern ode
 | ------ | ------------------ | --------------------------------------------- |
 | 400    | `bad_request`      | Fachlicher Fehler (z. B. Code abgelaufen)      |
 | 401    | `unauthorized`     | Kein/ungültiges Token                          |
+| 402    | `billing_required` | Trainer/Studio ohne Testphase oder aktives Abo – siehe [Abo & Abrechnung](#abo--abrechnung) |
 | 403    | `forbidden`        | Falsche Rolle (z. B. Kunde ruft Trainer-API)   |
 | 404    | `not_found`        | Existiert nicht oder kein Zugriff              |
 | 409    | `conflict`         | Existiert bereits                              |
@@ -69,7 +70,7 @@ Legende: 🌐 öffentlich · 👤 alle angemeldeten Nutzer · 🏋️ nur Traine
 
 | Methode | Pfad                 | Wer | Beschreibung                                          |
 | ------- | -------------------- | --- | ----------------------------------------------------- |
-| GET     | `/me`                | 👤  | `{ user, trainer }`, wobei `trainer` beim Kunden gefüllt ist |
+| GET     | `/me`                | 👤  | `{ user, trainer, studio, billing }`, wobei `trainer` beim Kunden gefüllt ist und `billing` (Abo-Status) bei Trainern und Studios, sonst `null` |
 | PATCH   | `/me`                | 👤  | Body `{ name? }`                                       |
 | DELETE  | `/me`                | 👤  | **Konto endgültig löschen**, inklusive Workouts, Messwerten, Nachrichten und Profilbild. Bei Trainern zusätzlich Pläne und Einladungen, Kunden verlieren nur die Verbindung. 204 |
 | POST    | `/me/trainer`        | 🙋  | Body `{ inviteCode }`, verbindet den Kunden mit dem Trainer |
@@ -258,6 +259,7 @@ Ist eine Unterhaltung oder ein Kunde nicht mehr verfügbar, antwortet die API mi
 ### Fehlerbehandlung in Apps
 
 - `401`: Token ungültig, abgelaufen oder Konto gelöscht. Session erneuern bzw. neu einloggen.
+- `402`: Testphase vorbei und kein aktives Abo (nur Trainer/Studios). Abo-Seite zeigen; `/me` und `/billing` funktionieren weiter.
 - `503`: Datenbank oder Anmeldedienst kurzzeitig nicht erreichbar. **Nicht abmelden**, später erneut versuchen.
 - Validierungsfehler (`422`) kommen mit deutschen Meldungen pro Feld in `details`.
 
@@ -284,6 +286,47 @@ Alle TypeScript-Typen stehen in [`lib/types.ts`](../lib/types.ts) und [`lib/sche
 
 **Profilbilder:** `user`, `trainer`, Kunden (`ClientSummary`) und Chat-Partner haben ein Feld `avatarUrl` (öffentliche URL oder `null`).
 Schneide Bilder in der App vor dem Upload am besten quadratisch auf 512×512 zu, so wie es das Web macht. Bei jedem Upload entsteht eine neue URL, das alte Bild wird gelöscht.
+
+## Abo & Abrechnung
+
+Trainer und Studios testen **7 Tage kostenlos** ohne Zahlungsdaten (ab Registrierung). Danach braucht es ein Abo, das über
+**Stripe Checkout** abgeschlossen und im **Stripe-Kundenportal** verwaltet wird (Paket wechseln, kündigen, Zahlungsart, Rechnungen).
+Kunden zahlen nie. Trainer eines Studios sind über das Studio-Abo abgedeckt.
+
+Ohne Zugang antwortet jede API für Trainer/Studios mit `402 billing_required` – außer `/me…`, `/billing…` und
+`/studio-invitations/…`. Kunden sind davon nie betroffen (sie trainieren weiter, auch wenn ihr Coach gesperrt ist).
+
+| Methode | Pfad                | Wer      | Beschreibung |
+| ------- | ------------------- | -------- | ------------ |
+| GET     | `/billing`          | 👤       | `{ billing }` – Abo-Status (siehe unten), bei Kunden `null` |
+| POST    | `/billing/checkout` | 🏋️ 🏢   | Body `{ plan, interval }` mit `plan` = `trainer_10` \| `trainer_20` \| `trainer_unlimited` (Trainer) bzw. `studio`, `interval` = `month` \| `year` → `{ url }` der Stripe-Bezahlseite. Eine laufende Testphase bleibt kostenlos (ab 48 h Rest). 409 bei bestehendem Abo, falschem Paket oder Studio-Trainern, 503 wenn Stripe nicht eingerichtet ist |
+| POST    | `/billing/portal`   | 🏋️ 🏢   | → `{ url }` des Stripe-Kundenportals. 409 ohne bisheriges Abo |
+| POST    | `/billing/webhook`  | Stripe   | Webhook-Endpunkt für Stripe (Signatur `stripe-signature`), nicht für Apps |
+
+`billing`:
+
+```json
+{
+  "access": true,
+  "source": "trial",            // trial | subscription | studio | none
+  "managedByStudio": false,     // Trainer im Studio: Abo läuft übers Studio
+  "trialEndsAt": "2026-11-17T09:00:00.000Z",
+  "plan": null,                 // trainer_10 | trainer_20 | trainer_unlimited | studio
+  "interval": null,             // month | year
+  "status": null,               // Stripe-Status, z. B. active, past_due, canceled
+  "currentPeriodEnd": null,     // nächste Abbuchung bzw. Ende nach Kündigung
+  "cancelAtPeriodEnd": false,
+  "clientLimit": null,          // max. Kunden laut Paket, null = unbegrenzt
+  "clientCount": 0,             // nur Trainer
+  "hasCustomer": false,         // Kundenportal verfügbar
+  "checkoutAvailable": true     // Stripe auf dem Server eingerichtet
+}
+```
+
+**Kundenlimit:** Mit dem Paket „bis 10“ bzw. „bis 20 Kunden“ lehnt `POST /invitations` beim Erreichen des Limits mit `409` ab,
+und das Einlösen eines Codes (`POST /me/trainer`, Registrierung mit `invite_code`) scheitert mit
+„Dein Coach kann gerade keine weiteren Kunden aufnehmen“. Bestehende Kunden bleiben immer verbunden.
+`past_due` (Zahlung fehlgeschlagen, Stripe versucht es erneut) gilt weiter als aktiv.
 
 ## Sicherheit
 

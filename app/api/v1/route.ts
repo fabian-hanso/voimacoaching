@@ -1,7 +1,9 @@
+import { SITE_NAME } from "@/lib/site";
+
 /** API-Index: Version & Übersicht der Endpunkte (öffentlich). */
 export function GET() {
   return Response.json({
-    name: "Voima Coach API",
+    name: `${SITE_NAME} API`,
     version: "v1",
     docs: "/docs/API.md im Repository",
     auth: "Supabase Auth. Apps: Authorization: Bearer <access_token>. Web: Supabase-Session-Cookies.",
