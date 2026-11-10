@@ -12,6 +12,7 @@ import type { AssignedPlan, BookingProvider, MeResponse, Progress } from "@/lib/
 import type { LoggedExercise, PlanDay } from "@/lib/schemas";
 import { ClientAppointments } from "./appointments";
 import { MyCourses } from "./courses";
+import { ExplainButton } from "./exercise-guide";
 import { ProgressView } from "./progress-view";
 import { StudioLogo } from "@/components/studio-logo";
 import { useMessaging } from "./messaging";
@@ -401,6 +402,7 @@ function PlanCard({
                     <li key={j} className="flex items-start justify-between gap-3">
                       <span className="flex min-w-0 items-center gap-1.5 text-fg">
                         <span className="truncate">{e.name}</span> <TypeBadge type={e.type} />
+                        <ExplainButton name={e.name} note={e.notes} className="-my-1" />
                       </span>
                       <span className="shrink-0 text-right font-mono text-xs text-fg-subtle">{describePlanExercise(e)}</span>
                     </li>
@@ -595,8 +597,9 @@ function WorkoutLogger({ plan, day, onDone }: { plan: AssignedPlan | null; day: 
         <Card key={ei}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="flex items-center gap-2 font-semibold text-fg">
+              <h3 className="flex flex-wrap items-center gap-2 font-semibold text-fg">
                 {ex.name} <TypeBadge type={ex.type} />
+                <ExplainButton name={ex.name} note={ex.notes} label />
               </h3>
               {ex.target && <p className="mt-0.5 font-mono text-xs text-fg-subtle">Ziel: {ex.target}</p>}
               {ex.notes && <p className="mt-1 text-sm text-fg-muted">{ex.notes}</p>}

@@ -156,10 +156,13 @@ function Hero() {
                 <span className="size-1.5 rounded-full bg-brand" />
                 Neu: Fortschrittsfotos & Körpermaße im Vergleich
               </a>
-              <h1 className="mt-6 text-4xl leading-[1.05] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Trainingspläne teilen.{" "}
-                <span className="rounded-control bg-brand box-decoration-clone px-2 text-brand-fg">Fortschritt sehen.</span>{" "}
-                Gemeinsam ans Ziel.
+              <h1 className="mt-6 text-4xl leading-[1.08] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                <span className="block">Trainingspläne teilen.</span>
+                {/* Eigener Block mit Abstand, damit der Balken die Unterlängen der Zeile darüber nicht verdeckt */}
+                <span className="my-2 inline-block max-w-full rounded-control bg-brand px-3 py-1 leading-[1.05] text-brand-fg sm:my-3">
+                  Fortschritt sehen.
+                </span>
+                <span className="block">Gemeinsam ans Ziel.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-8 text-white/75">
                 Voima Coach verbindet Personal Trainer und ihre Kunden. Trainer erstellen Pläne in Minuten –
@@ -181,29 +184,11 @@ function Hero() {
                 </Link>
               </div>
 
-              {/* Vertrauen */}
-              <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <div className="flex -space-x-2" aria-hidden="true">
-                  {["M", "S", "J", "A"].map((l, i) => (
-                    <span
-                      key={l}
-                      className={`grid size-8 place-items-center rounded-full text-xs font-bold ring-2 ring-black ${
-                        i === 0 ? "bg-brand text-brand-fg" : "bg-white text-brand-fg"
-                      }`}
-                    >
-                      {l}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm text-white/75">
-                  <span className="font-semibold text-white">★ 4,9</span> · von 2.400+ Trainern genutzt
-                </p>
-                <p className="w-full text-xs text-white/55 sm:w-auto">14 Tage kostenlos · Keine Kreditkarte nötig</p>
-              </div>
+              <p className="mt-6 text-xs text-white/55">7 Tage kostenlos · Keine Kreditkarte nötig</p>
             </div>
 
             {/* Schwebende App-Karten (Desktop) */}
-            <div aria-hidden="true" className="relative hidden h-[30rem] lg:block">
+            <div aria-hidden="true" className="relative hidden h-[30rem] opacity-85 lg:block">
               <div className="absolute top-4 right-0 w-72 rounded-box bg-white p-5 text-brand-fg shadow-2xl motion-safe:animate-float">
                 <p className="text-xs font-medium text-fg-muted">Heute · von Coach Marco</p>
                 <p className="mt-1 text-lg font-bold">Unterkörper A</p>

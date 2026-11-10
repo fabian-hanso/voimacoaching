@@ -177,9 +177,9 @@ async function seed() {
       {
         name: "Tag A",
         exercises: [
-          { name: "Kniebeuge", type: "strength", sets: 3, reps: "8-10", weightKg: 40, restSec: 120 },
+          { name: "Kniebeuge", type: "strength", sets: 3, reps: "8-10", weightKg: 40, restSec: 120, notes: "Knie aktiv nach außen drücken, unten kurz halten." },
           { name: "Bankdrücken", type: "strength", sets: 3, reps: "8-10", weightKg: 35, restSec: 120 },
-          { name: "Rudern am Kabel", type: "strength", sets: 3, reps: "10-12", weightKg: 30 },
+          { name: "Kabelrudern", type: "strength", sets: 3, reps: "10-12", weightKg: 30 },
         ],
       },
       {

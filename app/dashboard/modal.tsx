@@ -1,13 +1,22 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Icon } from "@/components/icons";
 import { cx } from "@/components/ui";
 
+// Offene Modals (zuletzt geöffnetes oben) – Escape schließt nur das oberste, z. B. Erklärung über dem Katalog.
+const stack: object[] = [];
+
 /** Einfaches Modal (Escape und Klick daneben schließen, außer während `busy`). */
 export function Modal({ label, onClose, busy, children, wide }: { label: string; onClose: () => void; busy?: boolean; children: ReactNode; wide?: boolean }) {
+  const self = useRef({});
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
+    const id = self.current;
+    stack.push(id);
+    return () => void stack.splice(stack.indexOf(id), 1);
+  }, []);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && stack.at(-1) === self.current && onClose();
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, busy]);

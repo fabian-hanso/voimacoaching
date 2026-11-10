@@ -69,8 +69,8 @@ export function withName(e: PlanExercise, name: string): PlanExercise {
 /** Nur die zum Typ passenden Felder an die API schicken. */
 export function cleanPlanExercise(e: PlanExercise): PlanExercise {
   return e.type === "cardio"
-    ? { name: e.name, type: "cardio", durationMin: e.durationMin ?? null, distanceKm: e.distanceKm ?? null, intensity: e.intensity || null, notes: e.notes ?? null }
-    : { name: e.name, type: "strength", sets: e.sets, reps: e.reps, weightKg: e.weightKg ?? null, restSec: e.restSec ?? null, notes: e.notes ?? null };
+    ? { name: e.name, type: "cardio", durationMin: e.durationMin ?? null, distanceKm: e.distanceKm ?? null, intensity: e.intensity || null, notes: e.notes?.trim() || null }
+    : { name: e.name, type: "strength", sets: e.sets, reps: e.reps, weightKg: e.weightKg ?? null, restSec: e.restSec ?? null, notes: e.notes?.trim() || null };
 }
 
 /** Kurzbeschreibung einer Planübung, z. B. „4 × 6 @ 80 kg“ oder „30 min · 5 km · Zone 2“. */

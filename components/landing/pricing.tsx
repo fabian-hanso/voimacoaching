@@ -123,7 +123,7 @@ export function Pricing() {
 
         {/* Vertrauen */}
         <ul className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-fg-muted">
-          {["14 Tage kostenlos testen", "Monatlich kündbar", "Keine Kreditkarte nötig", "Kunden immer kostenlos"].map((t) => (
+          {["7 Tage kostenlos testen", "Monatlich kündbar", "Keine Kreditkarte nötig", "Kunden immer kostenlos"].map((t) => (
             <li key={t} className="flex items-center gap-2">
               <span className="grid size-5 place-items-center rounded-full bg-brand text-brand-fg">
                 <Icon name="check" className="size-3" />

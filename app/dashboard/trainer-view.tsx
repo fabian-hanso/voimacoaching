@@ -3,8 +3,29 @@
 import { useState } from "react";
 import { api, fmtDate, useApi } from "@/lib/client/api";
 import { errorMessage } from "@/lib/client/errors";
-import { Alert, Avatar, Badge, Button, Card, cx, EmptyState, Field, Input, Select, Spinner, Textarea, LoadError, type BadgeTone } from "@/components/ui";
-import type { Appointment, ClientDetail, ClientSummary, Invitation, PlanWithAssignments } from "@/lib/types";
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  cx,
+  EmptyState,
+  Field,
+  Input,
+  Select,
+  Spinner,
+  Textarea,
+  LoadError,
+  type BadgeTone,
+} from "@/components/ui";
+import type {
+  Appointment,
+  ClientDetail,
+  ClientSummary,
+  Invitation,
+  PlanWithAssignments,
+} from "@/lib/types";
 import type { PlanInput } from "@/lib/schemas";
 import { ProgressView } from "./progress-view";
 import { openRequests, TrainerAppointments } from "./appointments";
@@ -23,8 +44,14 @@ import {
   withName,
   withType,
 } from "./exercise-fields";
+import {
+  ExerciseCatalog,
+  ExerciseCatalogModal,
+  ExplainButton,
+} from "./exercise-guide";
+import { EXERCISE_CATALOG } from "@/lib/exercises";
 
-type Tab = "clients" | "plans" | "appointments" | "invitations";
+type Tab = "clients" | "plans" | "exercises" | "appointments" | "invitations";
 
 export function TrainerView() {
   const [tab, setTab] = useState<Tab>("clients");
@@ -36,6 +63,7 @@ export function TrainerView() {
   const tabs: [Tab, string, number | null][] = [
     ["clients", "Kunden", null],
     ["plans", "Trainingspläne", null],
+    ["exercises", "Übungen", null],
     ["appointments", "Termine", pending || null],
     ["invitations", "Einladungen", null],
   ];
@@ -52,12 +80,17 @@ export function TrainerView() {
             }}
             className={cx(
               "flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition",
-              tab === key ? "border-fg text-fg"
+              tab === key
+                ? "border-fg text-fg"
                 : "border-transparent text-fg-muted hover:text-fg",
             )}
           >
             {label}
-            {count != null && <span className="rounded-full bg-accent px-1.5 text-xs text-accent-fg">{count}</span>}
+            {count != null && (
+              <span className="rounded-full bg-accent px-1.5 text-xs text-accent-fg">
+                {count}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -66,10 +99,16 @@ export function TrainerView() {
           (clientId ? (
             <ClientDetailView id={clientId} onBack={() => setClientId(null)} />
           ) : (
-            <ClientsList onOpen={setClientId} onInvite={() => setTab("invitations")} />
+            <ClientsList
+              onOpen={setClientId}
+              onInvite={() => setTab("invitations")}
+            />
           ))}
         {tab === "plans" && <PlansTab />}
-        {tab === "appointments" && <TrainerAppointments appointments={appointments} />}
+        {tab === "exercises" && <ExercisesTab />}
+        {tab === "appointments" && (
+          <TrainerAppointments appointments={appointments} />
+        )}
         {tab === "invitations" && <InvitationsTab />}
       </div>
     </div>
@@ -82,11 +121,30 @@ export function TrainerView() {
 
 type ClientStatus = "active" | "inactive" | "new" | "invited";
 
-const STATUS: Record<ClientStatus, { label: string; tone: BadgeTone; hint: string }> = {
-  active: { label: "Aktiv", tone: "success", hint: "Hat in den letzten 7 Tagen trainiert." },
-  inactive: { label: "Inaktiv", tone: "warning", hint: "Hat seit über 7 Tagen nicht trainiert." },
-  new: { label: "Neu angemeldet", tone: "accent", hint: "Registriert, hat aber noch kein Training getrackt." },
-  invited: { label: "Eingeladen", tone: "neutral", hint: "Einladung verschickt, aber noch nicht angemeldet." },
+const STATUS: Record<
+  ClientStatus,
+  { label: string; tone: BadgeTone; hint: string }
+> = {
+  active: {
+    label: "Aktiv",
+    tone: "success",
+    hint: "Hat in den letzten 7 Tagen trainiert.",
+  },
+  inactive: {
+    label: "Inaktiv",
+    tone: "warning",
+    hint: "Hat seit über 7 Tagen nicht trainiert.",
+  },
+  new: {
+    label: "Neu angemeldet",
+    tone: "accent",
+    hint: "Registriert, hat aber noch kein Training getrackt.",
+  },
+  invited: {
+    label: "Eingeladen",
+    tone: "neutral",
+    hint: "Einladung verschickt, aber noch nicht angemeldet.",
+  },
 };
 
 const DAY_MS = 86_400_000;
@@ -96,33 +154,58 @@ function clientStatus(c: ClientSummary): ClientStatus {
   return c.workoutsLast7Days > 0 ? "active" : "inactive";
 }
 
-function StatusBadge({ status, detail }: { status: ClientStatus; detail?: string }) {
+function StatusBadge({
+  status,
+  detail,
+}: {
+  status: ClientStatus;
+  detail?: string;
+}) {
   const s = STATUS[status];
   return (
-    <span title={detail ? `${s.hint} ${detail}` : s.hint} className="shrink-0 cursor-help">
+    <span
+      title={detail ? `${s.hint} ${detail}` : s.hint}
+      className="shrink-0 cursor-help"
+    >
       <Badge tone={s.tone}>{s.label}</Badge>
     </span>
   );
 }
 
-const inviteLink = (code: string) => `${window.location.origin}/registrieren?rolle=kunde&code=${code}`;
+const inviteLink = (code: string) =>
+  `${window.location.origin}/registrieren?rolle=kunde&code=${code}`;
 
-function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInvite: () => void }) {
-  const { data, loading, error, reload } = useApi<{ clients: ClientSummary[] }>("/clients");
+function ClientsList({
+  onOpen,
+  onInvite,
+}: {
+  onOpen: (id: string) => void;
+  onInvite: () => void;
+}) {
+  const { data, loading, error, reload } = useApi<{ clients: ClientSummary[] }>(
+    "/clients",
+  );
   const invites = useApi<{ invitations: Invitation[] }>("/invitations");
   const { conversations } = useMessaging();
   const [filter, setFilter] = useState<ClientStatus | "all">("all");
   const [now] = useState(() => Date.now());
   const [copied, setCopied] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
-  const unreadOf = (id: string) => conversations.find((c) => c.partner.id === id)?.unread ?? 0;
+  const unreadOf = (id: string) =>
+    conversations.find((c) => c.partner.id === id)?.unread ?? 0;
 
   if (loading) return <Spinner />;
-  if (error && !data) return <LoadError message={error.message} onRetry={reload} />;
+  if (error && !data)
+    return <LoadError message={error.message} onRetry={reload} />;
 
-  const clients = (data?.clients ?? []).map((c) => ({ c, status: clientStatus(c) }));
+  const clients = (data?.clients ?? []).map((c) => ({
+    c,
+    status: clientStatus(c),
+  }));
   // Offene Einladungen = „noch nicht angemeldet“
-  const pending = (invites.data?.invitations ?? []).filter((i) => !i.usedBy && new Date(i.expiresAt).getTime() > now);
+  const pending = (invites.data?.invitations ?? []).filter(
+    (i) => !i.usedBy && new Date(i.expiresAt).getTime() > now,
+  );
   const counts: Record<ClientStatus, number> = {
     active: clients.filter((x) => x.status === "active").length,
     inactive: clients.filter((x) => x.status === "inactive").length,
@@ -150,7 +233,12 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
     <div className="space-y-6">
       {/* Filter mit Anzahl je Status */}
       <div className="flex flex-wrap items-center gap-2">
-        <FilterChip active={filter === "all"} onClick={() => setFilter("all")} label="Alle" count={clients.length + pending.length} />
+        <FilterChip
+          active={filter === "all"}
+          onClick={() => setFilter("all")}
+          label="Alle"
+          count={clients.length + pending.length}
+        />
         {order.map((st) => (
           <FilterChip
             key={st}
@@ -161,18 +249,28 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
             title={STATUS[st].hint}
           />
         ))}
-        <Button variant="ghost" size="sm" className="ml-auto" onClick={onInvite}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-auto"
+          onClick={onInvite}
+        >
           <Icon name="plus" className="size-3.5" /> Kunden einladen
         </Button>
       </div>
       {copyError && <Alert>{copyError}</Alert>}
 
       {shownClients.length === 0 && shownInvites.length === 0 ? (
-        <EmptyState title={`Keine Kunden mit Status „${filter === "all" ? "Alle" : STATUS[filter].label}“`} text="Wähle oben einen anderen Filter." />
+        <EmptyState
+          title={`Keine Kunden mit Status „${filter === "all" ? "Alle" : STATUS[filter].label}“`}
+          text="Wähle oben einen anderen Filter."
+        />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {shownClients.map(({ c, status }) => {
-            const daysSince = c.lastWorkoutAt ? Math.floor((now - new Date(c.lastWorkoutAt).getTime()) / DAY_MS) : null;
+            const daysSince = c.lastWorkoutAt
+              ? Math.floor((now - new Date(c.lastWorkoutAt).getTime()) / DAY_MS)
+              : null;
             return (
               <button
                 key={c.id}
@@ -186,21 +284,39 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
                     <p className="truncate text-xs text-fg-muted">{c.email}</p>
                   </div>
                   {unreadOf(c.id) > 0 && (
-                    <span title="Ungelesene Nachrichten" className="flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-brand-fg">
+                    <span
+                      title="Ungelesene Nachrichten"
+                      className="flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-brand-fg"
+                    >
                       <Icon name="chat" className="size-3" /> {unreadOf(c.id)}
                     </span>
                   )}
                   <StatusBadge
                     status={status}
-                    detail={status === "inactive" && daysSince != null ? `Letztes Training vor ${daysSince} Tagen.` : undefined}
+                    detail={
+                      status === "inactive" && daysSince != null
+                        ? `Letztes Training vor ${daysSince} Tagen.`
+                        : undefined
+                    }
                   />
                 </div>
                 <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  <MiniStat label="7 Tage" value={String(c.workoutsLast7Days)} />
+                  <MiniStat
+                    label="7 Tage"
+                    value={String(c.workoutsLast7Days)}
+                  />
                   <MiniStat label="Pläne" value={String(c.activePlans)} />
                   <MiniStat
                     label="Zuletzt"
-                    value={daysSince == null ? "–" : daysSince === 0 ? "Heute" : daysSince === 1 ? "Gestern" : `vor ${daysSince} T.`}
+                    value={
+                      daysSince == null
+                        ? "–"
+                        : daysSince === 0
+                          ? "Heute"
+                          : daysSince === 1
+                            ? "Gestern"
+                            : `vor ${daysSince} T.`
+                    }
                   />
                 </dl>
               </button>
@@ -217,15 +333,23 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
                   <Icon name="mail" className="size-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-fg">{inv.email ?? "Offene Einladung"}</p>
+                  <p className="truncate font-semibold text-fg">
+                    {inv.email ?? "Offene Einladung"}
+                  </p>
                   <p className="truncate text-xs text-fg-muted">
-                    Code <span className="font-mono font-semibold tracking-wider">{inv.code}</span> · gültig bis {fmtDate(inv.expiresAt)}
+                    Code{" "}
+                    <span className="font-mono font-semibold tracking-wider">
+                      {inv.code}
+                    </span>{" "}
+                    · gültig bis {fmtDate(inv.expiresAt)}
                   </p>
                 </div>
                 <StatusBadge status="invited" />
               </div>
               <div className="mt-4 flex items-center justify-between gap-2 rounded-tile bg-surface-2 px-3 py-2">
-                <span className="text-xs text-fg-muted">Noch nicht angemeldet</span>
+                <span className="text-xs text-fg-muted">
+                  Noch nicht angemeldet
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -235,7 +359,9 @@ function ClientsList({ onOpen, onInvite }: { onOpen: (id: string) => void; onInv
                       await navigator.clipboard.writeText(inviteLink(inv.code));
                       setCopied(inv.code);
                     } catch {
-                      setCopyError(`Kopieren nicht möglich. Bitte manuell kopieren: ${inviteLink(inv.code)}`);
+                      setCopyError(
+                        `Kopieren nicht möglich. Bitte manuell kopieren: ${inviteLink(inv.code)}`,
+                      );
                     }
                   }}
                 >
@@ -280,7 +406,14 @@ function FilterChip({
       )}
     >
       {label}
-      <span className={cx("rounded-full px-1.5 text-xs", active ? "bg-fg/20" : "bg-surface-3")}>{count}</span>
+      <span
+        className={cx(
+          "rounded-full px-1.5 text-xs",
+          active ? "bg-fg/20" : "bg-surface-3",
+        )}
+      >
+        {count}
+      </span>
     </button>
   );
 }
@@ -313,10 +446,16 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
     );
   }
   if (detail.error || !detail.data) {
-    return <LoadError message={detail.error?.message ?? "Kunde konnte nicht geladen werden."} onRetry={detail.reload} />;
+    return (
+      <LoadError
+        message={detail.error?.message ?? "Kunde konnte nicht geladen werden."}
+        onRetry={detail.reload}
+      />
+    );
   }
   const { client, plans: assigned, progress } = detail.data;
-  const assignable = plans.data?.plans.filter((p) => !assigned.some((a) => a.id === p.id)) ?? [];
+  const assignable =
+    plans.data?.plans.filter((p) => !assigned.some((a) => a.id === p.id)) ?? [];
 
   async function run(fn: () => Promise<unknown>) {
     setError(null);
@@ -331,7 +470,10 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
 
   return (
     <div className="space-y-6">
-      <button onClick={onBack} className="text-sm font-medium text-fg-muted hover:text-fg">
+      <button
+        onClick={onBack}
+        className="text-sm font-medium text-fg-muted hover:text-fg"
+      >
         ← Alle Kunden
       </button>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -339,7 +481,9 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
           <Avatar name={client.name} src={client.avatarUrl} size="2xl" />
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-2xl font-bold tracking-tight text-fg">{client.name}</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-fg">
+                {client.name}
+              </h2>
               <StatusBadge status={clientStatus(client)} />
             </div>
             <p className="text-sm text-fg-muted">
@@ -348,19 +492,29 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-        <Button variant="secondary" size="sm" onClick={() => messaging.open(id)}>
-          <Icon name="chat" className="size-4" /> Nachricht
-        </Button>
-        <Button variant="danger" size="sm" onClick={() => setConfirmRemove(true)}>
-          Kunde entfernen
-        </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => messaging.open(id)}
+          >
+            <Icon name="chat" className="size-4" /> Nachricht
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setConfirmRemove(true)}
+          >
+            Kunde entfernen
+          </Button>
         </div>
         {confirmRemove && (
           <ConfirmDialog
             title={`${client.name} entfernen?`}
             description={
               <>
-                <p>Die Verbindung zwischen dir und {client.name} wird getrennt:</p>
+                <p>
+                  Die Verbindung zwischen dir und {client.name} wird getrennt:
+                </p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   <li>Alle zugewiesenen Pläne werden aufgehoben.</li>
                   <li>Ihr könnt euch keine Nachrichten mehr schreiben.</li>
@@ -368,8 +522,9 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
                   <li>{client.name} bekommt einen Hinweis darüber.</li>
                 </ul>
                 <p className="mt-2">
-                  Das Konto und die Trainingsdaten von {client.name} bleiben erhalten. Für eine neue Verbindung brauchst du
-                  eine neue Einladung.
+                  Das Konto und die Trainingsdaten von {client.name} bleiben
+                  erhalten. Für eine neue Verbindung brauchst du eine neue
+                  Einladung.
                 </p>
               </>
             }
@@ -388,7 +543,9 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
       <Card>
         <h3 className="text-sm font-semibold text-fg">Zugewiesene Pläne</h3>
         <div className="mt-4 flex flex-wrap gap-2">
-          {assigned.length === 0 && <p className="text-sm text-fg-muted">Noch kein Plan zugewiesen.</p>}
+          {assigned.length === 0 && (
+            <p className="text-sm text-fg-muted">Noch kein Plan zugewiesen.</p>
+          )}
           {assigned.map((p) => (
             <span
               key={p.id}
@@ -397,7 +554,13 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
               {p.title}
               <button
                 aria-label={`${p.title} entfernen`}
-                onClick={() => run(() => api(`/plans/${p.id}/assignments/${id}`, { method: "DELETE" }))}
+                onClick={() =>
+                  run(() =>
+                    api(`/plans/${p.id}/assignments/${id}`, {
+                      method: "DELETE",
+                    }),
+                  )
+                }
                 className="grid size-5 place-items-center rounded-full hover:bg-brand/40"
               >
                 ×
@@ -407,7 +570,11 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
         </div>
         {assignable.length > 0 && (
           <div className="mt-4 flex gap-2">
-            <Select value={planId} onChange={(e) => setPlanId(e.target.value)} className="max-w-xs">
+            <Select
+              value={planId}
+              onChange={(e) => setPlanId(e.target.value)}
+              className="max-w-xs"
+            >
               <option value="">Plan auswählen …</option>
               {assignable.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -419,7 +586,9 @@ function ClientDetailView({ id, onBack }: { id: string; onBack: () => void }) {
               disabled={!planId}
               onClick={() =>
                 run(async () => {
-                  await api(`/plans/${planId}/assignments`, { body: { clientId: id } });
+                  await api(`/plans/${planId}/assignments`, {
+                    body: { clientId: id },
+                  });
                   setPlanId("");
                 })
               }
@@ -449,8 +618,13 @@ const emptyPlan = (): PlanInput => ({
 });
 
 function PlansTab() {
-  const { data, loading, error, reload } = useApi<{ plans: PlanWithAssignments[] }>("/plans");
-  const [editing, setEditing] = useState<{ id: string | null; plan: PlanInput } | null>(null);
+  const { data, loading, error, reload } = useApi<{
+    plans: PlanWithAssignments[];
+  }>("/plans");
+  const [editing, setEditing] = useState<{
+    id: string | null;
+    plan: PlanInput;
+  } | null>(null);
   const [deleting, setDeleting] = useState<PlanWithAssignments | null>(null);
 
   if (editing) {
@@ -466,7 +640,8 @@ function PlansTab() {
     );
   }
   if (loading) return <Spinner />;
-  if (error && !data) return <LoadError message={error.message} onRetry={reload} />;
+  if (error && !data)
+    return <LoadError message={error.message} onRetry={reload} />;
 
   return (
     <div className="space-y-6">
@@ -476,8 +651,10 @@ function PlansTab() {
           description={
             deleting.assignedClientIds.length > 0 ? (
               <p>
-                Der Plan ist <strong>{deleting.assignedClientIds.length} Kunden</strong> zugewiesen und verschwindet auch bei ihnen.
-                Bereits geloggte Workouts bleiben erhalten.
+                Der Plan ist{" "}
+                <strong>{deleting.assignedClientIds.length} Kunden</strong>{" "}
+                zugewiesen und verschwindet auch bei ihnen. Bereits geloggte
+                Workouts bleiben erhalten.
               </p>
             ) : (
               <p>Der Plan wird endgültig gelöscht.</p>
@@ -493,10 +670,15 @@ function PlansTab() {
         />
       )}
       <div className="flex justify-end">
-        <Button onClick={() => setEditing({ id: null, plan: emptyPlan() })}>+ Neuer Plan</Button>
+        <Button onClick={() => setEditing({ id: null, plan: emptyPlan() })}>
+          + Neuer Plan
+        </Button>
       </div>
       {!data?.plans.length ? (
-        <EmptyState title="Noch keine Pläne" text="Erstelle deinen ersten Trainingsplan und weise ihn Kunden zu." />
+        <EmptyState
+          title="Noch keine Pläne"
+          text="Erstelle deinen ersten Trainingsplan und weise ihn Kunden zu."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {data.plans.map((p) => (
@@ -504,7 +686,11 @@ function PlansTab() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="font-semibold text-fg">{p.title}</h3>
-                  {p.description && <p className="mt-1 text-sm text-fg-muted">{p.description}</p>}
+                  {p.description && (
+                    <p className="mt-1 text-sm text-fg-muted">
+                      {p.description}
+                    </p>
+                  )}
                 </div>
                 <Badge tone="brand">{p.assignedClientIds.length} Kunden</Badge>
               </div>
@@ -520,7 +706,14 @@ function PlansTab() {
                   variant="secondary"
                   size="sm"
                   onClick={() =>
-                    setEditing({ id: p.id, plan: { title: p.title, description: p.description ?? "", days: p.days } })
+                    setEditing({
+                      id: p.id,
+                      plan: {
+                        title: p.title,
+                        description: p.description ?? "",
+                        days: p.days,
+                      },
+                    })
                   }
                 >
                   Bearbeiten
@@ -541,10 +734,19 @@ function PlansTab() {
   );
 }
 
-function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanInput; onDone: () => void }) {
+function PlanEditor({
+  id,
+  initial,
+  onDone,
+}: {
+  id: string | null;
+  initial: PlanInput;
+  onDone: () => void;
+}) {
   const [plan, setPlan] = useState<PlanInput>(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [pickFor, setPickFor] = useState<number | null>(null);
 
   const update = (fn: (draft: PlanInput) => void) =>
     setPlan((prev) => {
@@ -559,9 +761,17 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
     try {
       const body = {
         ...plan,
-        days: plan.days.map((d) => ({ ...d, exercises: d.exercises.filter((e) => e.name.trim()).map(cleanPlanExercise) })),
+        days: plan.days.map((d) => ({
+          ...d,
+          exercises: d.exercises
+            .filter((e) => e.name.trim())
+            .map(cleanPlanExercise),
+        })),
       };
-      await api(id ? `/plans/${id}` : "/plans", { method: id ? "PUT" : "POST", body });
+      await api(id ? `/plans/${id}` : "/plans", {
+        method: id ? "PUT" : "POST",
+        body,
+      });
       onDone();
     } catch (err) {
       setError(errorMessage(err, "Speichern fehlgeschlagen."));
@@ -572,7 +782,9 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-fg">{id ? "Plan bearbeiten" : "Neuer Plan"}</h2>
+        <h2 className="text-xl font-bold text-fg">
+          {id ? "Plan bearbeiten" : "Neuer Plan"}
+        </h2>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={onDone}>
             Abbrechen
@@ -584,16 +796,36 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
       </div>
       {error && <Alert>{error}</Alert>}
       <ExerciseDatalist />
+      {pickFor !== null && plan.days[pickFor] && (
+        <ExerciseCatalogModal
+          dayName={plan.days[pickFor].name}
+          onClose={() => setPickFor(null)}
+          onPick={(e) =>
+            update((p) => {
+              const list = p.days[pickFor].exercises;
+              // Leere Platzhalter-Übung (z. B. bei neuem Tag) durch die gewählte ersetzen
+              if (list.length === 1 && !list[0].name.trim()) list.pop();
+              list.push(newPlanExercise(e.type, e.name));
+            })
+          }
+        />
+      )}
 
       <Card className="grid gap-4 md:grid-cols-2">
         <Field label="Titel">
-          <Input value={plan.title} onChange={(e) => update((p) => void (p.title = e.target.value))} placeholder="z. B. Kraftaufbau Phase 1" />
+          <Input
+            value={plan.title}
+            onChange={(e) => update((p) => void (p.title = e.target.value))}
+            placeholder="z. B. Kraftaufbau Phase 1"
+          />
         </Field>
         <Field label="Beschreibung (optional)">
           <Textarea
             rows={1}
             value={plan.description ?? ""}
-            onChange={(e) => update((p) => void (p.description = e.target.value))}
+            onChange={(e) =>
+              update((p) => void (p.description = e.target.value))
+            }
             placeholder="Ziel, Hinweise, Dauer …"
           />
         </Field>
@@ -604,11 +836,17 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
           <div className="flex items-center gap-3">
             <Input
               value={day.name}
-              onChange={(e) => update((p) => void (p.days[di].name = e.target.value))}
+              onChange={(e) =>
+                update((p) => void (p.days[di].name = e.target.value))
+              }
               className="max-w-xs font-semibold"
             />
             {plan.days.length > 1 && (
-              <Button variant="danger" size="sm" onClick={() => update((p) => void p.days.splice(di, 1))}>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => update((p) => void p.days.splice(di, 1))}
+              >
                 Tag entfernen
               </Button>
             )}
@@ -616,13 +854,20 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
           <div className="mt-4 space-y-3">
             {day.exercises.map((ex, ei) => {
               const set = (fn: (e: typeof ex) => typeof ex) =>
-                update((p) => void (p.days[di].exercises[ei] = fn(p.days[di].exercises[ei])));
+                update(
+                  (p) =>
+                    void (p.days[di].exercises[ei] = fn(
+                      p.days[di].exercises[ei],
+                    )),
+                );
               const remove = (
                 <button
                   type="button"
                   aria-label="Übung entfernen"
                   title="Übung entfernen"
-                  onClick={() => update((p) => void p.days[di].exercises.splice(ei, 1))}
+                  onClick={() =>
+                    update((p) => void p.days[di].exercises.splice(ei, 1))
+                  }
                   className="grid size-9 shrink-0 place-items-center rounded-control text-lg text-fg-subtle hover:bg-danger/10 hover:text-danger"
                 >
                   ×
@@ -631,91 +876,154 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
               return (
                 <div
                   key={ei}
-                  className="flex flex-col gap-3 rounded-tile bg-surface-2 p-3 ring-1 ring-line lg:flex-row lg:items-end"
+                  className="space-y-3 rounded-tile bg-surface-2 p-3 ring-1 ring-line"
                 >
-                  {/* Art + Name */}
-                  <div className="flex min-w-0 items-end gap-2 lg:w-[42%] lg:shrink-0">
-                    <MiniField label="Art" className="w-28 shrink-0">
-                      <Select value={ex.type} onChange={(e) => set((x) => withType(x, e.target.value as typeof ex.type))}>
-                        <option value="strength">Kraft</option>
-                        <option value="cardio">Ausdauer</option>
-                      </Select>
-                    </MiniField>
-                    <MiniField label="Übung" className="flex-1">
-                      <Input
-                        value={ex.name}
-                        list={EXERCISE_DATALIST_ID}
-                        placeholder={ex.type === "cardio" ? "z. B. Laufband" : "z. B. Kniebeuge"}
-                        onChange={(e) => set((x) => withName(x, e.target.value))}
-                      />
-                    </MiniField>
-                    <div className="lg:hidden">{remove}</div>
-                  </div>
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                    {/* Art + Name */}
+                    <div className="flex min-w-0 items-end gap-2 lg:w-[42%] lg:shrink-0">
+                      <MiniField label="Art" className="w-28 shrink-0">
+                        <Select
+                          value={ex.type}
+                          onChange={(e) =>
+                            set((x) =>
+                              withType(x, e.target.value as typeof ex.type),
+                            )
+                          }
+                        >
+                          <option value="strength">Kraft</option>
+                          <option value="cardio">Ausdauer</option>
+                        </Select>
+                      </MiniField>
+                      <MiniField label="Übung" className="flex-1">
+                        <span className="relative block">
+                          <Input
+                            value={ex.name}
+                            list={EXERCISE_DATALIST_ID}
+                            placeholder={
+                              ex.type === "cardio"
+                                ? "z. B. Laufband"
+                                : "z. B. Kniebeuge"
+                            }
+                            onChange={(e) =>
+                              set((x) => withName(x, e.target.value))
+                            }
+                            className="pr-10"
+                          />
+                          <ExplainButton
+                            name={ex.name}
+                            className="absolute top-1/2 right-1.5 -translate-y-1/2"
+                          />
+                        </span>
+                      </MiniField>
+                      <div className="lg:hidden">{remove}</div>
+                    </div>
 
-                  {/* Werte je nach Art */}
-                  {ex.type === "strength" ? (
-                    <div className="grid min-w-0 flex-1 grid-cols-3 gap-2">
-                      <MiniField label="Sätze">
-                        <Input
-                          type="number"
-                          inputMode="numeric"
-                          min={1}
-                          max={20}
-                          value={ex.sets ?? ""}
-                          onChange={(e) => set((x) => ({ ...x, sets: Number(e.target.value) || 1 }))}
-                        />
-                      </MiniField>
-                      <MiniField label="Wiederholungen">
-                        <Input value={ex.reps ?? ""} placeholder="8-10" onChange={(e) => set((x) => ({ ...x, reps: e.target.value }))} />
-                      </MiniField>
-                      <MiniField label="Gewicht">
-                        <UnitInput
-                          unit="kg"
-                          type="number"
-                          inputMode="decimal"
-                          min={0}
-                          step="0.5"
-                          placeholder="–"
-                          value={ex.weightKg ?? ""}
-                          onChange={(e) => set((x) => ({ ...x, weightKg: numOrNull(e.target.value) }))}
-                        />
-                      </MiniField>
-                    </div>
-                  ) : (
-                    <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_2fr]">
-                      <MiniField label="Dauer">
-                        <UnitInput
-                          unit="min"
-                          type="number"
-                          inputMode="numeric"
-                          min={1}
-                          value={ex.durationMin ?? ""}
-                          onChange={(e) => set((x) => ({ ...x, durationMin: numOrNull(e.target.value) }))}
-                        />
-                      </MiniField>
-                      <MiniField label="Distanz">
-                        <UnitInput
-                          unit="km"
-                          type="number"
-                          inputMode="decimal"
-                          min={0}
-                          step="0.1"
-                          placeholder="–"
-                          value={ex.distanceKm ?? ""}
-                          onChange={(e) => set((x) => ({ ...x, distanceKm: numOrNull(e.target.value) }))}
-                        />
-                      </MiniField>
-                      <MiniField label="Intensität" className="col-span-2 sm:col-span-1">
-                        <Input
-                          value={ex.intensity ?? ""}
-                          placeholder="z. B. Zone 2, Steigung 8 %"
-                          title="z. B. Zone 2, 130–140 bpm, Steigung 8 %, 150 W, Intervalle 6 × 1 min"
-                          onChange={(e) => set((x) => ({ ...x, intensity: e.target.value }))}
-                        />
-                      </MiniField>
-                    </div>
-                  )}
-                  <div className="hidden lg:block">{remove}</div>
+                    {/* Werte je nach Art */}
+                    {ex.type === "strength" ? (
+                      <div className="grid min-w-0 flex-1 grid-cols-3 gap-2">
+                        <MiniField label="Sätze">
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            max={20}
+                            value={ex.sets ?? ""}
+                            onChange={(e) =>
+                              set((x) => ({
+                                ...x,
+                                sets: Number(e.target.value) || 1,
+                              }))
+                            }
+                          />
+                        </MiniField>
+                        <MiniField label="Wiederholungen">
+                          <Input
+                            value={ex.reps ?? ""}
+                            placeholder="8-10"
+                            onChange={(e) =>
+                              set((x) => ({ ...x, reps: e.target.value }))
+                            }
+                          />
+                        </MiniField>
+                        <MiniField label="Gewicht">
+                          <UnitInput
+                            unit="kg"
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            step="0.5"
+                            placeholder="–"
+                            value={ex.weightKg ?? ""}
+                            onChange={(e) =>
+                              set((x) => ({
+                                ...x,
+                                weightKg: numOrNull(e.target.value),
+                              }))
+                            }
+                          />
+                        </MiniField>
+                      </div>
+                    ) : (
+                      <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_2fr]">
+                        <MiniField label="Dauer">
+                          <UnitInput
+                            unit="min"
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            value={ex.durationMin ?? ""}
+                            onChange={(e) =>
+                              set((x) => ({
+                                ...x,
+                                durationMin: numOrNull(e.target.value),
+                              }))
+                            }
+                          />
+                        </MiniField>
+                        <MiniField label="Distanz">
+                          <UnitInput
+                            unit="km"
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            step="0.1"
+                            placeholder="–"
+                            value={ex.distanceKm ?? ""}
+                            onChange={(e) =>
+                              set((x) => ({
+                                ...x,
+                                distanceKm: numOrNull(e.target.value),
+                              }))
+                            }
+                          />
+                        </MiniField>
+                        <MiniField
+                          label="Intensität"
+                          className="col-span-2 sm:col-span-1"
+                        >
+                          <Input
+                            value={ex.intensity ?? ""}
+                            placeholder="z. B. Zone 2, Steigung 8 %"
+                            title="z. B. Zone 2, 130–140 bpm, Steigung 8 %, 150 W, Intervalle 6 × 1 min"
+                            onChange={(e) =>
+                              set((x) => ({ ...x, intensity: e.target.value }))
+                            }
+                          />
+                        </MiniField>
+                      </div>
+                    )}
+                    <div className="hidden lg:block">{remove}</div>
+                  </div>
+                  <MiniField label="Hinweis für den Kunden (optional)">
+                    <Input
+                      value={ex.notes ?? ""}
+                      maxLength={500}
+                      placeholder="z. B. Langsam absenken, Sitzhöhe Stufe 4, Knie nicht nach innen"
+                      onChange={(e) =>
+                        set((x) => ({ ...x, notes: e.target.value }))
+                      }
+                    />
+                  </MiniField>
                 </div>
               );
             })}
@@ -724,7 +1032,9 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
             variant="ghost"
             size="sm"
             className="mt-3"
-            onClick={() => update((p) => void p.days[di].exercises.push(newPlanExercise()))}
+            onClick={() =>
+              update((p) => void p.days[di].exercises.push(newPlanExercise()))
+            }
           >
             + Kraftübung
           </Button>
@@ -732,16 +1042,35 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
             variant="ghost"
             size="sm"
             className="mt-3"
-            onClick={() => update((p) => void p.days[di].exercises.push(newPlanExercise("cardio")))}
+            onClick={() =>
+              update(
+                (p) =>
+                  void p.days[di].exercises.push(newPlanExercise("cardio")),
+              )
+            }
           >
             + Ausdauer (Laufband, Rad …)
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="mt-3"
+            onClick={() => setPickFor(di)}
+          >
+            <Icon name="book" className="size-3.5" /> Aus Katalog wählen
           </Button>
         </Card>
       ))}
       <Button
         variant="secondary"
         onClick={() =>
-          update((p) => void p.days.push({ name: `Tag ${p.days.length + 1}`, exercises: [newPlanExercise()] }))
+          update(
+            (p) =>
+              void p.days.push({
+                name: `Tag ${p.days.length + 1}`,
+                exercises: [newPlanExercise()],
+              }),
+          )
         }
       >
         + Trainingstag hinzufügen
@@ -754,16 +1083,39 @@ function PlanEditor({ id, initial, onDone }: { id: string | null; initial: PlanI
 }
 
 /* ------------------------------------------------------------------ */
+/* Übungskatalog                                                       */
+/* ------------------------------------------------------------------ */
+
+function ExercisesTab() {
+  return (
+    <Card>
+      <h2 className="font-semibold text-fg">Übungskatalog</h2>
+      <p className="mt-1 text-sm text-fg-muted">
+        {EXERCISE_CATALOG.length} Übungen mit Anleitung. Nimmst du sie in einen
+        Plan auf, sehen deine Kunden die Erklärung direkt an der Übung –
+        zusammen mit deinem persönlichen Hinweis.
+      </p>
+      <div className="mt-5">
+        <ExerciseCatalog />
+      </div>
+    </Card>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Einladungen                                                         */
 /* ------------------------------------------------------------------ */
 
 function InvitationsTab() {
-  const { data, loading, error, reload } = useApi<{ invitations: Invitation[] }>("/invitations");
+  const { data, loading, error, reload } = useApi<{
+    invitations: Invitation[];
+  }>("/invitations");
   const [email, setEmail] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
-  const link = (code: string) => `${window.location.origin}/registrieren?rolle=kunde&code=${code}`;
+  const link = (code: string) =>
+    `${window.location.origin}/registrieren?rolle=kunde&code=${code}`;
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
@@ -773,7 +1125,9 @@ function InvitationsTab() {
       setEmail("");
       reload();
     } catch (err) {
-      setFormError(errorMessage(err, "Einladung konnte nicht erstellt werden."));
+      setFormError(
+        errorMessage(err, "Einladung konnte nicht erstellt werden."),
+      );
     }
   }
 
@@ -782,9 +1136,13 @@ function InvitationsTab() {
       <Card>
         <h3 className="font-semibold text-fg">Neuen Kunden einladen</h3>
         <p className="mt-1 text-sm text-fg-muted">
-          Der Code ist 14 Tage gültig und kann im Web oder in der App eingegeben werden.
+          Der Code ist 14 Tage gültig und kann im Web oder in der App eingegeben
+          werden.
         </p>
-        <form onSubmit={create} className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <form
+          onSubmit={create}
+          className="mt-4 flex flex-col gap-2 sm:flex-row"
+        >
           <Input
             type="email"
             value={email}
@@ -795,7 +1153,11 @@ function InvitationsTab() {
             Einladung erstellen
           </Button>
         </form>
-        {formError && <div className="mt-3"><Alert>{formError}</Alert></div>}
+        {formError && (
+          <div className="mt-3">
+            <Alert>{formError}</Alert>
+          </div>
+        )}
       </Card>
 
       {loading ? (
@@ -803,7 +1165,10 @@ function InvitationsTab() {
       ) : error && !data ? (
         <LoadError message={error.message} onRetry={reload} />
       ) : !data?.invitations.length ? (
-        <EmptyState title="Keine Einladungen" text="Erstelle oben deine erste Einladung." />
+        <EmptyState
+          title="Keine Einladungen"
+          text="Erstelle oben deine erste Einladung."
+        />
       ) : (
         <Card className="overflow-x-auto p-0">
           <table className="w-full text-left text-sm">
@@ -820,15 +1185,23 @@ function InvitationsTab() {
                 const expired = new Date(inv.expiresAt) < new Date();
                 return (
                   <tr key={inv.code}>
-                    <td className="px-6 py-3 font-mono font-semibold tracking-widest text-fg">{inv.code}</td>
-                    <td className="px-6 py-3 text-fg-muted">{inv.email ?? "–"}</td>
+                    <td className="px-6 py-3 font-mono font-semibold tracking-widest text-fg">
+                      {inv.code}
+                    </td>
+                    <td className="px-6 py-3 text-fg-muted">
+                      {inv.email ?? "–"}
+                    </td>
                     <td className="px-6 py-3">
                       {inv.usedBy ? (
-                        <Badge tone="success">Angenommen {fmtDate(inv.usedAt)}</Badge>
+                        <Badge tone="success">
+                          Angenommen {fmtDate(inv.usedAt)}
+                        </Badge>
                       ) : expired ? (
                         <Badge>Abgelaufen</Badge>
                       ) : (
-                        <Badge tone="brand">Offen bis {fmtDate(inv.expiresAt)}</Badge>
+                        <Badge tone="brand">
+                          Offen bis {fmtDate(inv.expiresAt)}
+                        </Badge>
                       )}
                     </td>
                     <td className="px-6 py-3 text-right whitespace-nowrap">
@@ -838,11 +1211,15 @@ function InvitationsTab() {
                           size="sm"
                           onClick={async () => {
                             try {
-                              await navigator.clipboard.writeText(link(inv.code));
+                              await navigator.clipboard.writeText(
+                                link(inv.code),
+                              );
                               setCopied(inv.code);
                             } catch {
                               // z. B. ohne HTTPS oder ohne Berechtigung → Link zum manuellen Kopieren anzeigen
-                              setFormError(`Kopieren nicht möglich. Bitte manuell kopieren: ${link(inv.code)}`);
+                              setFormError(
+                                `Kopieren nicht möglich. Bitte manuell kopieren: ${link(inv.code)}`,
+                              );
                             }
                           }}
                         >
@@ -855,11 +1232,22 @@ function InvitationsTab() {
                         onClick={async () => {
                           setFormError(null);
                           try {
-                            await api(`/invitations/${inv.code}`, { method: "DELETE" });
+                            await api(`/invitations/${inv.code}`, {
+                              method: "DELETE",
+                            });
                           } catch (err) {
                             // 404 = schon gelöscht → Liste trotzdem aktualisieren
-                            if (!(err instanceof Error && "status" in err && err.status === 404)) {
-                              setFormError(errorMessage(err, "Einladung konnte nicht gelöscht werden."));
+                            if (!(
+                              err instanceof Error &&
+                              "status" in err &&
+                              err.status === 404
+                            )) {
+                              setFormError(
+                                errorMessage(
+                                  err,
+                                  "Einladung konnte nicht gelöscht werden.",
+                                ),
+                              );
                             }
                           }
                           reload();

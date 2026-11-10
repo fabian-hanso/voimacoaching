@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui";
 import { ClientView } from "./client-view";
+import { ExerciseGuidesProvider } from "./exercise-guide";
 import { useMe } from "./shell";
 import { TrainerView } from "./trainer-view";
 import { StudioView } from "./studio-view";
@@ -29,7 +30,9 @@ export function DashboardHome() {
           }
         </p>
       </div>
-      {me.user.role === "studio" ? <StudioView /> : me.user.role === "trainer" ? <TrainerView /> : <ClientView me={me} onMeChange={reload} />}
+      <ExerciseGuidesProvider>
+        {me.user.role === "studio" ? <StudioView /> : me.user.role === "trainer" ? <TrainerView /> : <ClientView me={me} onMeChange={reload} />}
+      </ExerciseGuidesProvider>
     </>
   );
 }

@@ -1833,7 +1833,7 @@ function SlotPicker({ provider, service, onBooked }: { provider: BookingProvider
   return (
     <>
       <p className="mt-6 text-sm font-semibold text-fg">Tag</p>
-      <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-2">
+      <div className="-mx-1 mt-1 flex gap-2 overflow-x-auto px-1 pt-1 pb-2">
         {days.map((d) => {
           const dt = `${d.date}T12:00:00`;
           const active = d.date === selectedDate;

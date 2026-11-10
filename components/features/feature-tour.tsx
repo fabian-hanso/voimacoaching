@@ -819,7 +819,7 @@ function Finale({ complete, level, xp }: { complete: boolean; level: number; xp:
             <p className="mt-6 text-sm font-semibold text-brand">Level {level} erreicht · {xp} XP</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Alle {CHAPTERS.length} Features entdeckt! 🏆</h2>
             <p className="mx-auto mt-3 max-w-md text-white/70">
-              Du kennst jetzt Voima Coach. Zeit, es selbst auszuprobieren – 14 Tage kostenlos.
+              Du kennst jetzt Voima Coach. Zeit, es selbst auszuprobieren – 7 Tage kostenlos.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link

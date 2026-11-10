@@ -14,8 +14,10 @@ import { WEEKDAYS } from "./studio/studio-page";
 import { WishLink } from "./feature-wish";
 import { CalendarView, openRequests } from "./appointments";
 import { StudioCourses } from "./courses";
+import { ExerciseCatalog } from "./exercise-guide";
+import { EXERCISE_CATALOG } from "@/lib/exercises";
 
-type Tab = "team" | "clients" | "appointments" | "courses" | "invitations" | "profile";
+type Tab = "team" | "clients" | "appointments" | "courses" | "exercises" | "invitations" | "profile";
 
 /**
  * Dashboard für Studio-Inhaber: Trainer verwalten, Kunden zuweisen/übertragen,
@@ -40,6 +42,7 @@ export function StudioView() {
     ["clients", "Kunden", data.clients.length],
     ["appointments", "Termine", openRequests(appointments.data?.appointments, now) || null],
     ["courses", "Kurse", null],
+    ["exercises", "Übungen", null],
     ["invitations", "Einladungen", null],
     ["profile", "Studio-Profil", null],
   ];
@@ -96,6 +99,17 @@ export function StudioView() {
       {tab === "clients" && <ClientsTab data={data} reload={overview.reload} />}
       {tab === "appointments" && <CalendarView role="studio" onChanged={appointments.reload} />}
       {tab === "courses" && <StudioCourses trainers={data.trainers} />}
+      {tab === "exercises" && (
+        <Card>
+          <h2 className="font-semibold text-fg">Übungskatalog</h2>
+          <p className="mt-1 text-sm text-fg-muted">
+            {EXERCISE_CATALOG.length} Übungen mit Anleitung. Nehmen eure Trainer sie in einen Plan auf, sehen die Kunden die Erklärung direkt an der Übung.
+          </p>
+          <div className="mt-5">
+            <ExerciseCatalog />
+          </div>
+        </Card>
+      )}
       {tab === "invitations" && <InvitationsTab data={data} reload={overview.reload} />}
       {tab === "profile" && <ProfileTab data={data} reload={overview.reload} />}
 

@@ -21,6 +21,10 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Hinzugefügt
 
+- **Übungskatalog mit Erklärungen:** Alle 46 Katalogübungen haben eine Anleitung mit Muskeln, Equipment, Niveau, Ausführung Schritt für Schritt und typischen Fehlern.
+  - Trainer: neuer Tab „Übungen“ zum Durchsuchen, nach Übung, Muskel oder Gerät und mit Kategorien. Im Plan-Editor gibt es „Aus Katalog wählen“ je Trainingstag, ein Erklär-Icon am Übungsnamen und das Feld **„Hinweis für den Kunden“** je Übung.
+  - Kunden: An jeder Übung im Plan und beim Training gibt es „Erklärung“, mit Katalog-Anleitung und persönlichem Hinweis des Coaches. Der Katalog ist als Schnellaktion auf der Startseite erreichbar.
+  - API: `GET /exercises` liefert je Übung `guide`.
 - **Kurse im Studio** (z. B. Yoga, Spinning, Rücken-Fit):
   - Studios legen Kurse an – mit Titel, Kategorie, Beschreibung, Titelbild (16:9), Raum, zugewiesenem Trainer,
     **Plätzen pro Termin** (Kontingent), Dauer und wöchentlichen Zeiten (mehrere Tage/Uhrzeiten möglich),
@@ -60,6 +64,7 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 - Studio-Seite: Erst die Studio-Infos (Ausstattung, Team, Öffnungszeiten, Kontakt), danach freie Termine bei Trainern und Kurse.
 - Startseite (Kunde): Die Kachel „Nächstes Training“ hat ein Gym-Foto als Hintergrund unter einer dunklen Ebene, weißen Text und einen Lime-Button (`public/images/dashboard-training.jpg`, zugeschnitten und auf 1600 px verkleinert).
 - Training: Die Abhak-Buttons für Sätze und Ausdauer-Einheiten sind kleiner und zeigen schon vor dem Abhaken einen grauen Haken. Erledigt werden sie Lime.
+- Landingpage: Die Hero-Überschrift hat mehr Luft, sodass der Lime-Balken die Zeile darüber nicht mehr verdeckt. Die Karten rechts sind etwas dezenter, die Bewertungszeile ist entfernt. Testzeitraum überall **7 statt 14 Tage**.
 - **Einheitliche Rundungen:** feste Stufen als Design-Tokens (`rounded-box` 24 px für äußere Flächen, `rounded-tile` 16 px für Flächen in Karten, `rounded-control` 12 px für Buttons/Felder, `rounded-inner` 8 px). Alle CTAs haben jetzt dieselbe Form, keine Pillen-Buttons mehr.
 - Aktiver Tab in den Dashboards (Team, Kunden, …) ist jetzt schwarz statt dunkelgrün.
 - Studio-Kundenliste: Status **„Mitglied“** für Mitglieder ohne Coach, Filter „Mitglieder“ und „Coach fehlt“.
@@ -68,6 +73,7 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 
 ### Behoben
 
+- Filter-Chips im Übungskatalog und die Tagesauswahl bei der Terminbuchung werden oben nicht mehr abgeschnitten (Rand und Fokus-Ring hatten in der horizontal scrollenden Zeile keinen Platz).
 - Die Tab-Leisten im Studio- und Trainer-Dashboard (Team, Kunden, …) ließen sich vertikal scrollen. Die Leiste scrollt jetzt nur noch horizontal, und zwar ohne sichtbaren Scrollbalken.
 - Startseite (Kunde): Der Nachrichten-Button in der Karte „Dein Coach“ hat jetzt einen sichtbaren Hover-Zustand.
 
