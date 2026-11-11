@@ -5,20 +5,26 @@ import { Icon } from "@/components/icons";
 import { Button, Card } from "@/components/ui";
 import { api } from "@/lib/client/api";
 import { useEffect, useState } from "react";
+import { PosterDialog } from "./poster-dialog";
 
 export function MemberCodeCard({
   code,
   studioName,
+  logoUrl,
   onRenewed,
 }: {
   code: string;
   studioName: string;
+  /** Studio-Logo für den Aushang; ohne Logo wird unser Logo verwendet */
+  logoUrl: string | null;
   onRenewed: () => void;
 }) {
   const [qr, setQr] = useState<string | null>(null);
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
   const [renew, setRenew] = useState(false);
+  const [posterOpen, setPosterOpen] = useState(false);
+  const slug = studioName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
   useEffect(() => {
     const url = `${window.location.origin}/registrieren?rolle=kunde&mitglied=${code}`;
@@ -85,17 +91,30 @@ export function MemberCodeCard({
           {qr && (
             <a
               href={qr}
-              download={`qr-${studioName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`}
+              download={`qr-${slug}.png`}
               className="inline-flex items-center gap-2 rounded-control bg-surface-3 px-2.5 py-1.5 text-xs font-semibold text-fg ring-1 ring-line-strong transition hover:bg-line-strong"
             >
               <Icon name="camera" className="size-3.5" /> QR-Code herunterladen
             </a>
           )}
+          <Button size="sm" onClick={() => setPosterOpen(true)} disabled={!link}>
+            <Icon name="qr" className="size-3.5" />
+            Aushang gestalten
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => setRenew(true)}>
             Code erneuern
           </Button>
         </div>
       </div>
+      {posterOpen && (
+        <PosterDialog
+          url={link}
+          code={code}
+          studioName={studioName}
+          logoUrl={logoUrl}
+          onClose={() => setPosterOpen(false)}
+        />
+      )}
       {renew && (
         <ConfirmDialog
           title="Mitglieds-Code erneuern?"

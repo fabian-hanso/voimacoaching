@@ -55,6 +55,7 @@ export function ClientsTab({
         <MemberCodeCard
           code={data.studio.joinCode}
           studioName={data.studio.name}
+          logoUrl={data.studio.logoUrl}
           onRenewed={reload}
         />
         <EmptyState
@@ -92,6 +93,7 @@ export function ClientsTab({
       <MemberCodeCard
         code={data.studio.joinCode}
         studioName={data.studio.name}
+        logoUrl={data.studio.logoUrl}
         onRenewed={reload}
       />
       {!data.trainers.length && (
