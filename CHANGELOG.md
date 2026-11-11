@@ -57,6 +57,10 @@ API-Endpunkte noch ändern – Änderungen, die Apps anpassen müssen, sind mit 
 - Preise: „Unbegrenzte Pläne & Vorlagen“ heißt jetzt „Unbegrenzt viele Trainingspläne“, weil es keine Vorlagen gibt.
 - Landingpage: Im Hero ist „Fitnessstudios“ jetzt lila hervorgehoben, passend zum Lime-Balken bei „Personal Trainer“.
 
+### Behoben
+
+- **Anmelden, Registrieren und Passwort-Seiten auf dem Handy:** Die Seite ließ sich nicht mehr seitlich verschieben bzw. aus dem Bild scrollen (der Hintergrund-Farbverlauf war breiter als der Bildschirm). Das Formular hat auf kleinen Bildschirmen außerdem weniger Innenabstand.
+
 ### Datenbank
 
 - `20261126000000_appointment_moved.sql` – neue Hinweisart `appointment_moved`. Eingespielt.

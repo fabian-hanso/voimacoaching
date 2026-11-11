@@ -269,13 +269,13 @@ export function AuthShell({
   children: ReactNode;
 }) {
   return (
-    <div className="relative isolate flex flex-1 flex-col items-center justify-center px-4 py-16">
+    <div className="relative isolate flex flex-1 flex-col items-center justify-center overflow-x-clip px-4 py-10 sm:py-16">
       <div
         aria-hidden="true"
         className="absolute top-0 left-1/2 -z-10 h-[24rem] w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-brand/15 to-brand/5 blur-3xl"
       />
       <Logo />
-      <div className="mt-8 w-full max-w-md rounded-box bg-surface p-8 shadow-xl ring-1 ring-line-strong">
+      <div className="mt-8 w-full max-w-md rounded-box bg-surface p-5 shadow-xl ring-1 ring-line-strong sm:p-8">
         <h1 className="text-2xl font-bold tracking-tight text-fg">{title}</h1>
         <p className="mt-1 text-sm text-fg-muted">{subtitle}</p>
         <div className="mt-6">{children}</div>
